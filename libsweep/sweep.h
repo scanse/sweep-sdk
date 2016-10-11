@@ -29,16 +29,12 @@ extern "C" {
 SWEEP_API int32_t sweep_get_version(void);
 SWEEP_API bool sweep_is_abi_compatible(void);
 
-/* Error handling */
-
 typedef struct sweep_error* sweep_error_t;
+typedef struct sweep_device* sweep_device_t;
+typedef struct sweep_scan* sweep_scan_t;
 
 SWEEP_API const char* sweep_error_message(sweep_error_t error);
 SWEEP_API void sweep_error_destruct(sweep_error_t error);
-
-/* Sweep device */
-
-typedef struct sweep_device* sweep_device_t;
 
 SWEEP_API sweep_device_t sweep_device_construct_simple(sweep_error_t* error);
 SWEEP_API sweep_device_t sweep_device_construct(const char* tty, int32_t baud, int32_t timeout, sweep_error_t* error);
@@ -47,10 +43,12 @@ SWEEP_API void sweep_device_destruct(sweep_device_t device);
 SWEEP_API void sweep_device_start_scanning(sweep_device_t device, sweep_error_t* error);
 SWEEP_API void sweep_device_stop_scanning(sweep_device_t device, sweep_error_t* error);
 
-typedef void (*sweep_scan_handler_t)(void* data, int32_t angle, int32_t distance);
+SWEEP_API void sweep_device_scan(sweep_device_t device, sweep_scan_t* scan, int32_t timeout, sweep_error_t* error);
 
-SWEEP_API void sweep_device_scan(sweep_device_t device, sweep_scan_handler_t handler, void* data, int32_t timeout,
-                                 sweep_error_t* error);
+SWEEP_API int32_t sweep_scan_get_number_of_samples(sweep_scan_t scan);
+SWEEP_API int32_t sweep_scan_get_angle(sweep_scan_t scan, int32_t sample);
+SWEEP_API int32_t sweep_scan_get_distance(sweep_scan_t scan, int32_t sample);
+SWEEP_API void sweep_scan_destruct(sweep_scan_t scan);
 
 SWEEP_API int32_t sweep_device_get_motor_speed(sweep_device_t device, sweep_error_t* error);
 SWEEP_API int32_t sweep_device_get_sample_rate(sweep_device_t device, sweep_error_t* error);
