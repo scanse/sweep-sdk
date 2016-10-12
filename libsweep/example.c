@@ -44,15 +44,12 @@ int main() {
   sweep_device_start_scanning(sweep, &error);
   check(error);
 
-  // Response for a single full 360 degree scan
-  sweep_scan_t scan;
-
   int32_t timeout = (1 / speed) * 2;
 
   // Let's do 10 full 360 degree scans
   for (int32_t num_scans = 0; num_scans < 10; ++num_scans) {
     // This blocks until a full 360 degree scan is available
-    sweep_device_scan(sweep, &scan, timeout, &error);
+    sweep_scan_t scan = sweep_device_get_scan(sweep, timeout, &error);
     check(error);
 
     // For each sample in a full 360 degree scan print angle and distance.
@@ -62,10 +59,10 @@ int main() {
       int32_t distance = sweep_scan_get_distance(scan, n);
       fprintf(stdout, "Angle %" PRId32 ", Distance %" PRId32 "\n", angle, distance);
     }
-  }
 
-  // Cleanup scan response
-  sweep_scan_destruct(scan);
+    // Cleanup scan response
+    sweep_scan_destruct(scan);
+  }
 
   // Shut down and cleanup Sweep device
   sweep_device_destruct(sweep);

@@ -43,12 +43,12 @@ SWEEP_API void sweep_device_destruct(sweep_device_t device);
 SWEEP_API void sweep_device_start_scanning(sweep_device_t device, sweep_error_t* error);
 SWEEP_API void sweep_device_stop_scanning(sweep_device_t device, sweep_error_t* error);
 
-SWEEP_API void sweep_device_scan(sweep_device_t device, sweep_scan_t* scan, int32_t timeout, sweep_error_t* error);
+SWEEP_API sweep_scan_t sweep_device_get_scan(sweep_device_t device, int32_t timeout, sweep_error_t* error);
+SWEEP_API void sweep_scan_destruct(sweep_scan_t scan);
 
 SWEEP_API int32_t sweep_scan_get_number_of_samples(sweep_scan_t scan);
 SWEEP_API int32_t sweep_scan_get_angle(sweep_scan_t scan, int32_t sample);
 SWEEP_API int32_t sweep_scan_get_distance(sweep_scan_t scan, int32_t sample);
-SWEEP_API void sweep_scan_destruct(sweep_scan_t scan);
 
 SWEEP_API int32_t sweep_device_get_motor_speed(sweep_device_t device, sweep_error_t* error);
 SWEEP_API int32_t sweep_device_get_sample_rate(sweep_device_t device, sweep_error_t* error);

@@ -32,7 +32,7 @@ void sweep_device_destruct(sweep_device_t device) {}
 void sweep_device_start_scanning(sweep_device_t device, sweep_error_t* error) {}
 void sweep_device_stop_scanning(sweep_device_t device, sweep_error_t* error) {}
 
-void sweep_device_scan(sweep_device_t device, sweep_scan_t* scan, int32_t timeout, sweep_error_t* error) { scan = 0; }
+sweep_scan_t sweep_device_get_scan(sweep_device_t device, int32_t timeout, sweep_error_t* error) { return 0; }
 
 int32_t sweep_scan_get_number_of_samples(sweep_scan_t scan) { return 2; }
 int32_t sweep_scan_get_angle(sweep_scan_t scan, int32_t sample) { return 10; }
