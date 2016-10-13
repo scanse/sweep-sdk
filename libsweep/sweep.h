@@ -42,7 +42,7 @@ SWEEP_API const char* sweep_error_message(sweep_error_s error);
 SWEEP_API void sweep_error_destruct(sweep_error_s error);
 
 SWEEP_API sweep_device_s sweep_device_construct_simple(sweep_error_s* error);
-SWEEP_API sweep_device_s sweep_device_construct(const char* port, int32_t baud, int32_t timeout, sweep_error_s* error);
+SWEEP_API sweep_device_s sweep_device_construct(const char* port, int32_t baudrate, int32_t timeout, sweep_error_s* error);
 SWEEP_API void sweep_device_destruct(sweep_device_s device);
 
 SWEEP_API void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error);
