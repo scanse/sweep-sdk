@@ -7,14 +7,14 @@
 #include <sweep/sweep.h>
 
 // Utility functions for error handling: we simply shut down here; you should do a better job
-static void die(sweep_error_t error) {
+static void die(sweep_error_s error) {
   assert(error);
   fprintf(stderr, "Error: %s\n", sweep_error_message(error));
   sweep_error_destruct(error);
   exit(EXIT_FAILURE);
 }
 
-static void check(sweep_error_t error) {
+static void check(sweep_error_s error) {
   if (error)
     die(error);
 }
@@ -24,10 +24,10 @@ int main() {
   assert(sweep_is_abi_compatible());
 
   // All functions which can potentially fail write into an error object
-  sweep_error_t error = NULL;
+  sweep_error_s error = NULL;
 
   // Create a Sweep device from default USB serial port; there is a second constructor for advanced usage
-  sweep_device_t sweep = sweep_device_construct_simple(&error);
+  sweep_device_s sweep = sweep_device_construct_simple(&error);
   check(error);
 
   // The Sweep's rotating speed in Hz
@@ -49,7 +49,7 @@ int main() {
   // Let's do 10 full 360 degree scans
   for (int32_t num_scans = 0; num_scans < 10; ++num_scans) {
     // This blocks until a full 360 degree scan is available
-    sweep_scan_t scan = sweep_device_get_scan(sweep, timeout, &error);
+    sweep_scan_s scan = sweep_device_get_scan(sweep, timeout, &error);
     check(error);
 
     // For each sample in a full 360 degree scan print angle and distance.

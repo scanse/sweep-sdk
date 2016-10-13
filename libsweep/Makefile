@@ -1,7 +1,7 @@
 include config.mk
 
 TARGET = libsweep.so
-OBJECTS = sweep.o
+OBJECTS = sweep.o serial_unix.o
 HEADER = sweep.h
 
 $(TARGET): $(OBJECTS) $(HEADER)
