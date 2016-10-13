@@ -5,7 +5,7 @@ OBJECTS = sweep.o serial_unix.o
 HEADER = sweep.h serial.h
 
 $(TARGET): $(OBJECTS) $(HEADER)
-	$(CC) $(LDFLAGS) -o $@ $< $(LDLIBS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 install:
 	@mkdir -p $(PREFIX)/include/sweep
