@@ -2,7 +2,7 @@ include config.mk
 
 TARGET = libsweep.so
 OBJECTS = sweep.o serial_unix.o
-HEADER = sweep.h
+HEADER = sweep.h serial.h
 
 $(TARGET): $(OBJECTS) $(HEADER)
 	$(CC) $(LDFLAGS) -o $@ $< $(LDLIBS)
@@ -15,7 +15,10 @@ install:
 	ln -sf $(PREFIX)/lib/$(TARGET) $(PREFIX)/lib/$(TARGET).$(VERSION_MAJOR)
 	ln -sf $(PREFIX)/lib/$(TARGET) $(PREFIX)/lib/$(TARGET).$(VERSION_MAJOR).$(VERSION_MINOR)
 
+watch:
+	while ! inotifywait -e modify *.c *.h; do make; done
+
 clean:
 	@$(RM) $(OBJECTS) $(TARGET)
 
-.PHONY: clean install
+.PHONY: clean install watch
