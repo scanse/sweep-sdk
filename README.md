@@ -145,7 +145,7 @@ Returns the angle for the `sample`th sample in the `sweep_scan_s`.
 Returns the distance for the `sample`th sample in the `sweep_scan_s`.
 
 
-##### License
+### License
 
 Copyright © 2016 Scanse LLC
 Copyright © 2016 Daniel J. Hofmann

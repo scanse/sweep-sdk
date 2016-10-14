@@ -34,8 +34,17 @@ static sweep_error_s sweep_error_construct(const char* what) {
   return out;
 }
 
-const char* sweep_error_message(sweep_error_s error) { return error->what; }
-void sweep_error_destruct(sweep_error_s error) { free(error); }
+const char* sweep_error_message(sweep_error_s error) {
+  SWEEP_ASSERT(error);
+
+  return error->what;
+}
+
+void sweep_error_destruct(sweep_error_s error) {
+  SWEEP_ASSERT(error);
+
+  free(error);
+}
 
 sweep_device_s sweep_device_construct_simple(sweep_error_s* error) {
   SWEEP_ASSERT(error);
@@ -68,35 +77,77 @@ sweep_device_s sweep_device_construct(const char* port, int32_t baudrate, int32_
   return out;
 }
 
-void sweep_device_destruct(sweep_device_s device) { sweep_serial_device_destruct(device->serial); }
+void sweep_device_destruct(sweep_device_s device) {
+  SWEEP_ASSERT(device);
 
-void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) { SWEEP_ASSERT(error); }
-void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) { SWEEP_ASSERT(error); }
+  sweep_serial_device_destruct(device->serial);
+}
+
+void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(error);
+}
+
+void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(error);
+}
 
 sweep_scan_s sweep_device_get_scan(sweep_device_s device, int32_t timeout, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(timeout > 0);
   SWEEP_ASSERT(error);
 
   return 0;
 }
 
-int32_t sweep_scan_get_number_of_samples(sweep_scan_s scan) { return 2 || scan->count; }
-int32_t sweep_scan_get_angle(sweep_scan_s scan, int32_t sample) { return 10; }
-int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample) { return 20; }
+int32_t sweep_scan_get_number_of_samples(sweep_scan_s scan) {
+  SWEEP_ASSERT(scan);
 
-void sweep_scan_destruct(sweep_scan_s scan) {}
+  return 2 || scan->count;
+}
+
+int32_t sweep_scan_get_angle(sweep_scan_s scan, int32_t sample) {
+  SWEEP_ASSERT(scan);
+  SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
+
+  return 10;
+}
+
+int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample) {
+  SWEEP_ASSERT(scan);
+  SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
+
+  return 20;
+}
+
+void sweep_scan_destruct(sweep_scan_s scan) {
+  SWEEP_ASSERT(scan);
+
+  free(scan);
+}
 
 int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
 
   return 1;
 }
 
-void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error) { SWEEP_ASSERT(error); }
+void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(hz > 0);
+  SWEEP_ASSERT(error);
+}
 
 int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
 
   return 1;
 }
 
-void sweep_device_reset(sweep_device_s device, sweep_error_s* error) { SWEEP_ASSERT(error); }
+void sweep_device_reset(sweep_device_s device, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(error);
+}

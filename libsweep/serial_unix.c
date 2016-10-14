@@ -39,9 +39,17 @@ static sweep_serial_error_s sweep_serial_error_construct(const char* what) {
   return out;
 }
 
-const char* sweep_serial_error_message(sweep_serial_error_s error) { return error->what; }
+const char* sweep_serial_error_message(sweep_serial_error_s error) {
+  SWEEP_ASSERT(error);
 
-void sweep_serial_error_destruct(sweep_serial_error_s error) { free(error); }
+  return error->what;
+}
+
+void sweep_serial_error_destruct(sweep_serial_error_s error) {
+  SWEEP_ASSERT(error);
+
+  free(error);
+}
 
 static speed_t sweep_serial_detail_get_baud(int32_t baudrate, sweep_serial_error_s* error) {
   SWEEP_ASSERT(baudrate > 0);
@@ -244,6 +252,7 @@ static speed_t sweep_serial_detail_get_baud(int32_t baudrate, sweep_serial_error
 }
 
 static bool sweep_serial_detail_wait_readable(sweep_serial_device_s serial, sweep_serial_error_s* error) {
+  SWEEP_ASSERT(serial);
   SWEEP_ASSERT(error);
 
   // Setup a select call to block for serial data or a timeout
@@ -360,9 +369,14 @@ sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t ba
   return out;
 }
 
-void sweep_serial_device_destruct(sweep_serial_device_s serial) { free(serial); }
+void sweep_serial_device_destruct(sweep_serial_device_s serial) {
+  SWEEP_ASSERT(serial);
+
+  free(serial);
+}
 
 void sweep_serial_device_read(sweep_serial_device_s serial, void* to, int32_t len, sweep_serial_error_s* error) {
+  SWEEP_ASSERT(serial);
   SWEEP_ASSERT(to);
   SWEEP_ASSERT(len >= 0);
   SWEEP_ASSERT(error);
@@ -397,6 +411,7 @@ void sweep_serial_device_read(sweep_serial_device_s serial, void* to, int32_t le
 }
 
 void sweep_serial_device_write(sweep_serial_device_s serial, const void* from, int32_t len, sweep_serial_error_s* error) {
+  SWEEP_ASSERT(serial);
   SWEEP_ASSERT(from);
   SWEEP_ASSERT(len >= 0);
   SWEEP_ASSERT(error);
@@ -423,6 +438,7 @@ void sweep_serial_device_write(sweep_serial_device_s serial, const void* from, i
 }
 
 void sweep_serial_device_flush(sweep_serial_device_s serial, sweep_serial_error_s* error) {
+  SWEEP_ASSERT(serial);
   SWEEP_ASSERT(error);
 
   if (tcflush(serial->fd, TCIFLUSH) == -1) {
