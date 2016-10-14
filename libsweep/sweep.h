@@ -56,8 +56,8 @@ SWEEP_API int32_t sweep_scan_get_angle(sweep_scan_s scan, int32_t sample);
 SWEEP_API int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample);
 
 SWEEP_API int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error);
-SWEEP_API int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error);
 SWEEP_API void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error);
+SWEEP_API int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error);
 
 SWEEP_API void sweep_device_reset(sweep_device_s device, sweep_error_s* error);
 
