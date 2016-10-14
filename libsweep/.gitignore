@@ -1,2 +1,2 @@
-libsweep.so
-sweep.o
+*.so
+*.o

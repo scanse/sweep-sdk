@@ -1,5 +1,4 @@
 #include "sweep.h"
-#include "serial.h"
 
 #include <stdlib.h>
 
@@ -11,13 +10,12 @@ typedef struct sweep_error {
 } sweep_error;
 
 typedef struct sweep_device {
-  sweep_serial_device_s serial; // serial port communication
+  bool scanning;
+  int32_t motor_speed;
+  int32_t sample_rate;
 } sweep_device;
 
-typedef struct sweep_scan {
-  // impl.
-  int32_t count;
-} sweep_scan;
+typedef struct sweep_scan { int32_t count; } sweep_scan;
 
 // Constructor hidden from users
 static sweep_error_s sweep_error_construct(const char* what) {
@@ -58,24 +56,14 @@ sweep_device_s sweep_device_construct(const char* port, int32_t baudrate, int32_
   SWEEP_ASSERT(timeout > 0);
   SWEEP_ASSERT(error);
 
-  sweep_serial_error_s serialerror = NULL;
-  sweep_serial_device_s serial = sweep_serial_device_construct(port, baudrate, timeout, &serialerror);
-
-  if (serialerror) {
-    *error = sweep_error_construct(sweep_serial_error_message(serialerror));
-    sweep_serial_error_destruct(serialerror);
-    return NULL;
-  }
-
   sweep_device_s out = malloc(sizeof(sweep_device));
 
   if (out == NULL) {
     *error = sweep_error_construct("oom during sweep device creation");
-    sweep_serial_device_destruct(serial);
     return NULL;
   }
 
-  *out = (sweep_device){.serial = serial};
+  *out = (sweep_device){.scanning = false, .motor_speed = 1, .sample_rate = 360};
 
   return out;
 }
@@ -83,19 +71,21 @@ sweep_device_s sweep_device_construct(const char* port, int32_t baudrate, int32_
 void sweep_device_destruct(sweep_device_s device) {
   SWEEP_ASSERT(device);
 
-  sweep_serial_device_destruct(device->serial);
-
   free(device);
 }
 
 void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+
+  device->scanning = true;
 }
 
 void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+
+  device->scanning = false;
 }
 
 sweep_scan_s sweep_device_get_scan(sweep_device_s device, int32_t timeout, sweep_error_s* error) {
@@ -103,20 +93,47 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, int32_t timeout, sweep
   SWEEP_ASSERT(timeout > 0);
   SWEEP_ASSERT(error);
 
-  return 0;
+  sweep_scan_s out = malloc(sizeof(sweep_scan));
+
+  if (out == NULL) {
+    *error = sweep_error_construct("oom during sweep device scan creation");
+    return NULL;
+  }
+
+  *out = (sweep_scan){.count = 16};
+
+  return out;
 }
 
 int32_t sweep_scan_get_number_of_samples(sweep_scan_s scan) {
   SWEEP_ASSERT(scan);
 
-  return 2 || scan->count;
+  return scan->count;
 }
 
 int32_t sweep_scan_get_angle(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
-  return 10;
+  int32_t angle = 360;
+  int32_t delta = (sample % 4) * 2;
+
+  switch (sample / 4) {
+  case 0:
+    angle = 0;
+    break;
+  case 1:
+    angle = 90;
+    break;
+  case 2:
+    angle = 180;
+    break;
+  case 3:
+    angle = 270;
+    break;
+  }
+
+  return angle + delta;
 }
 
 int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample) {
@@ -136,20 +153,23 @@ int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
 
-  return 1;
+  return device->motor_speed;
 }
 
 void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(hz > 0);
   SWEEP_ASSERT(error);
+
+  device->motor_speed = hz;
 }
 
 int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
 
-  return 1;
+  return device->sample_rate;
+  ;
 }
 
 void sweep_device_reset(sweep_device_s device, sweep_error_s* error) {
