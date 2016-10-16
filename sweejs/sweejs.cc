@@ -134,7 +134,62 @@ NAN_METHOD(Sweep::stopScanning) {
 NAN_METHOD(Sweep::scan) {
   auto* const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
 
-  // TODO: impl. based on AsyncWorker
+  if (info.Length() != 2 || !info[0]->IsNumber() || !info[1]->IsFunction()) {
+    return Nan::ThrowTypeError("Timeout and callback expected");
+  }
+
+  const auto timeout = Nan::To<int32_t>(info[0]).FromJust();
+  const auto function = info[1].As<v8::Function>();
+
+  struct AsyncScanWorker final : Nan::AsyncWorker {
+    AsyncScanWorker(Sweep& sweep, Nan::Callback* callback, int32_t timeout)
+        : Nan::AsyncWorker(callback), sweep{sweep}, timeout{timeout} {}
+
+    void Execute() override {
+      ::sweep_error_s error = nullptr;
+      scan = ::sweep_device_get_scan(sweep.device.get(), timeout, &error);
+
+      if (error) {
+        SetErrorMessage(::sweep_error_message(error));
+        ::sweep_error_destruct(error);
+      }
+    }
+
+    void HandleOKCallback() override {
+      Nan::HandleScope scope;
+
+      auto n = ::sweep_scan_get_number_of_samples(scan);
+
+      auto samples = Nan::New<v8::Array>(n);
+
+      for (int32_t i = 0; i < n; ++i) {
+        const auto angle = Nan::New<v8::Number>(::sweep_scan_get_angle(scan, i));
+        const auto distance = Nan::New<v8::Number>(::sweep_scan_get_distance(scan, i));
+
+        const auto anglekey = Nan::New<v8::String>("angle").ToLocalChecked();
+        const auto distancekey = Nan::New<v8::String>("distance").ToLocalChecked();
+
+        // sample = {'angle': 360, 'distance': 20}
+        const auto sample = Nan::New<v8::Object>();
+        Nan::Set(sample, anglekey, angle).FromJust();
+        Nan::Set(sample, distancekey, distance).FromJust();
+
+        Nan::Set(samples, i, sample).FromJust();
+      }
+
+      const constexpr auto argc = 2u;
+      v8::Local<v8::Value> argv[argc] = {Nan::Null(), samples};
+
+      callback->Call(argc, argv);
+    }
+
+    Sweep& sweep;
+    int32_t timeout;
+    ::sweep_scan_s scan;
+  };
+
+  auto* callback = new Nan::Callback{function};
+  Nan::AsyncQueueWorker(new AsyncScanWorker{*self, callback, timeout});
 }
 
 NAN_METHOD(Sweep::getMotorSpeed) {

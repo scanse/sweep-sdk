@@ -23,8 +23,15 @@ if (require.main === module) {
 
   const rate = sweep.getSampleRate();
 
-  // resets the hardware device: is not (!) needed to shutdown the library
-  sweep.reset();
+  sweep.scan(2000, (err, samples) => {
+    if (err) {
+      return console.log(err);
+    }
+
+    samples.forEach((sample) => {
+      console.log(`angle: ${sample.angle}, distance: ${sample.distance}`);
+    });
+  });
 }
 
 module.exports = sweejs;
