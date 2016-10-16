@@ -142,12 +142,14 @@ NAN_METHOD(Sweep::scan) {
   const auto function = info[1].As<v8::Function>();
 
   struct AsyncScanWorker final : Nan::AsyncWorker {
-    AsyncScanWorker(Sweep& sweep, Nan::Callback* callback, int32_t timeout)
-        : Nan::AsyncWorker(callback), sweep{sweep}, timeout{timeout} {}
+    using Base = Nan::AsyncWorker;
+
+    AsyncScanWorker(std::shared_ptr<::sweep_device> device, Nan::Callback* callback, int32_t timeout)
+        : Base(callback), device{std::move(device)}, timeout{timeout} {}
 
     void Execute() override {
       ::sweep_error_s error = nullptr;
-      scan = ::sweep_device_get_scan(sweep.device.get(), timeout, &error);
+      scan = ::sweep_device_get_scan(device.get(), timeout, &error);
 
       if (error) {
         SetErrorMessage(::sweep_error_message(error));
@@ -183,13 +185,13 @@ NAN_METHOD(Sweep::scan) {
       callback->Call(argc, argv);
     }
 
-    Sweep& sweep;
+    std::shared_ptr<::sweep_device> device; // keep alive until done
     int32_t timeout;
     ::sweep_scan_s scan;
   };
 
   auto* callback = new Nan::Callback{function};
-  Nan::AsyncQueueWorker(new AsyncScanWorker{*self, callback, timeout});
+  Nan::AsyncQueueWorker(new AsyncScanWorker{self->device, callback, timeout});
 }
 
 NAN_METHOD(Sweep::getMotorSpeed) {
