@@ -70,12 +70,25 @@ NAN_METHOD(Sweep::New) {
   if (info.IsConstructCall()) {
     Sweep* self = nullptr;
 
-    if (simple) {
-      self = new Sweep();
-    } else if (config) {
-      self = new Sweep();
-    } else {
-      return Nan::ThrowError("Unable to create device"); // unreachable
+    try {
+      if (simple) {
+        self = new Sweep();
+      } else if (config) {
+        const Nan::Utf8String utf8port{info[0]};
+
+        if (!(*utf8port)) {
+          return Nan::ThrowError("UTF-8 conversion error for serial port string");
+        }
+
+        const auto port = *utf8port;
+        const auto baudrate = Nan::To<int32_t>(info[1]).FromJust();
+        const auto timeout = Nan::To<int32_t>(info[2]).FromJust();
+        self = new Sweep(port, baudrate, timeout);
+      } else {
+        return Nan::ThrowError("Unable to create device"); // unreachable
+      }
+    } catch (const SweepError& e) {
+      return Nan::ThrowError(e.what());
     }
 
     self->Wrap(info.This());
