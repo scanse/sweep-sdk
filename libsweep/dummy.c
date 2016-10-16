@@ -100,7 +100,7 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, int32_t timeout, sweep
     return NULL;
   }
 
-  *out = (sweep_scan){.count = 16};
+  *out = (sweep_scan){.count = device->scanning ? 16 : 0};
 
   return out;
 }
