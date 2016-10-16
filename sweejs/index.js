@@ -23,7 +23,8 @@ if (require.main === module) {
 
   const rate = sweep.getSampleRate();
 
-  sweep.reset(); // this resets the hardware and is not needed to shutdown the library
+  // resets the hardware device: is not (!) needed to shutdown the library
+  sweep.reset();
 }
 
 module.exports = sweejs;

@@ -8,18 +8,21 @@
 #include <sweep/sweep.h>
 
 class Sweep final : public Nan::ObjectWrap {
- public:
+public:
   static NAN_MODULE_INIT(Init);
 
- private:
+private:
   static NAN_METHOD(New);
 
   static NAN_METHOD(startScanning);
   static NAN_METHOD(stopScanning);
 
+  static NAN_METHOD(scan);
+
   static NAN_METHOD(getMotorSpeed);
   static NAN_METHOD(setMotorSpeed);
   static NAN_METHOD(getSampleRate);
+
   static NAN_METHOD(reset);
 
   static Nan::Persistent<v8::Function>& constructor();
@@ -29,8 +32,6 @@ class Sweep final : public Nan::ObjectWrap {
   Sweep();
   Sweep(const char* port, int32_t baudrate, int32_t timeout);
 
-  ~Sweep();
-
   // Non-Copyable
   Sweep(const Sweep&) = delete;
   Sweep& operator=(const Sweep&) = delete;
@@ -39,7 +40,8 @@ class Sweep final : public Nan::ObjectWrap {
   Sweep(Sweep&&) = delete;
   Sweep& operator=(Sweep&&) = delete;
 
-  ::sweep_device_s device;
+  // Ref-counted to keep alive until last in-flight callback is finished
+  std::shared_ptr<::sweep_device> device;
 };
 
 NODE_MODULE(sweejs, Sweep::Init)

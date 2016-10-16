@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <utility>
 
 #include "sweejs.h"
 
@@ -7,28 +8,32 @@
 struct SweepError final : std::runtime_error {
   using Base = std::runtime_error;
 
-  SweepError(const char *what) : Base{what} {}
+  SweepError(const char* what) : Base{what} {}
 };
 
 Sweep::Sweep() {
   ::sweep_error_s error = nullptr;
-  device = ::sweep_device_construct_simple(&error);
+  auto devptr = ::sweep_device_construct_simple(&error);
 
   if (error) {
     throw SweepError{"device construction failed"};
   }
+
+  std::shared_ptr<::sweep_device> arc{devptr, [](::sweep_device_s dev) { ::sweep_device_destruct(dev); }};
+  device = std::move(arc);
 }
 
-Sweep::Sweep(const char *port, int32_t baudrate, int32_t timeout) {
+Sweep::Sweep(const char* port, int32_t baudrate, int32_t timeout) {
   ::sweep_error_s error = nullptr;
-  device = ::sweep_device_construct(port, baudrate, timeout, &error);
+  auto devptr = ::sweep_device_construct(port, baudrate, timeout, &error);
 
   if (error) {
     throw SweepError{"device construction failed"};
   }
-}
 
-Sweep::~Sweep() { ::sweep_device_destruct(device); }
+  std::shared_ptr<::sweep_device> arc{devptr, [](::sweep_device_s dev) { ::sweep_device_destruct(dev); }};
+  device = std::move(arc);
+}
 
 // NAN Bindings
 
@@ -41,6 +46,7 @@ NAN_MODULE_INIT(Sweep::Init) {
 
   SetPrototypeMethod(fnTp, "startScanning", startScanning);
   SetPrototypeMethod(fnTp, "stopScanning", startScanning);
+  SetPrototypeMethod(fnTp, "scan", scan);
   SetPrototypeMethod(fnTp, "getMotorSpeed", getMotorSpeed);
   SetPrototypeMethod(fnTp, "setMotorSpeed", setMotorSpeed);
   SetPrototypeMethod(fnTp, "getSampleRate", getSampleRate);
@@ -53,12 +59,25 @@ NAN_MODULE_INIT(Sweep::Init) {
 }
 
 NAN_METHOD(Sweep::New) {
-  if (info.Length() != 0) {
-    return Nan::ThrowTypeError("No types expected");
+  // auto-detect or port, baud, timeout
+  const auto simple = info.Length() == 0;
+  const auto config = info.Length() == 3 && info[0]->IsString() && info[1]->IsNumber() && info[2]->IsNumber();
+
+  if (!simple && !config) {
+    return Nan::ThrowTypeError("No arguments for auto-detection or serial port, baudrate, timeout expected");
   }
 
   if (info.IsConstructCall()) {
-    auto *const self = new Sweep;
+    Sweep* self = nullptr;
+
+    if (simple) {
+      self = new Sweep();
+    } else if (config) {
+      self = new Sweep();
+    } else {
+      return Nan::ThrowError("Unable to create device"); // unreachable
+    }
+
     self->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
   } else {
@@ -68,14 +87,14 @@ NAN_METHOD(Sweep::New) {
 }
 
 NAN_METHOD(Sweep::startScanning) {
-  auto *const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
+  auto* const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
 
   if (info.Length() != 0) {
     return Nan::ThrowTypeError("No arguments expected");
   }
 
   ::sweep_error_s error = nullptr;
-  ::sweep_device_start_scanning(self->device, &error);
+  ::sweep_device_start_scanning(self->device.get(), &error);
 
   if (error) {
     Nan::ThrowError(::sweep_error_message(error));
@@ -84,14 +103,14 @@ NAN_METHOD(Sweep::startScanning) {
 }
 
 NAN_METHOD(Sweep::stopScanning) {
-  auto *const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
+  auto* const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
 
   if (info.Length() != 0) {
     return Nan::ThrowTypeError("No arguments expected");
   }
 
   ::sweep_error_s error = nullptr;
-  ::sweep_device_stop_scanning(self->device, &error);
+  ::sweep_device_stop_scanning(self->device.get(), &error);
 
   if (error) {
     Nan::ThrowError(::sweep_error_message(error));
@@ -99,15 +118,21 @@ NAN_METHOD(Sweep::stopScanning) {
   }
 }
 
+NAN_METHOD(Sweep::scan) {
+  auto* const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
+
+  // TODO: impl. based on AsyncWorker
+}
+
 NAN_METHOD(Sweep::getMotorSpeed) {
-  auto *const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
+  auto* const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
 
   if (info.Length() != 0) {
     return Nan::ThrowTypeError("No arguments expected");
   }
 
   ::sweep_error_s error = NULL;
-  const auto speed = ::sweep_device_get_motor_speed(self->device, &error);
+  const auto speed = ::sweep_device_get_motor_speed(self->device.get(), &error);
 
   if (error) {
     Nan::ThrowError(::sweep_error_message(error));
@@ -119,7 +144,7 @@ NAN_METHOD(Sweep::getMotorSpeed) {
 }
 
 NAN_METHOD(Sweep::setMotorSpeed) {
-  auto *const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
+  auto* const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
 
   if (info.Length() != 1 && !info[0]->IsNumber()) {
     return Nan::ThrowTypeError("Motor speed in Hz as number expected");
@@ -128,7 +153,7 @@ NAN_METHOD(Sweep::setMotorSpeed) {
   const auto speed = Nan::To<int32_t>(info[0]).FromJust();
 
   ::sweep_error_s error = NULL;
-  ::sweep_device_set_motor_speed(self->device, speed, &error);
+  ::sweep_device_set_motor_speed(self->device.get(), speed, &error);
 
   if (error) {
     Nan::ThrowError(::sweep_error_message(error));
@@ -138,14 +163,14 @@ NAN_METHOD(Sweep::setMotorSpeed) {
 }
 
 NAN_METHOD(Sweep::getSampleRate) {
-  auto *const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
+  auto* const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
 
   if (info.Length() != 0) {
     return Nan::ThrowTypeError("No arguments expected");
   }
 
   ::sweep_error_s error = NULL;
-  const auto rate = ::sweep_device_get_sample_rate(self->device, &error);
+  const auto rate = ::sweep_device_get_sample_rate(self->device.get(), &error);
 
   if (error) {
     Nan::ThrowError(::sweep_error_message(error));
@@ -157,14 +182,14 @@ NAN_METHOD(Sweep::getSampleRate) {
 }
 
 NAN_METHOD(Sweep::reset) {
-  auto *const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
+  auto* const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
 
   if (info.Length() != 0) {
     return Nan::ThrowTypeError("No arguments expected");
   }
 
   ::sweep_error_s error = NULL;
-  ::sweep_device_reset(self->device, &error);
+  ::sweep_device_reset(self->device.get(), &error);
 
   if (error) {
     Nan::ThrowError(::sweep_error_message(error));
@@ -173,7 +198,7 @@ NAN_METHOD(Sweep::reset) {
   }
 }
 
-Nan::Persistent<v8::Function> &Sweep::constructor() {
+Nan::Persistent<v8::Function>& Sweep::constructor() {
   static Nan::Persistent<v8::Function> init;
   return init;
 }
