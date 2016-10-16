@@ -45,7 +45,7 @@ NAN_MODULE_INIT(Sweep::Init) {
   fnTp->InstanceTemplate()->SetInternalFieldCount(1);
 
   SetPrototypeMethod(fnTp, "startScanning", startScanning);
-  SetPrototypeMethod(fnTp, "stopScanning", startScanning);
+  SetPrototypeMethod(fnTp, "stopScanning", stopScanning);
   SetPrototypeMethod(fnTp, "scan", scan);
   SetPrototypeMethod(fnTp, "getMotorSpeed", getMotorSpeed);
   SetPrototypeMethod(fnTp, "setMotorSpeed", setMotorSpeed);
