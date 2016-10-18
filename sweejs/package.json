@@ -1,20 +1,16 @@
 {
   "name": "sweejs",
   "version": "0.0.1",
-  "description": "Sweep LiDAR",
+  "description": "Native module for the Sweep LiDAR",
   "keywords": [
     "addon",
     "native",
     "module"
   ],
-  "author": "",
+  "author": "Daniel J. Hofmann",
   "license": "MIT",
-  "main": "index.js",
-  "scripts": {
-    "install": "ncmake --build --config Release build"
-  },
+  "main": "./build/Release/sweejs",
   "dependencies": {
-    "nan": "^2.2.1",
-    "node-cmake": "^1.3.0"
+    "nan": "^2.2"
   }
 }

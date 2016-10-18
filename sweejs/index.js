@@ -1,6 +1,6 @@
 'use strict';
 
-const sweejs = require('node-cmake')('sweejs');
+const sweejs = require('.');
 const assert = require('assert');
 
 
