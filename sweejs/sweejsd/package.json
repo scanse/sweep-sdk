@@ -1,0 +1,10 @@
+{
+  "name": "sweejs",
+  "version": "0.0.1",
+  "description": "Sweep LiDAR Websocket Daemon",
+  "author": "Daniel J. Hofmann",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^1.1"
+  }
+}
