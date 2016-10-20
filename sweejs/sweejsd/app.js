@@ -1,7 +1,15 @@
 'use strict';
 
 const sweejs = require('..');
-const wss = require('ws').Server({port: 8081});
+
+const koa = require('koa');
+const srv = require('koa-static');
+const wss = require('ws').Server({port: 5000});
+
+
+const app = koa();
+app.use(srv('.', {index: 'map.html'}));
+app.listen(8080);
 
 
 const sweep = new sweejs.Sweep();
@@ -15,7 +23,7 @@ function pushScanInto(ws) {
 
       samples.forEach((sample) => {
         const message = {angle: sample.angle, distance: sample.distance};
-        ws.send(JSON.stringify(message));
+        ws.send(JSON.stringify(message), error => {/**/});
       });
     });
   };

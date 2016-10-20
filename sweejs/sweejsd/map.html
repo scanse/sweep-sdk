@@ -26,8 +26,13 @@ const map = new mapboxgl.Map({
   zoom: 12
 });
 
+const ws = new WebSocket('ws://localhost:5000');
+
 map.on('load', function () {
-  console.log();
+  ws.onmessage = evt => {
+    const message = JSON.parse(evt.data);
+    console.log(message);
+  };
 });
 
 </script>

@@ -5,6 +5,8 @@
   "author": "Daniel J. Hofmann",
   "license": "MIT",
   "dependencies": {
+    "koa": "^1.2",
+    "koa-static": "^2.0",
     "ws": "^1.1"
   }
 }
