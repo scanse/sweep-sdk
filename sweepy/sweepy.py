@@ -74,8 +74,9 @@ class Sample(collections.namedtuple('Sample', 'angle distance')):
 
 
 class Sweep:
-    def __init__(_):
+    def __init__(_, port = None, baudrate = None, timeout = None):
         _.scoped = False
+        _.args = [port, baudrate, timeout]
 
     def __enter__(_):
         _.scoped = True
@@ -84,7 +85,20 @@ class Sweep:
         assert libsweep.sweep_is_abi_compatible(), 'Your installed libsweep is not ABI compatible with these bindings'
 
         error = ctypes.c_void_p();
-        device = libsweep.sweep_device_construct_simple(ctypes.byref(error))
+
+        simple = not any(_.args)
+        config = all(_.args)
+
+        assert simple or config, 'No arguments for auto-detection or port, baudrate, timeout required'
+
+        if simple:
+            device = libsweep.sweep_device_construct_simple(ctypes.byref(error))
+
+        if config:
+            port = ctypes.string_at(_.args[0])
+            baudrate = ctypes.c_int32(_.args[1])
+            timeout = ctypes.c_int32(_.args[2])
+            device = libsweep.sweep_device_construct(port, baudrate, timeout, ctypes.byref(error))
 
         if error:
             raise error_to_exception(error)
@@ -183,8 +197,6 @@ class Sweep:
 
 
 if __name__ == '__main__':
-    error = ctypes.c_void_p()
-
     with Sweep() as sweep:
         sweep.start_scanning()
         sweep.stop_scanning()
