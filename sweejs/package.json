@@ -10,6 +10,9 @@
   "author": "Daniel J. Hofmann",
   "license": "MIT",
   "main": "./build/Release/sweejs",
+  "scripts": {
+    "test": "node index"
+  },
   "dependencies": {
     "nan": "^2.2"
   }

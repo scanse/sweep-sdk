@@ -4,6 +4,9 @@
   "description": "Sweep LiDAR Websocket Daemon",
   "author": "Daniel J. Hofmann",
   "license": "MIT",
+  "scripts": {
+    "start": "node app"
+  },
   "dependencies": {
     "koa": "^1.2",
     "koa-static": "^2.0",
