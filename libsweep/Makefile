@@ -11,6 +11,7 @@ dummy: dummy.o
 install:
 	@mkdir -p $(PREFIX)/include/sweep
 	install -m 0644 sweep.h $(PREFIX)/include/sweep
+	install -m 0644 sweep.hpp $(PREFIX)/include/sweep
 	@mkdir -p $(PREFIX)/lib
 	install -m 0644 libsweep.so $(PREFIX)/lib
 	ln -sf $(PREFIX)/lib/libsweep.so $(PREFIX)/lib/libsweep.so.$(VERSION_MAJOR)
