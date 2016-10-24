@@ -11,21 +11,19 @@
 namespace sweep {
 
 // Error reporting
-
 struct device_error final : std::runtime_error {
   using base = std::runtime_error;
   using base::base;
 };
 
 // Some implementation details
-
 namespace detail {
 template <typename T> using non_owning = T;
 
 struct error_to_exception {
   operator non_owning<::sweep_error_s*>() { return &error; }
 
-  ~error_to_exception() {
+  ~error_to_exception() noexcept(false) {
     if (error) {
       device_error e{::sweep_error_message(error)};
       ::sweep_error_destruct(error);
@@ -109,6 +107,7 @@ scan sweep::get_scan(std::int32_t timeout) {
 };
 
 void sweep::reset() { ::sweep_device_reset(device.get(), detail::error_to_exception{}); }
+
 } // ns
 
 #endif

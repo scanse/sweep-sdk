@@ -27,7 +27,7 @@ private:
 
   static Nan::Persistent<v8::Function>& constructor();
 
-  // Wrapper Object
+  // Wrapped Object
 
   Sweep();
   Sweep(const char* port, int32_t baudrate, int32_t timeout);

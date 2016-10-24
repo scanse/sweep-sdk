@@ -1,15 +1,36 @@
 # libsweep
 
-C99 library for Scanse Sweep LiDAR.
+Low-level Scanse Sweep LiDAR library. Comes as C99 library `sweep.h` with optional C++11 header `sweep.hpp` on top of it.
 
 ### Quick Start
 
-    cd libsweep
     make
     sudo make install
-    sudo ldconfig
+
+If you don't have a Sweep device yet you can build a dummy `libsweep.so` always returning static point cloud data:
+
+    make dummy
+    sudo make install
+
+This dummy library is API and ABI compatible. Once your device arrives switch out the `libsweep.so` shared library and you're good to go.
+
+### Usage
+
+- Include `<sweep/sweep.h>` for the C interface or `<sweep/sweep.hpp>` for the C++ interface.
+- Link `libsweep.so` with `-lsweep`.
+
+See [example.c](example.c) and [example.cc](example.cc) for a C and C++ example, respectively.
+
 
 ### libsweep
+
+Before jumping into details, here are the library's main design ideas:
+
+- Only opaque pointers (think typed `void *`) and plain C types in the API. This is how we accomplish ABI compatibility.
+- No global state: `_s` context objects (`_s` since POSIX reserves `_t`) hold state and have to be passed explicitly.
+- Make ownership and lifetimes explicit: all objects have to be `_construct()`ed for creation and successfully created objects have to be `_destruct()`ed for cleanup.
+- Sane defaults and user-friendly API: when possible we provide `_simple()` functions e.g. doing serial port auto-detection.
+- Fixed-size and signed integers for portability and runtime checking (think sanitizers).
 
 Table of Contents:
 - [Version and ABI Management](#version-and-abi-management)

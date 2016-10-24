@@ -2,6 +2,9 @@
 
 const sweejs = require('..');
 
+// Maybe change from Websocket server to only serving GeoJSON data as HTTP endpoint
+// https://www.mapbox.com/mapbox-gl-js/example/live-geojson/
+
 const koa = require('koa');
 const srv = require('koa-static');
 const wss = require('ws').Server({port: 5000});

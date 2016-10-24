@@ -16,6 +16,13 @@
 <div id='map'></div>
 
 <script>
+
+// Mapbox GL JS - https://www.mapbox.com/mapbox-gl-js/api/
+// Styling Data - https://www.mapbox.com/mapbox-gl-style-spec/
+// Building Data - https://www.mapbox.com/vector-tiles/mapbox-streets-v7/#building
+// Polygon Extrusion - https://www.mapbox.com/mapbox-gl-js/example/3d-extrusion-floorplan/
+// Streaming Source - https://www.mapbox.com/mapbox-gl-js/example/live-geojson/
+
 mapboxgl.accessToken = 'pk.eyJ1IjoiZGFuaWVsamgiLCJhIjoiY2l1NXB2NmFtMDAxdTJ6cDg1anlkeWpwMSJ9.GtchJ8LqryQsfvWOMQbtyg';
 
 const map = new mapboxgl.Map({
@@ -36,19 +43,92 @@ const ws = new WebSocket('ws://localhost:5000');
 map.on('load', function () {
 
   map.addLayer({
-      'id': '3d-buildings',
-      'source': 'composite',
-      'source-layer': 'building',
-      'filter': ['all', ['==', 'extrude', 'true'], ['==', 'underground', 'false'] ],
-      'type': 'fill',
-      'minzoom': 15,
+    'id': '3d-buildings',
+    'source': 'composite',
+    'source-layer': 'building',
+    'filter': ['all', ['==', 'extrude', 'true'], ['==', 'underground', 'false'] ],
+    'type': 'fill',
+    'minzoom': 15,
+    'paint': {
+      'fill-extrude-height': { 'type': 'identity', 'property': 'height' },
+      'fill-extrude-base': { 'type': 'identity', 'property': 'min_height' },
+      'fill-color': '#faf0e6',
+      'fill-opacity': 1.0
+    }
+  });
 
-       'paint': {
-         'fill-extrude-height': { 'type': 'identity', 'property': 'height' },
-         'fill-extrude-base': { 'type': 'identity', 'property': 'min_height' },
-         'fill-color': '#faf0e6',
-         'fill-opacity': 1.0
-       }
+  map.addSource('pointclouds', {
+    type: 'geojson',
+    data: {
+      'type': 'FeatureCollection',
+      'features': [
+      {
+        'type': 'Feature',
+        'properties': {
+          'height': 21,
+          'min_height': 20,
+        },
+        'geometry': {
+          'type': 'Polygon',
+          'coordinates': [[
+            [13.399950, 52.509300],
+            [13.399960, 52.509300],
+            [13.399960, 52.509310],
+            [13.399950, 52.509310],
+            [13.399950, 52.509300],
+          ]]
+        }
+      },
+      {
+        'type': 'Feature',
+        'properties': {
+          'height': 24,
+          'min_height': 23,
+        },
+        'geometry': {
+          'type': 'Polygon',
+          'coordinates': [[
+            [13.399950, 52.509300],
+            [13.399960, 52.509300],
+            [13.399960, 52.509310],
+            [13.399950, 52.509310],
+            [13.399950, 52.509300],
+          ]]
+        }
+      },
+      {
+        'type': 'Feature',
+        'properties': {
+          'height': 27,
+          'min_height': 26,
+        },
+        'geometry': {
+          'type': 'Polygon',
+          'coordinates': [[
+            [13.399950, 52.509300],
+            [13.399960, 52.509300],
+            [13.399960, 52.509310],
+            [13.399950, 52.509310],
+            [13.399950, 52.509300],
+          ]]
+        }
+      }
+      ]
+     }
+  });
+
+  map.addLayer({
+    'id': '3d-pointcloud',
+    'source': 'pointclouds',
+    'type': 'fill',
+    'minzoom': 15,
+
+    'paint': {
+      'fill-extrude-height': { 'type': 'identity', 'property': 'height' },
+      'fill-extrude-base': { 'type': 'identity', 'property': 'min_height' },
+      'fill-color': '#ff00ff',
+      'fill-opacity': 0.5
+    }
   });
 
   map.setLight({
