@@ -51,13 +51,13 @@ void sweep_serial_error_destruct(sweep_serial_error_s error) {
   free(error);
 }
 
-static speed_t sweep_serial_detail_get_baud(int32_t baudrate, sweep_serial_error_s* error) {
-  SWEEP_ASSERT(baudrate > 0);
+static speed_t sweep_serial_detail_get_baud(int32_t bitrate, sweep_serial_error_s* error) {
+  SWEEP_ASSERT(bitrate> 0);
   SWEEP_ASSERT(error);
 
   speed_t baud;
 
-  switch (baudrate) {
+  switch (bitrate) {
 #ifdef B0
   case 0:
     baud = B0;
@@ -244,7 +244,7 @@ static speed_t sweep_serial_detail_get_baud(int32_t baudrate, sweep_serial_error
     break;
 #endif
   default:
-    *error = sweep_serial_error_construct("baudrate could not be determined");
+    *error = sweep_serial_error_construct("baud rate could not be determined");
     baud = -1;
   }
 
@@ -284,10 +284,10 @@ static bool sweep_serial_detail_wait_readable(sweep_serial_device_s serial, swee
   return false;
 }
 
-sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t baudrate, int32_t timeout,
+sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t bitrate, int32_t timeout,
                                                     sweep_serial_error_s* error) {
   SWEEP_ASSERT(port);
-  SWEEP_ASSERT(baudrate > 0);
+  SWEEP_ASSERT(bitrate > 0);
   SWEEP_ASSERT(timeout > 0);
   SWEEP_ASSERT(error);
 
@@ -330,7 +330,7 @@ sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t ba
 
   // setup baud rate
   sweep_serial_error_s bauderror = NULL;
-  speed_t baud = sweep_serial_detail_get_baud(baudrate, &bauderror);
+  speed_t baud = sweep_serial_detail_get_baud(bitrate, &bauderror);
 
   if (bauderror) {
     *error = bauderror;

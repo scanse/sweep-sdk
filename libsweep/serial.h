@@ -18,7 +18,7 @@ typedef struct sweep_serial_error* sweep_serial_error_s;
 const char* sweep_serial_error_message(sweep_serial_error_s error);
 void sweep_serial_error_destruct(sweep_serial_error_s error);
 
-sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t baudrate, int32_t timeout,
+sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t bitrate, int32_t timeout,
                                                     sweep_serial_error_s* error);
 void sweep_serial_device_destruct(sweep_serial_device_s serial);
 

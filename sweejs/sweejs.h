@@ -30,7 +30,7 @@ private:
   // Wrapped Object
 
   Sweep();
-  Sweep(const char* port, int32_t baudrate, int32_t timeout);
+  Sweep(const char* port, int32_t bitrate, int32_t timeout);
 
   // Non-Copyable
   Sweep(const Sweep&) = delete;

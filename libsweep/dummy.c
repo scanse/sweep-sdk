@@ -50,9 +50,9 @@ sweep_device_s sweep_device_construct_simple(sweep_error_s* error) {
   return sweep_device_construct("/dev/ttyUSB0", 115200, 1000, error);
 }
 
-sweep_device_s sweep_device_construct(const char* port, int32_t baudrate, int32_t timeout, sweep_error_s* error) {
+sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, int32_t timeout, sweep_error_s* error) {
   SWEEP_ASSERT(port);
-  SWEEP_ASSERT(baudrate > 0);
+  SWEEP_ASSERT(bitrate> 0);
   SWEEP_ASSERT(timeout > 0);
   SWEEP_ASSERT(error);
 

@@ -45,8 +45,8 @@ Sweep::Sweep() {
   device = {devptr, defer};
 }
 
-Sweep::Sweep(const char* port, int32_t baudrate, int32_t timeout) {
-  auto devptr = ::sweep_device_construct(port, baudrate, timeout, ErrorToException{});
+Sweep::Sweep(const char* port, int32_t bitrate, int32_t timeout) {
+  auto devptr = ::sweep_device_construct(port, bitrate, timeout, ErrorToException{});
   auto defer = [](::sweep_device_s dev) { ::sweep_device_destruct(dev); };
 
   device = {devptr, defer};
@@ -74,12 +74,12 @@ NAN_MODULE_INIT(Sweep::Init) {
 }
 
 NAN_METHOD(Sweep::New) {
-  // auto-detect or port, baud, timeout
+  // auto-detect or port, bitrate, timeout
   const auto simple = info.Length() == 0;
   const auto config = info.Length() == 3 && info[0]->IsString() && info[1]->IsNumber() && info[2]->IsNumber();
 
   if (!simple && !config) {
-    return Nan::ThrowTypeError("No arguments for auto-detection or serial port, baudrate, timeout expected");
+    return Nan::ThrowTypeError("No arguments for auto-detection or serial port, bitrate, timeout expected");
   }
 
   if (info.IsConstructCall()) {
@@ -96,10 +96,10 @@ NAN_METHOD(Sweep::New) {
         }
 
         const auto port = *utf8port;
-        const auto baudrate = Nan::To<int32_t>(info[1]).FromJust();
+        const auto bitrate = Nan::To<int32_t>(info[1]).FromJust();
         const auto timeout = Nan::To<int32_t>(info[2]).FromJust();
 
-        self = new Sweep(port, baudrate, timeout);
+        self = new Sweep(port, bitrate, timeout);
       } else {
         return Nan::ThrowError("Unable to create device"); // unreachable
       }

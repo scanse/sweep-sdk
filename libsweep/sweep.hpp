@@ -18,10 +18,8 @@ struct device_error final : std::runtime_error {
 
 // Some implementation details
 namespace detail {
-template <typename T> using non_owning = T;
-
 struct error_to_exception {
-  operator non_owning<::sweep_error_s*>() { return &error; }
+  operator ::sweep_error_s*() { return &error; }
 
   ~error_to_exception() noexcept(false) {
     if (error) {
@@ -49,7 +47,7 @@ struct scan {
 class sweep {
 public:
   sweep();
-  sweep(const char* port, std::int32_t baudrate, std::int32_t timeout);
+  sweep(const char* port, std::int32_t bitrate, std::int32_t timeout);
 
   void start_scanning();
   void stop_scanning();
@@ -71,8 +69,8 @@ private:
 
 sweep::sweep() : device{::sweep_device_construct_simple(detail::error_to_exception{}), &::sweep_device_destruct} {}
 
-sweep::sweep(const char* port, std::int32_t baudrate, std::int32_t timeout)
-    : device{::sweep_device_construct(port, baudrate, timeout, detail::error_to_exception{}), &::sweep_device_destruct} {}
+sweep::sweep(const char* port, std::int32_t bitrate, std::int32_t timeout)
+    : device{::sweep_device_construct(port, bitrate, timeout, detail::error_to_exception{}), &::sweep_device_destruct} {}
 
 void sweep::start_scanning() { ::sweep_device_start_scanning(device.get(), detail::error_to_exception{}); }
 
