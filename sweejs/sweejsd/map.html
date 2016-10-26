@@ -4,8 +4,8 @@
   <meta charset='utf-8' />
   <title>Sweep LiDAR Map</title>
   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-  <script src='https://api.mapbox.com/mapbox-gl-js/v0.26.0/mapbox-gl.js'></script>
-  <link href='https://api.mapbox.com/mapbox-gl-js/v0.26.0/mapbox-gl.css' rel='stylesheet' />
+  <script src='dist/mapbox-gl.js'></script>
+  <link href='dist/mapbox-gl.css' rel='stylesheet' />
   <style>
       body { margin:0; padding:0; }
       #map { position:absolute; top:0; bottom:0; width:100%; }
@@ -60,81 +60,42 @@ map.on('load', function () {
   map.addSource('pointclouds', {
     type: 'geojson',
     data: {
-      'type': 'FeatureCollection',
-      'features': [
-      {
-        'type': 'Feature',
-        'properties': {
-          'height': 21,
-          'min_height': 20,
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": { "z": 5 },
+          "geometry": {
+            "type": "Point",
+            "coordinates": [13.399950, 52.509310]
+          }
         },
-        'geometry': {
-          'type': 'Polygon',
-          'coordinates': [[
-            [13.399950, 52.509300],
-            [13.399960, 52.509300],
-            [13.399960, 52.509310],
-            [13.399950, 52.509310],
-            [13.399950, 52.509300],
-          ]]
+        {
+          "type": "Feature",
+          "properties": { "z": 10 },
+          "geometry": {
+            "type": "Point",
+            "coordinates": [ 13.399950, 52.509300 ]
+          }
         }
-      },
-      {
-        'type': 'Feature',
-        'properties': {
-          'height': 24,
-          'min_height': 23,
-        },
-        'geometry': {
-          'type': 'Polygon',
-          'coordinates': [[
-            [13.399950, 52.509300],
-            [13.399960, 52.509300],
-            [13.399960, 52.509310],
-            [13.399950, 52.509310],
-            [13.399950, 52.509300],
-          ]]
-        }
-      },
-      {
-        'type': 'Feature',
-        'properties': {
-          'height': 27,
-          'min_height': 26,
-        },
-        'geometry': {
-          'type': 'Polygon',
-          'coordinates': [[
-            [13.399950, 52.509300],
-            [13.399960, 52.509300],
-            [13.399960, 52.509310],
-            [13.399950, 52.509310],
-            [13.399950, 52.509300],
-          ]]
-        }
-      }
       ]
-     }
+    }
   });
 
   map.addLayer({
     'id': '3d-pointcloud',
     'source': 'pointclouds',
-    'type': 'fill',
     'minzoom': 15,
-
+    'type': 'circle',
     'paint': {
-      'fill-extrude-height': { 'type': 'identity', 'property': 'height' },
-      'fill-extrude-base': { 'type': 'identity', 'property': 'min_height' },
-      'fill-color': '#ff00ff',
-      'fill-opacity': 0.5
+      'circle-color': '#ff00ff',
+      'circle-opacity': 0.5,
+      'circle-radius': 15,
+      'circle-z-offset': {
+        'stops': [[0, 0], [200, 200]],
+        'property': 'z'
+      }
     }
-  });
-
-  map.setLight({
-    'anchor': 'viewport',
-    'color': '#faf0e6',
-    'intensity': 0.3
   });
 
   ws.onmessage = evt => {
