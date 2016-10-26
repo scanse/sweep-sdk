@@ -34,11 +34,11 @@ int main() {
   int32_t speed = sweep_device_get_motor_speed(sweep, &error);
   check(error);
 
-  // The Sweep's sampling rate in S/s
+  // The Sweep's sampling rate in Hz
   int32_t rate = sweep_device_get_sample_rate(sweep, &error);
   check(error);
 
-  fprintf(stdout, "Motor Speed: %" PRId32 " Hz, Sample Rate: %" PRId32 " S/s\n", speed, rate);
+  fprintf(stdout, "Motor Speed: %" PRId32 " Hz, Sample Rate: %" PRId32 " Hz\n", speed, rate);
 
   // Starts motor and activates LiDAR
   sweep_device_start_scanning(sweep, &error);
