@@ -1,8 +1,15 @@
-PREFIX ?= /usr
-
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
 
-CFLAGS += -O2 -Wall -Wextra -pedantic -std=c99 -fvisibility=hidden -fPIC -pthread
-LDFLAGS += -shared -Wl,-soname,libsweep.so.$(VERSION_MAJOR)
-LDLIBS += -lpthread
+UNAME := $(shell uname)
+
+ifeq ($(UNAME), Linux)
+  PREFIX ?= /usr
+  CFLAGS += -O2 -Wall -Wextra -pedantic -std=c99 -fvisibility=hidden -fPIC -pthread
+  LDFLAGS += -shared -Wl,-soname,libsweep.so.$(VERSION_MAJOR)
+  LDLIBS += -lpthread
+else ifeq ($(UNAME), Darwin)
+  $(error macOS build system support missing)
+else
+  $(error system not supported)
+endif
