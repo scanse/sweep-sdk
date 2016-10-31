@@ -52,7 +52,7 @@ sweep_device_s sweep_device_construct_simple(sweep_error_s* error) {
 
 sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, int32_t timeout, sweep_error_s* error) {
   SWEEP_ASSERT(port);
-  SWEEP_ASSERT(bitrate> 0);
+  SWEEP_ASSERT(bitrate > 0);
   SWEEP_ASSERT(timeout > 0);
   SWEEP_ASSERT(error);
 
@@ -141,6 +141,13 @@ int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
   return 20;
+}
+
+int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample) {
+  SWEEP_ASSERT(scan);
+  SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
+
+  return 1;
 }
 
 void sweep_scan_destruct(sweep_scan_s scan) {

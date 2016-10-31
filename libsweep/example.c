@@ -57,7 +57,8 @@ int main() {
     for (int32_t n = 0; n < sweep_scan_get_number_of_samples(scan); ++n) {
       int32_t angle = sweep_scan_get_angle(scan, n);
       int32_t distance = sweep_scan_get_distance(scan, n);
-      fprintf(stdout, "Angle %" PRId32 ", Distance %" PRId32 "\n", angle, distance);
+      int32_t signal = sweep_scan_get_signal_strength(scan, n);
+      fprintf(stdout, "Angle %" PRId32 ", Distance %" PRId32 ", Signal Strength: %" PRId32 "\n", angle, distance, signal);
     }
 
     // Cleanup scan response

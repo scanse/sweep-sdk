@@ -45,6 +45,9 @@ libsweep.sweep_scan_get_angle.argtypes = [ctypes.c_void_p, ctypes.c_int32]
 libsweep.sweep_scan_get_distance.restype = ctypes.c_int32
 libsweep.sweep_scan_get_distance.argtypes = [ctypes.c_void_p, ctypes.c_int32]
 
+libsweep.sweep_scan_get_signal_strength.restype = ctypes.c_int32
+libsweep.sweep_scan_get_signal_strength.argtypes = [ctypes.c_void_p, ctypes.c_int32]
+
 libsweep.sweep_device_get_motor_speed.restype = ctypes.c_int32
 libsweep.sweep_device_get_motor_speed.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 
@@ -69,7 +72,7 @@ class Scan(collections.namedtuple('Scan', 'samples')):
     pass
 
 
-class Sample(collections.namedtuple('Sample', 'angle distance')):
+class Sample(collections.namedtuple('Sample', 'angle distance signal_strength')):
     pass
 
 
@@ -178,7 +181,9 @@ class Sweep:
 
             num_samples = libsweep.sweep_scan_get_number_of_samples(scan)
 
-            samples = [Sample(angle=libsweep.sweep_scan_get_angle(scan, n), distance=libsweep.sweep_scan_get_distance(scan, n))
+            samples = [Sample(angle=libsweep.sweep_scan_get_angle(scan, n),
+                              distance=libsweep.sweep_scan_get_distance(scan, n),
+                              signal_strength=libsweep.sweep_scan_get_signal_strength(scan, n))
                        for n in range(num_samples)]
 
             libsweep.sweep_scan_destruct(scan)

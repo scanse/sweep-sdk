@@ -126,6 +126,13 @@ int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample) {
   return 20;
 }
 
+int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample) {
+  SWEEP_ASSERT(scan);
+  SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
+
+  return 1;
+}
+
 void sweep_scan_destruct(sweep_scan_s scan) {
   SWEEP_ASSERT(scan);
 

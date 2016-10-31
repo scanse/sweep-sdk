@@ -172,14 +172,17 @@ NAN_METHOD(Sweep::scan) {
       for (int32_t i = 0; i < n; ++i) {
         const auto angle = Nan::New<v8::Number>(::sweep_scan_get_angle(scan, i));
         const auto distance = Nan::New<v8::Number>(::sweep_scan_get_distance(scan, i));
+        const auto signal = Nan::New<v8::Number>(::sweep_scan_get_signal_strength(scan, i));
 
         const auto anglekey = Nan::New<v8::String>("angle").ToLocalChecked();
         const auto distancekey = Nan::New<v8::String>("distance").ToLocalChecked();
+        const auto signalkey = Nan::New<v8::String>("signal").ToLocalChecked();
 
-        // sample = {'angle': 360, 'distance': 20}
+        // sample = {'angle': 360, 'distance': 20, 'signal': 1}
         const auto sample = Nan::New<v8::Object>();
         Nan::Set(sample, anglekey, angle).FromJust();
         Nan::Set(sample, distancekey, distance).FromJust();
+        Nan::Set(sample, signalkey, signal).FromJust();
 
         Nan::Set(samples, i, sample).FromJust();
       }

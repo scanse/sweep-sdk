@@ -17,8 +17,9 @@ int main() {
   for (auto n = 0; n < 3; ++n) {
     auto scan = device.get_scan();
 
-    for (auto sample : scan.samples)
-      std::cout << "angle: " << sample.angle << ", distance: " << sample.distance << std::endl;
+    for (auto sample : scan.samples) {
+      std::cout << "angle " << sample.angle << " distance " << sample.distance << " strength " << sample.signal_strength << "\n";
+    }
   }
 
   // resets the hardware; not needed to shut down this library, just for testing purpose

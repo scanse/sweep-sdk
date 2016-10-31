@@ -29,7 +29,7 @@ if (require.main === module) {
     }
 
     samples.forEach((sample) => {
-      console.log(`angle: ${sample.angle}, distance: ${sample.distance}`);
+      console.log(`angle: ${sample.angle}, distance: ${sample.distance}, singal: ${sample.signal}`);
     });
   });
 }

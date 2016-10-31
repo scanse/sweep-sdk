@@ -165,6 +165,10 @@ Returns the angle for the `sample`th sample in the `sweep_scan_s`.
 
 Returns the distance for the `sample`th sample in the `sweep_scan_s`.
 
+##### `int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample)`
+
+Returns the signal strength for the `sample`th sample in the `sweep_scan_s`.
+
 
 ### License
 
