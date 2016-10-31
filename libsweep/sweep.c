@@ -13,6 +13,7 @@ typedef struct sweep_error {
 
 typedef struct sweep_device {
   sweep_serial_device_s serial; // serial port communication
+  bool is_scanning;
 } sweep_device;
 
 typedef struct sweep_scan {
@@ -168,7 +169,7 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
     return NULL;
   }
 
-  *out = (sweep_device){.serial = serial};
+  *out = (sweep_device){.serial = serial, .is_scanning = false};
 
   return out;
 }
@@ -184,6 +185,9 @@ void sweep_device_destruct(sweep_device_s device) {
 void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+
+  if (device->is_scanning)
+    return;
 
   sweep_serial_error_s serialerror = NULL;
 
@@ -216,11 +220,16 @@ void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
 
   if (!ok)
     *error = sweep_error_construct("invalid start scan response commands");
+
+  device->is_scanning = true;
 }
 
 void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+
+  if (!device->is_scanning)
+    return;
 
   sweep_serial_error_s serialerror = NULL;
 
@@ -253,6 +262,8 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
 
   if (!ok)
     *error = sweep_error_construct("invalid stop scan response commands");
+
+  device->is_scanning = false;
 }
 
 sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) {
