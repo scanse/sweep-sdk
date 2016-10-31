@@ -48,7 +48,7 @@ struct scan {
 class sweep {
 public:
   sweep();
-  sweep(const char* port, std::int32_t bitrate, std::int32_t timeout);
+  sweep(const char* port, std::int32_t bitrate);
 
   void start_scanning();
   void stop_scanning();
@@ -58,7 +58,7 @@ public:
 
   std::int32_t get_sample_rate();
 
-  scan get_scan(std::int32_t timeout = 2000);
+  scan get_scan();
 
   void reset();
 
@@ -70,12 +70,12 @@ private:
 
 sweep::sweep() : device{::sweep_device_construct_simple(detail::error_to_exception{}), &::sweep_device_destruct} {}
 
-sweep::sweep(const char* port, std::int32_t bitrate, std::int32_t timeout)
-    : device{::sweep_device_construct(port, bitrate, timeout, detail::error_to_exception{}), &::sweep_device_destruct} {}
+sweep::sweep(const char* port, std::int32_t bitrate)
+    : device{::sweep_device_construct(port, bitrate, detail::error_to_exception{}), &::sweep_device_destruct} {}
 
 void sweep::start_scanning() { ::sweep_device_start_scanning(device.get(), detail::error_to_exception{}); }
 
-void sweep::stop_scanning() { ::sweep_device_start_scanning(device.get(), detail::error_to_exception{}); }
+void sweep::stop_scanning() { ::sweep_device_stop_scanning(device.get(), detail::error_to_exception{}); }
 
 std::int32_t sweep::get_motor_speed() { return ::sweep_device_get_motor_speed(device.get(), detail::error_to_exception{}); }
 
@@ -85,10 +85,10 @@ void sweep::set_motor_speed(std::int32_t speed) {
 
 std::int32_t sweep::get_sample_rate() { return ::sweep_device_get_sample_rate(device.get(), detail::error_to_exception{}); }
 
-scan sweep::get_scan(std::int32_t timeout) {
+scan sweep::get_scan() {
   using scan_owner = std::unique_ptr<::sweep_scan, decltype(&::sweep_scan_destruct)>;
 
-  scan_owner releasing_scan{::sweep_device_get_scan(device.get(), timeout, detail::error_to_exception{}), &::sweep_scan_destruct};
+  scan_owner releasing_scan{::sweep_device_get_scan(device.get(), detail::error_to_exception{}), &::sweep_scan_destruct};
 
   auto num_samples = ::sweep_scan_get_number_of_samples(releasing_scan.get());
 

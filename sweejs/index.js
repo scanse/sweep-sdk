@@ -23,7 +23,7 @@ if (require.main === module) {
 
   const rate = sweep.getSampleRate();
 
-  sweep.scan(2000, (err, samples) => {
+  sweep.scan((err, samples) => {
     if (err) {
       return console.log(err);
     }

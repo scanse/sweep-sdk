@@ -22,7 +22,7 @@ sweep.startScanning();
 function pushScanInto(ws) {
   return function push() {
 
-    sweep.scan(2000, (err, samples) => {
+    sweep.scan((err, samples) => {
       if (err) return;
 
       const latitude = 52.511433;

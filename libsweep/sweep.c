@@ -1,4 +1,5 @@
 #include "sweep.h"
+#include "protocol.h"
 #include "serial.h"
 
 #include <stdlib.h>
@@ -46,20 +47,112 @@ void sweep_error_destruct(sweep_error_s error) {
   free(error);
 }
 
+static void sweep_device_detail_write_command(sweep_serial_device_s serial, const char* cmd, sweep_serial_error_s* error) {
+  SWEEP_ASSERT(serial);
+  SWEEP_ASSERT(cmd);
+  SWEEP_ASSERT(error);
+
+  sweep_protocol_cmd_packet_s packet = {.cmdByte1 = cmd[0],    //
+                                        .cmdByte2 = cmd[1],    //
+                                        .cmdParamTerm = '\n'}; //
+
+  sweep_serial_device_write(serial, &packet, sizeof(sweep_protocol_cmd_packet_s), error);
+}
+
+static void sweep_device_detail_write_command_with_arguments(sweep_serial_device_s serial, const char* cmd, const char* args,
+                                                             sweep_serial_error_s* error) {
+  SWEEP_ASSERT(serial);
+  SWEEP_ASSERT(cmd);
+  SWEEP_ASSERT(args);
+  SWEEP_ASSERT(error);
+
+  sweep_protocol_cmd_param_packet_s packet = {.cmdByte1 = cmd[0],       //
+                                              .cmdByte2 = cmd[1],       //
+                                              .cmdParamByte1 = args[0], //
+                                              .cmdParamByte2 = args[1], //
+                                              .cmdParamTerm = '\n'};    //
+
+  sweep_serial_device_write(serial, &packet, sizeof(sweep_protocol_cmd_param_packet_s), error);
+}
+
+static void sweep_device_detail_read_response_header(sweep_serial_device_s serial, sweep_protocol_response_header_s* header,
+                                                     sweep_serial_error_s* error) {
+  SWEEP_ASSERT(serial);
+  SWEEP_ASSERT(header);
+  SWEEP_ASSERT(error);
+
+  sweep_serial_device_read(serial, header, sizeof(sweep_protocol_response_header_s), error);
+}
+
+static void sweep_device_detail_read_response_param(sweep_serial_device_s serial, sweep_protocol_response_param_s* param,
+                                                    sweep_serial_error_s* error) {
+  SWEEP_ASSERT(serial);
+  SWEEP_ASSERT(param);
+  SWEEP_ASSERT(error);
+
+  sweep_serial_device_read(serial, param, sizeof(sweep_protocol_response_param_s), error);
+}
+
+static const char* sweep_device_detail_speed_to_char_literal(int32_t speed, sweep_error_s* error) {
+  SWEEP_ASSERT(error);
+
+  const char* out;
+
+  switch (speed) {
+  case 0:
+    out = "00";
+    break;
+  case 1:
+    out = "01";
+    break;
+  case 2:
+    out = "02";
+    break;
+  case 3:
+    out = "03";
+    break;
+  case 4:
+    out = "04";
+    break;
+  case 5:
+    out = "05";
+    break;
+  case 6:
+    out = "06";
+    break;
+  case 7:
+    out = "07";
+    break;
+  case 8:
+    out = "08";
+    break;
+  case 9:
+    out = "09";
+    break;
+  case 10:
+    out = "10";
+    break;
+  default:
+    *error = sweep_error_construct("invalid speed value");
+    out = "00";
+  }
+
+  return out;
+}
+
 sweep_device_s sweep_device_construct_simple(sweep_error_s* error) {
   SWEEP_ASSERT(error);
 
-  return sweep_device_construct("/dev/ttyUSB0", 115200, 1000, error);
+  return sweep_device_construct("/dev/ttyUSB0", 115200, error);
 }
 
-sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, int32_t timeout, sweep_error_s* error) {
+sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_error_s* error) {
   SWEEP_ASSERT(port);
   SWEEP_ASSERT(bitrate > 0);
-  SWEEP_ASSERT(timeout > 0);
   SWEEP_ASSERT(error);
 
   sweep_serial_error_s serialerror = NULL;
-  sweep_serial_device_s serial = sweep_serial_device_construct(port, bitrate, timeout, &serialerror);
+  sweep_serial_device_s serial = sweep_serial_device_construct(port, bitrate, &serialerror);
 
   if (serialerror) {
     *error = sweep_error_construct(sweep_serial_error_message(serialerror));
@@ -91,16 +184,79 @@ void sweep_device_destruct(sweep_device_s device) {
 void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+
+  sweep_serial_error_s serialerror = NULL;
+
+  sweep_device_detail_write_command(device->serial, SWEEP_PROTOCOL_DATA_ACQUISITION_START, &serialerror);
+
+  if (serialerror) {
+    *error = sweep_error_construct(sweep_serial_error_message(serialerror));
+    sweep_serial_error_destruct(serialerror);
+    return;
+  }
+
+  sweep_protocol_response_header_s response;
+  sweep_device_detail_read_response_header(device->serial, &response, &serialerror);
+
+  if (serialerror) {
+    *error = sweep_error_construct(sweep_serial_error_message(serialerror));
+    sweep_serial_error_destruct(serialerror);
+    return;
+  }
+
+  uint8_t checksum = sweep_protocol_checksum(response.cmdStatusByte1, response.cmdStatusByte2);
+
+  if (checksum != response.cmdSum) {
+    *error = sweep_error_construct("invalid start scan response checksum");
+    return;
+  }
+
+  bool ok = response.cmdByte1 == SWEEP_PROTOCOL_DATA_ACQUISITION_START[0] &&
+            response.cmdByte2 == SWEEP_PROTOCOL_DATA_ACQUISITION_START[1];
+
+  if (!ok)
+    *error = sweep_error_construct("invalid start scan response commands");
 }
 
 void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+
+  sweep_serial_error_s serialerror = NULL;
+
+  sweep_device_detail_write_command(device->serial, SWEEP_PROTOCOL_DATA_ACQUISITION_STOP, &serialerror);
+
+  if (serialerror) {
+    *error = sweep_error_construct(sweep_serial_error_message(serialerror));
+    sweep_serial_error_destruct(serialerror);
+    return;
+  }
+
+  sweep_protocol_response_header_s response;
+  sweep_device_detail_read_response_header(device->serial, &response, &serialerror);
+
+  if (serialerror) {
+    *error = sweep_error_construct(sweep_serial_error_message(serialerror));
+    sweep_serial_error_destruct(serialerror);
+    return;
+  }
+
+  uint8_t checksum = sweep_protocol_checksum(response.cmdStatusByte1, response.cmdStatusByte2);
+
+  if (checksum != response.cmdSum) {
+    *error = sweep_error_construct("invalid stop scan response checksum");
+    return;
+  }
+
+  bool ok = response.cmdByte1 == SWEEP_PROTOCOL_DATA_ACQUISITION_STOP[0] &&
+            response.cmdByte2 == SWEEP_PROTOCOL_DATA_ACQUISITION_STOP[1];
+
+  if (!ok)
+    *error = sweep_error_construct("invalid stop scan response commands");
 }
 
-sweep_scan_s sweep_device_get_scan(sweep_device_s device, int32_t timeout, sweep_error_s* error) {
+sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
-  SWEEP_ASSERT(timeout > 0);
   SWEEP_ASSERT(error);
 
   return 0;

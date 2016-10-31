@@ -45,8 +45,8 @@ Sweep::Sweep() {
   device = {devptr, defer};
 }
 
-Sweep::Sweep(const char* port, int32_t bitrate, int32_t timeout) {
-  auto devptr = ::sweep_device_construct(port, bitrate, timeout, ErrorToException{});
+Sweep::Sweep(const char* port, int32_t bitrate) {
+  auto devptr = ::sweep_device_construct(port, bitrate, ErrorToException{});
   auto defer = [](::sweep_device_s dev) { ::sweep_device_destruct(dev); };
 
   device = {devptr, defer};
@@ -74,12 +74,12 @@ NAN_MODULE_INIT(Sweep::Init) {
 }
 
 NAN_METHOD(Sweep::New) {
-  // auto-detect or port, bitrate, timeout
+  // auto-detect or port, bitrate
   const auto simple = info.Length() == 0;
-  const auto config = info.Length() == 3 && info[0]->IsString() && info[1]->IsNumber() && info[2]->IsNumber();
+  const auto config = info.Length() == 2 && info[0]->IsString() && info[1]->IsNumber();
 
   if (!simple && !config) {
-    return Nan::ThrowTypeError("No arguments for auto-detection or serial port, bitrate, timeout expected");
+    return Nan::ThrowTypeError("No arguments for auto-detection or serial port, bitrate expected");
   }
 
   if (info.IsConstructCall()) {
@@ -97,9 +97,8 @@ NAN_METHOD(Sweep::New) {
 
         const auto port = *utf8port;
         const auto bitrate = Nan::To<int32_t>(info[1]).FromJust();
-        const auto timeout = Nan::To<int32_t>(info[2]).FromJust();
 
-        self = new Sweep(port, bitrate, timeout);
+        self = new Sweep(port, bitrate);
       } else {
         return Nan::ThrowError("Unable to create device"); // unreachable
       }
@@ -138,23 +137,22 @@ NAN_METHOD(Sweep::stopScanning) {
 NAN_METHOD(Sweep::scan) {
   auto* const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
 
-  if (info.Length() != 2 || !info[0]->IsNumber() || !info[1]->IsFunction()) {
-    return Nan::ThrowTypeError("Timeout and callback expected");
+  if (info.Length() != 1 || !info[0]->IsFunction()) {
+    return Nan::ThrowTypeError("Callback expected");
   }
 
-  const auto timeout = Nan::To<int32_t>(info[0]).FromJust();
-  const auto function = info[1].As<v8::Function>();
+  const auto function = info[0].As<v8::Function>();
 
   struct AsyncScanWorker final : Nan::AsyncWorker {
     using Base = Nan::AsyncWorker;
 
-    AsyncScanWorker(std::shared_ptr<::sweep_device> device, Nan::Callback* callback, int32_t timeout)
-        : Base(callback), device{std::move(device)}, timeout{timeout} {}
+    AsyncScanWorker(std::shared_ptr<::sweep_device> device, Nan::Callback* callback)
+        : Base(callback), device{std::move(device)} {}
 
     void Execute() override {
       // Note: do not throw here (ErrorTo*) - Nan::AsyncWorker interface provides special SetErrorMessage
       ::sweep_error_s error = nullptr;
-      scan = ::sweep_device_get_scan(device.get(), timeout, &error);
+      scan = ::sweep_device_get_scan(device.get(), &error);
 
       if (error) {
         SetErrorMessage(::sweep_error_message(error));
@@ -194,12 +192,11 @@ NAN_METHOD(Sweep::scan) {
     }
 
     std::shared_ptr<::sweep_device> device; // keep alive until done
-    int32_t timeout;
     ::sweep_scan_s scan;
   };
 
   auto* callback = new Nan::Callback{function};
-  Nan::AsyncQueueWorker(new AsyncScanWorker{self->device, callback, timeout});
+  Nan::AsyncQueueWorker(new AsyncScanWorker{self->device, callback});
 }
 
 NAN_METHOD(Sweep::getMotorSpeed) {

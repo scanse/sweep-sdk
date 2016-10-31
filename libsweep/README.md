@@ -98,7 +98,7 @@ All direct device interaction happens on this type.
 Constructs a `sweep_device_s` using defaults to detect the hardware.
 In case of error a `sweep_error_s` will be written into `error`.
 
-##### `sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, int32_t timeout, sweep_error_s* error)`
+##### `sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_error_s* error)`
 
 Constructs a `sweep_device_s` with explicit hardware configuration.
 In case of error a `sweep_error_s` will be written into `error`.
@@ -144,10 +144,10 @@ In case of error a `sweep_error_s` will be written into `error`.
 
 Opaque type representing a single full 360 degree scan from a `sweep_device_s`.
 
-##### `sweep_scan_s sweep_device_get_scan(sweep_device_s device, int32_t timeout, sweep_error_s* error)`
+##### `sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error)`
 
-Blocks up to `timeout` milliseconds waiting for the `sweep_device_s` to accumulate a full 360 degree scan into `sweep_scan_s`.
-In case of error or timeout violation a `sweep_error_s` will be written into `error`.
+Blocks waiting for the `sweep_device_s` to accumulate a full 360 degree scan into `sweep_scan_s`.
+In case of error a `sweep_error_s` will be written into `error`.
 
 ##### `void sweep_scan_destruct(sweep_scan_s scan)`
 

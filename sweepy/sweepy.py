@@ -19,7 +19,7 @@ libsweep.sweep_device_construct_simple.restype = ctypes.c_void_p
 libsweep.sweep_device_construct_simple.argtypes = [ctypes.c_void_p]
 
 libsweep.sweep_device_construct.restype = ctypes.c_void_p
-libsweep.sweep_device_construct.argtypes = [ctypes.c_char_p, ctypes.c_int32, ctypes.c_int32, ctypes.c_void_p]
+libsweep.sweep_device_construct.argtypes = [ctypes.c_char_p, ctypes.c_int32, ctypes.c_void_p]
 
 libsweep.sweep_device_destruct.restype = None
 libsweep.sweep_device_destruct.argtypes = [ctypes.c_void_p]
@@ -31,7 +31,7 @@ libsweep.sweep_device_stop_scanning.restype = None
 libsweep.sweep_device_stop_scanning.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 
 libsweep.sweep_device_get_scan.restype = ctypes.c_void_p
-libsweep.sweep_device_get_scan.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_void_p]
+libsweep.sweep_device_get_scan.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 
 libsweep.sweep_scan_destruct.restype = None
 libsweep.sweep_scan_destruct.argtypes = [ctypes.c_void_p]
@@ -77,9 +77,9 @@ class Sample(collections.namedtuple('Sample', 'angle distance signal_strength'))
 
 
 class Sweep:
-    def __init__(_, port = None, bitrate = None, timeout = None):
+    def __init__(_, port = None, bitrate = None):
         _.scoped = False
-        _.args = [port, bitrate, timeout]
+        _.args = [port, bitrate]
 
     def __enter__(_):
         _.scoped = True
@@ -92,7 +92,7 @@ class Sweep:
         simple = not any(_.args)
         config = all(_.args)
 
-        assert simple or config, 'No arguments for auto-detection or port, bitrate, timeout required'
+        assert simple or config, 'No arguments for auto-detection or port, bitrate, required'
 
         if simple:
             device = libsweep.sweep_device_construct_simple(ctypes.byref(error))
@@ -100,8 +100,7 @@ class Sweep:
         if config:
             port = ctypes.string_at(_.args[0])
             bitrate = ctypes.c_int32(_.args[1])
-            timeout = ctypes.c_int32(_.args[2])
-            device = libsweep.sweep_device_construct(port, bitrate, timeout, ctypes.byref(error))
+            device = libsweep.sweep_device_construct(port, bitrate, ctypes.byref(error))
 
         if error:
             raise error_to_exception(error)
@@ -168,13 +167,13 @@ class Sweep:
 
         return rate
 
-    def get_scans(_, timeout = 2000):
+    def get_scans(_):
         _._assert_scoped()
 
         error = ctypes.c_void_p()
 
         while True:
-            scan = libsweep.sweep_device_get_scan(_.device, timeout, ctypes.byref(error))
+            scan = libsweep.sweep_device_get_scan(_.device, ctypes.byref(error))
 
             if error:
                 raise error_to_exception(error)

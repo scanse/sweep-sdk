@@ -10,7 +10,6 @@
 
 #include <fcntl.h>
 #include <sys/select.h>
-#include <sys/time.h>
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
@@ -19,10 +18,7 @@ typedef struct sweep_serial_error {
   const char* what; // always literal, do not free
 } sweep_serial_error;
 
-typedef struct sweep_serial_device {
-  int32_t fd;
-  int32_t timeout;
-} sweep_serial_device;
+typedef struct sweep_serial_device { int32_t fd; } sweep_serial_device;
 
 // Constructor hidden from users
 static sweep_serial_error_s sweep_serial_error_construct(const char* what) {
@@ -52,7 +48,7 @@ void sweep_serial_error_destruct(sweep_serial_error_s error) {
 }
 
 static speed_t sweep_serial_detail_get_baud(int32_t bitrate, sweep_serial_error_s* error) {
-  SWEEP_ASSERT(bitrate> 0);
+  SWEEP_ASSERT(bitrate > 0);
   SWEEP_ASSERT(error);
 
   speed_t baud;
@@ -255,14 +251,12 @@ static bool sweep_serial_detail_wait_readable(sweep_serial_device_s serial, swee
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(error);
 
-  // Setup a select call to block for serial data or a timeout
+  // Setup a select call to block for serial data
   fd_set readfds;
   FD_ZERO(&readfds);
   FD_SET(serial->fd, &readfds);
 
-  struct timeval timeout = (struct timeval){.tv_sec = serial->timeout / 1000, .tv_usec = (serial->timeout % 1000) * 1000};
-
-  int32_t ret = select(serial->fd + 1, &readfds, NULL, NULL, &timeout);
+  int32_t ret = select(serial->fd + 1, &readfds, NULL, NULL, NULL);
 
   if (ret == -1) {
     // Select was interrupted
@@ -277,18 +271,15 @@ static bool sweep_serial_detail_wait_readable(sweep_serial_device_s serial, swee
     // Data Available
     return true;
   } else {
-    // Timeout occurred
     return false;
   }
 
   return false;
 }
 
-sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t bitrate, int32_t timeout,
-                                                    sweep_serial_error_s* error) {
+sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t bitrate, sweep_serial_error_s* error) {
   SWEEP_ASSERT(port);
   SWEEP_ASSERT(bitrate > 0);
-  SWEEP_ASSERT(timeout > 0);
   SWEEP_ASSERT(error);
 
   int32_t fd = open(port, O_RDWR | O_NOCTTY | O_NONBLOCK);
@@ -364,7 +355,7 @@ sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t bi
     return NULL;
   }
 
-  *out = (sweep_serial_device){.fd = fd, .timeout = timeout};
+  *out = (sweep_serial_device){.fd = fd};
 
   return out;
 }

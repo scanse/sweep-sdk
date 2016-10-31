@@ -18,8 +18,11 @@ extern "C" {
 
 #if __GNUC__ >= 4
 #define SWEEP_API __attribute__((visibility("default")))
+#define SWEEP_PACKED __attribute__((packed))
 #else
+// TODO: error here at compile-time?
 #define SWEEP_API
+#define SWEEP_PACKED
 #endif
 
 #define SWEEP_VERSION_MAJOR 0
@@ -42,13 +45,13 @@ SWEEP_API const char* sweep_error_message(sweep_error_s error);
 SWEEP_API void sweep_error_destruct(sweep_error_s error);
 
 SWEEP_API sweep_device_s sweep_device_construct_simple(sweep_error_s* error);
-SWEEP_API sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, int32_t timeout, sweep_error_s* error);
+SWEEP_API sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_error_s* error);
 SWEEP_API void sweep_device_destruct(sweep_device_s device);
 
 SWEEP_API void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error);
 SWEEP_API void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error);
 
-SWEEP_API sweep_scan_s sweep_device_get_scan(sweep_device_s device, int32_t timeout, sweep_error_s* error);
+SWEEP_API sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error);
 SWEEP_API void sweep_scan_destruct(sweep_scan_s scan);
 
 SWEEP_API int32_t sweep_scan_get_number_of_samples(sweep_scan_s scan);
