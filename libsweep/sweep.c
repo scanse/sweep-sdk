@@ -361,4 +361,21 @@ int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error
 void sweep_device_reset(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+
+  sweep_error_s protocolerror = NULL;
+
+  sweep_device_detail_write_command(device, SWEEP_PROTOCOL_RESET_DEVICE, &protocolerror);
+
+  if (protocolerror) {
+    *error = protocolerror;
+    return;
+  }
+
+  sweep_protocol_response_header_s response;
+  sweep_device_detail_read_response_header(device, SWEEP_PROTOCOL_RESET_DEVICE, &response, &protocolerror);
+
+  if (protocolerror) {
+    *error = protocolerror;
+    return;
+  }
 }
