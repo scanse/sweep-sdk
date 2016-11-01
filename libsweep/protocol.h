@@ -3,8 +3,14 @@
 
 #include <stdint.h>
 
-inline float sweep_protocol_u16_to_f32(uint16_t v) { return ((float)(v >> 4u)) + (v & 15u) / 16.0f; }
-inline uint8_t sweep_protocol_checksum(uint8_t status1, uint8_t status2) { return ((status1 + status2) & 0x3F) + 0x30; }
+inline float sweep_protocol_u16_to_f32(uint16_t v) {
+  // two-byte float representation
+  return ((float)(v >> 4u)) + (v & 15u) / 16.0f;
+}
+inline uint8_t sweep_protocol_checksum(uint8_t status1, uint8_t status2) {
+  // 0b111111 bit mask + 0b110000
+  return ((status1 + status2) & 0x3F) + 0x30;
+}
 
 #define SWEEP_PROTOCOL_DATA_ACQUISITION_START                                                                                    \
   (const char[]) { 'D', 'S' }

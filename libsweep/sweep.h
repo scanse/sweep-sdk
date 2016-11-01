@@ -1,12 +1,6 @@
 #ifndef SWEEP_6144CCE8BA67_H
 #define SWEEP_6144CCE8BA67_H
 
-/*
- * The following provides a high-level interface overview for libsweep.
- *
- * TODO(daniel-j-h)
- */
-
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -20,7 +14,7 @@ extern "C" {
 #define SWEEP_API __attribute__((visibility("default")))
 #define SWEEP_PACKED __attribute__((packed))
 #else
-// TODO: error here at compile-time?
+#error "Only Clang and GCC supported at the moment, please open a ticket"
 #define SWEEP_API
 #define SWEEP_PACKED
 #endif

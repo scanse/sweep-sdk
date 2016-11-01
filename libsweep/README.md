@@ -159,15 +159,15 @@ Returns the number of samples in a full 360 degree `sweep_scan_s`.
 
 ##### `int32_t sweep_scan_get_angle(sweep_scan_s scan, int32_t sample)`
 
-Returns the angle for the `sample`th sample in the `sweep_scan_s`.
+Returns the angle in milli-degree for the `sample`th sample in the `sweep_scan_s`.
 
 ##### `int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample)`
 
-Returns the distance for the `sample`th sample in the `sweep_scan_s`.
+Returns the distance in centi-meter for the `sample`th sample in the `sweep_scan_s`.
 
 ##### `int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample)`
 
-Returns the signal strength for the `sample`th sample in the `sweep_scan_s`.
+Returns the signal strength (1 low -- 100 high) for the `sample`th sample in the `sweep_scan_s`.
 
 
 ### License

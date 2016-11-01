@@ -1,6 +1,7 @@
 #include "sweep.h"
 #include "protocol.h"
 #include "serial.h"
+#include "time.h"
 
 #include <stdlib.h>
 
@@ -16,8 +17,12 @@ typedef struct sweep_device {
   bool is_scanning;
 } sweep_device;
 
+#define SWEEP_MAX_SAMPLES 4096
+
 typedef struct sweep_scan {
-  // impl.
+  int32_t angle[SWEEP_MAX_SAMPLES];
+  int32_t distance[SWEEP_MAX_SAMPLES];
+  int32_t signal_strength[SWEEP_MAX_SAMPLES];
   int32_t count;
 } sweep_scan;
 
@@ -231,7 +236,16 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
     return NULL;
   }
 
-  *out = (sweep_device){.serial = serial, .is_scanning = false};
+  *out = (sweep_device){.serial = serial, .is_scanning = true};
+
+  sweep_error_s stoperror = NULL;
+  sweep_device_stop_scanning(out, &stoperror);
+
+  if (stoperror) {
+    *error = stoperror;
+    sweep_device_destruct(out);
+    return NULL;
+  }
 
   return out;
 }
@@ -287,6 +301,24 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
     return;
   }
 
+  sweep_sleep_microseconds(5000);
+
+  sweep_serial_error_s serialerror = NULL;
+  sweep_serial_device_flush(device->serial, &serialerror);
+
+  if (serialerror) {
+    *error = sweep_error_construct("unable to flush serial device during stopping scanning");
+    sweep_serial_error_destruct(serialerror);
+    return;
+  }
+
+  sweep_device_detail_write_command(device, SWEEP_PROTOCOL_DATA_ACQUISITION_STOP, &protocolerror);
+
+  if (protocolerror) {
+    *error = protocolerror;
+    return;
+  }
+
   sweep_protocol_response_header_s response;
   sweep_device_detail_read_response_header(device, SWEEP_PROTOCOL_DATA_ACQUISITION_STOP, &response, &protocolerror);
 
@@ -302,34 +334,84 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
 
-  return 0;
+  sweep_serial_error_s serialerror = NULL;
+
+  sweep_protocol_response_scan_packet_s responses[SWEEP_MAX_SAMPLES];
+
+  int32_t first = 0;
+  int32_t last = SWEEP_MAX_SAMPLES;
+
+  for (int32_t received = 0; received < SWEEP_MAX_SAMPLES; ++received) {
+    sweep_serial_device_read(device->serial, &responses[received], sizeof(sweep_protocol_response_scan_packet_s), &serialerror);
+
+    if (serialerror) {
+      *error = sweep_error_construct("unable to receive sweep scan response");
+      sweep_serial_error_destruct(serialerror);
+      return NULL;
+    }
+
+    // Only gather a full scan. We could improve this logic to improve on throughput
+    // with complicating the code much more (think spsc queue of all responses).
+    // On the other hand, we could also discard the sync bit and check repeating angles.
+    if (responses[received].sync_error == 1) {
+      if (first != 0 && last == SWEEP_MAX_SAMPLES) {
+        last = received;
+        break;
+      }
+
+      if (first == 0 && last == SWEEP_MAX_SAMPLES) {
+        first = received;
+      }
+    }
+  }
+
+  sweep_scan_s out = malloc(sizeof(sweep_scan));
+
+  if (out == NULL) {
+    *error = sweep_error_construct("oom during sweep scan creation");
+    return NULL;
+  }
+
+  SWEEP_ASSERT(last - first >= 0);
+  SWEEP_ASSERT(last - first < SWEEP_MAX_SAMPLES);
+
+  out->count = last - first;
+
+  for (int32_t it = 0; it < last - first; ++it) {
+    out->angle[it] = sweep_protocol_u16_to_f32(responses[first + it].angle) * 1000.f;
+    out->distance[it] = responses[first + it].distance;
+    out->signal_strength[it] = (responses[first + it].signal_strength / 256.f) * 100.f;
+  }
+
+  return out;
 }
 
 int32_t sweep_scan_get_number_of_samples(sweep_scan_s scan) {
   SWEEP_ASSERT(scan);
+  SWEEP_ASSERT(scan->count >= 0);
 
-  return 2 || scan->count;
+  return scan->count;
 }
 
 int32_t sweep_scan_get_angle(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
-  return 10;
+  return scan->angle[sample];
 }
 
 int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
-  return 20;
+  return scan->distance[sample];
 }
 
 int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
-  return 1;
+  return scan->signal_strength[sample];
 }
 
 void sweep_scan_destruct(sweep_scan_s scan) {
