@@ -3,14 +3,7 @@
 
 #include <stdint.h>
 
-inline float sweep_protocol_u16_to_f32(uint16_t v) {
-  // two-byte float representation
-  return ((float)(v >> 4u)) + (v & 15u) / 16.0f;
-}
-inline uint8_t sweep_protocol_checksum(uint8_t status1, uint8_t status2) {
-  // 0b111111 bit mask + 0b110000
-  return ((status1 + status2) & 0x3F) + 0x30;
-}
+#include "sweep.h"
 
 #define SWEEP_PROTOCOL_DATA_ACQUISITION_START                                                                                    \
   (const char[]) { 'D', 'S' }
@@ -60,7 +53,7 @@ typedef struct {
   uint8_t cmdByte2;
   uint8_t cmdStatusByte1;
   uint8_t cmdStatusByte2;
-  uint8_t cmdSum;
+  uint8_t cmdSum; // see sweep_protocol_checksum_response_header
   uint8_t term1;
 } SWEEP_PACKED sweep_protocol_response_header_s;
 
@@ -72,16 +65,16 @@ typedef struct {
   uint8_t term1;
   uint8_t cmdStatusByte1;
   uint8_t cmdStatusByte2;
-  uint8_t cmdSum;
+  uint8_t cmdSum; // see sweep_protocol_checksum_response_param
   uint8_t term2;
 } SWEEP_PACKED sweep_protocol_response_param_s;
 
 typedef struct {
   uint8_t sync_error;
-  uint16_t angle;
+  uint16_t angle; // see sweep_protocol_u16_to_f32
   uint16_t distance;
   uint8_t signal_strength;
-  uint8_t checksum;
+  uint8_t checksum; // see sweep_protocol_checksum_response_scan_packet
 } SWEEP_PACKED sweep_protocol_response_scan_packet_s;
 
 typedef struct {
@@ -115,5 +108,26 @@ typedef struct {
   uint8_t motor_speed[2];
   uint8_t term;
 } SWEEP_PACKED sweep_protocol_response_info_motor_s;
+
+inline uint8_t sweep_protocol_checksum_response_header(sweep_protocol_response_header_s* v) {
+  return ((v->cmdStatusByte1 + v->cmdStatusByte2) & 0x3F) + 0x30;
+}
+
+inline uint8_t sweep_protocol_checksum_response_param(sweep_protocol_response_param_s* v) {
+  return ((v->cmdStatusByte1 + v->cmdStatusByte2) & 0x3F) + 0x30;
+}
+
+inline uint8_t sweep_protocol_checksum_response_scan_packet(sweep_protocol_response_scan_packet_s* v) {
+  uint64_t checksum = 0;
+  checksum += v->sync_error;
+  checksum += v->angle & 0xff00;
+  checksum += v->angle & 0x00ff;
+  checksum += v->distance & 0xff00;
+  checksum += v->distance & 0x00ff;
+  checksum += v->signal_strength;
+  return checksum % 255;
+}
+
+inline float sweep_protocol_u16_to_f32(uint16_t v) { return ((float)(v >> 4u)) + (v & 15u) / 16.0f; }
 
 #endif

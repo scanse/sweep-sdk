@@ -114,7 +114,7 @@ static void sweep_device_detail_read_response_header(sweep_device_s device, cons
     return;
   }
 
-  uint8_t checksum = sweep_protocol_checksum(header->cmdStatusByte1, header->cmdStatusByte2);
+  uint8_t checksum = sweep_protocol_checksum_response_header(header);
 
   if (checksum != header->cmdSum) {
     *error = sweep_error_construct("invalid response header checksum");
@@ -146,7 +146,7 @@ static void sweep_device_detail_read_response_param(sweep_device_s device, const
     return;
   }
 
-  uint8_t checksum = sweep_protocol_checksum(param->cmdStatusByte1, param->cmdStatusByte2);
+  uint8_t checksum = sweep_protocol_checksum_response_param(param);
 
   if (checksum != param->cmdSum) {
     *error = sweep_error_construct("invalid response param header checksum");
@@ -347,6 +347,13 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
     if (serialerror) {
       *error = sweep_error_construct("unable to receive sweep scan response");
       sweep_serial_error_destruct(serialerror);
+      return NULL;
+    }
+
+    uint8_t checksum = sweep_protocol_checksum_response_scan_packet(&responses[received]);
+
+    if (checksum != responses[received].checksum) {
+      *error = sweep_error_construct("invalid response scan packet checksum");
       return NULL;
     }
 
