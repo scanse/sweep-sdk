@@ -19,6 +19,11 @@ This dummy library is API and ABI compatible. Once your device arrives switch ou
 - Include `<sweep/sweep.h>` for the C interface or `<sweep/sweep.hpp>` for the C++ interface.
 - Link `libsweep.so` with `-lsweep`.
 
+For example:
+
+    gcc -Wall -Wextra -pedantic -std=c99 example.c -lsweep
+    g++ -Wall -Wextra -pedantic -std=c++11 example.cc -lsweep
+
 See [example.c](example.c) and [example.cc](example.cc) for a C and C++ example, respectively.
 
 
