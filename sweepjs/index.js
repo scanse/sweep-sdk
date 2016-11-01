@@ -11,14 +11,6 @@ if (require.main === module) {
 
   sweep.startScanning();
 
-  const speed = sweep.getMotorSpeed();
-  sweep.setMotorSpeed(speed + 1);
-
-  const newspeed = sweep.getMotorSpeed();
-  assert.equal(newspeed, speed + 1);
-
-  const rate = sweep.getSampleRate();
-
   sweep.scan((err, samples) => {
     if (err) {
       return console.log(err);
