@@ -1,7 +1,7 @@
 #include <stdexcept>
 #include <utility>
 
-#include "sweejs.h"
+#include "sweepjs.h"
 
 struct SweepError final : std::runtime_error {
   using Base = std::runtime_error;

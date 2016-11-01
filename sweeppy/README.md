@@ -1,12 +1,12 @@
-# sweepy
+# SweepPy
 
 Python Scanse Sweep LiDAR library.
 
-Required `libsweep.so` to be installed.
+Requires `libsweep.so` to be installed.
 
 ### Quick Start
 
-See [sweepy.py](sweepy.py) for interface and example.
+See [sweeppy.py](sweeppy.py) for interface and example.
 
 ### License
 

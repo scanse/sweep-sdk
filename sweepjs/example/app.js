@@ -1,9 +1,6 @@
 'use strict';
 
-const sweejs = require('..');
-
-// Maybe change from Websocket server to only serving GeoJSON data as HTTP endpoint
-// https://www.mapbox.com/mapbox-gl-js/example/live-geojson/
+const sweepjs = require('..');
 
 const koa = require('koa');
 const srv = require('koa-static');
@@ -15,7 +12,7 @@ app.use(srv(__dirname, {index: 'map.html'}));
 app.listen(8080);
 
 
-const sweep = new sweejs.Sweep();
+const sweep = new sweepjs.Sweep();
 sweep.startScanning();
 
 
@@ -45,3 +42,7 @@ wss.on('connection', ws => {
 });
 
 console.log('Now open browser at http://localhost:8080')
+
+
+// Also possible: changing from Websocket server to only serving GeoJSON data as HTTP endpoint
+// https://www.mapbox.com/mapbox-gl-js/example/live-geojson/

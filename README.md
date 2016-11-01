@@ -3,8 +3,8 @@
 SDK for Scanse Sweep LiDAR.
 
 - [libsweep](libsweep/README.md): low-level ABI/API-stable C library
-- [sweepy](sweepy/README.md): Python bindings
-- [sweejs](sweejs/README.md): NodeJS bindings
+- [SweepPy](sweeppy/README.md): Python bindings
+- [SweepJs](sweepjs/README.md): NodeJS bindings
 
 ### License
 

@@ -1,5 +1,5 @@
 {
-  "name": "sweejs",
+  "name": "sweepjs",
   "version": "0.0.1",
   "description": "Native module for the Sweep LiDAR",
   "keywords": [
@@ -9,7 +9,7 @@
   ],
   "author": "Daniel J. Hofmann",
   "license": "MIT",
-  "main": "./build/Release/sweejs",
+  "main": "./build/Release/sweepjs",
   "scripts": {
     "test": "node index"
   },

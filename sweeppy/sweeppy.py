@@ -203,8 +203,6 @@ class Sweep:
 if __name__ == '__main__':
     with Sweep() as sweep:
         sweep.start_scanning()
-        sweep.stop_scanning()
-        sweep.start_scanning()
 
         speed = sweep.get_motor_speed()
         sweep.set_motor_speed(speed + 1)
@@ -217,6 +215,3 @@ if __name__ == '__main__':
 
             if n == 3:
                 break
-
-        # resets the hardware; not needed to shut down this library, just for testing purpose
-        sweep.reset()

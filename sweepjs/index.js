@@ -1,24 +1,20 @@
 'use strict';
 
-const sweejs = require('.');
+const sweepjs = require('.');
 const assert = require('assert');
 
 
 if (require.main === module) {
   console.log('self-testing module');
 
-  const sweep = new sweejs.Sweep();
+  const sweep = new sweepjs.Sweep();
 
-  sweep.startScanning();
-  sweep.stopScanning();
   sweep.startScanning();
 
   const speed = sweep.getMotorSpeed();
-
   sweep.setMotorSpeed(speed + 1);
 
   const newspeed = sweep.getMotorSpeed();
-
   assert.equal(newspeed, speed + 1);
 
   const rate = sweep.getSampleRate();
@@ -34,4 +30,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = sweejs;
+module.exports = sweepjs;

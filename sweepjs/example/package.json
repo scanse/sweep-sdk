@@ -1,5 +1,5 @@
 {
-  "name": "sweejs",
+  "name": "sweepjsd",
   "version": "0.0.1",
   "description": "Sweep LiDAR Websocket Daemon",
   "author": "Daniel J. Hofmann",

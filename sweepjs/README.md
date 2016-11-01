@@ -1,8 +1,8 @@
-# sweejs
+# SweepJs
 
 NodeJS Scanse Sweep LiDAR library.
 
-Required `libsweep.so` to be installed.
+Requires `libsweep.so` to be installed.
 
 In addition, requires a compiler to be installed for building the native NodeJS bindings.
 
@@ -11,7 +11,7 @@ In addition, requires a compiler to be installed for building the native NodeJS 
     npm install
     npm test
 
-See the [sweejsd](sweejsd) directory for an example streaming data from the device to the browser in real-time using a Websocket server.
+See the [example](example) directory for an example streaming data from the device to the browser in real-time using a Websocket server.
 
 ### License
 

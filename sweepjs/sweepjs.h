@@ -1,5 +1,5 @@
-#ifndef SWEEJS_3153F5A5574F_H
-#define SWEEJS_3153F5A5574F_H
+#ifndef SWEEPJS_3153F5A5574F_H
+#define SWEEPJS_3153F5A5574F_H
 
 #include <memory>
 
@@ -44,6 +44,6 @@ private:
   std::shared_ptr<::sweep_device> device;
 };
 
-NODE_MODULE(sweejs, Sweep::Init)
+NODE_MODULE(sweepjs, Sweep::Init)
 
 #endif

@@ -2,9 +2,9 @@
     "targets": [
         {
             "include_dirs": ["<!(node -e \"require('nan')\")"],
-            "target_name": "sweejs",
+            "target_name": "sweepjs",
             "sources": [
-                "sweejs.cc"
+                "sweepjs.cc"
             ],
             "conditions": [
                 ["OS != 'win'",{
