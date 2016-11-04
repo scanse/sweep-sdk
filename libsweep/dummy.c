@@ -131,7 +131,7 @@ int32_t sweep_scan_get_angle(sweep_scan_s scan, int32_t sample) {
     break;
   }
 
-  return angle + delta;
+  return (angle + delta) * 1000;
 }
 
 int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample) {
@@ -145,7 +145,7 @@ int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
-  return 1;
+  return 100;
 }
 
 void sweep_scan_destruct(sweep_scan_s scan) {
