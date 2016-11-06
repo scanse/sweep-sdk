@@ -5,7 +5,7 @@ all: libsweep.so
 libsweep.so: sweep.o serial_unix.o time_unix.o
 	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-dummy: dummy.o
+dummy: dummy.o time_unix.o
 	$(CC) $(LDFLAGS) -o libsweep.so $^ $(LDLIBS)
 
 install:

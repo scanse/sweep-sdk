@@ -1,4 +1,5 @@
 #include "sweep.h"
+#include "time.h"
 
 #include <stdlib.h>
 
@@ -62,7 +63,7 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
     return NULL;
   }
 
-  *out = (sweep_device){.scanning = false, .motor_speed = 1, .sample_rate = 360};
+  *out = (sweep_device){.scanning = false, .motor_speed = 1, .sample_rate = 360, .nth_scan_request = 0};
 
   return out;
 }
@@ -98,7 +99,11 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
     return NULL;
   }
 
-  *out = (sweep_scan){.count = device->scanning ? 16 : 0};
+  *out = (sweep_scan){.count = device->scanning ? 16 : 0, .nth = device->nth_scan_request};
+
+  device->nth_scan_request += 1;
+
+  sweep_sleep_microseconds(0.1 /*second*/ * 1000 * 1000);
 
   return out;
 }
@@ -114,7 +119,7 @@ int32_t sweep_scan_get_angle(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
   int32_t angle = 360;
-  int32_t delta = (sample % 4) * 2;
+  int32_t delta = (sample % 4) * 2 + scan->nth;
 
   switch (sample / 4) {
   case 0:
@@ -131,7 +136,7 @@ int32_t sweep_scan_get_angle(sweep_scan_s scan, int32_t sample) {
     break;
   }
 
-  return (angle + delta) * 1000;
+  return ((angle + delta) % 360) * 1000;
 }
 
 int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample) {
