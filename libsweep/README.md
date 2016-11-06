@@ -21,10 +21,10 @@ This dummy library is API and ABI compatible. Once your device arrives switch ou
 
 For example:
 
-    gcc -Wall -Wextra -pedantic -std=c99 example.c -lsweep
-    g++ -Wall -Wextra -pedantic -std=c++11 example.cc -lsweep
+    gcc -Wall -Wextra -pedantic -std=c99 examples/example.c -lsweep
+    g++ -Wall -Wextra -pedantic -std=c++11 examples/example.cc -lsweep
 
-See [example.c](example.c) and [example.cc](example.cc) for a C and C++ example, respectively.
+See [example.c](examples/example.c) and [example.cc](examples/example.cc) and for a C and C++ example, respectively.
 
 
 ### libsweep

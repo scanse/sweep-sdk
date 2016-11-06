@@ -1,3 +1,6 @@
+// Make use of the CMake build system or compile manually, e.g. with:
+// gcc -std=c99 example.c -lsweep
+
 #include <assert.h>
 #include <inttypes.h>
 #include <stdint.h>
@@ -40,7 +43,7 @@ int main() {
 
   fprintf(stdout, "Motor Speed: %" PRId32 " Hz, Sample Rate: %" PRId32 " Hz\n", speed, rate);
 
-  // Starts motor and activates LiDAR
+  // Capture scans
   sweep_device_start_scanning(sweep, &error);
   check(error);
 
