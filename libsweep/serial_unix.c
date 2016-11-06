@@ -25,11 +25,7 @@ static sweep_serial_error_s sweep_serial_error_construct(const char* what) {
   SWEEP_ASSERT(what);
 
   sweep_serial_error_s out = malloc(sizeof(sweep_serial_error));
-
-  if (out == NULL) {
-    SWEEP_ASSERT(false && "out of memory during error reporting");
-    exit(EXIT_FAILURE);
-  }
+  SWEEP_ASSERT(out && "out of memory during error reporting");
 
   *out = (sweep_serial_error){.what = what};
   return out;

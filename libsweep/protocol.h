@@ -3,18 +3,22 @@
 
 #include <stdint.h>
 
+#include "serial.h"
 #include "sweep.h"
+
+typedef struct sweep_protocol_error* sweep_protocol_error_s;
+
+const char* sweep_protocol_error_message(sweep_protocol_error_s error);
+void sweep_protocol_error_destruct(sweep_protocol_error_s error);
+
+// Command Symbols
 
 #define SWEEP_PROTOCOL_DATA_ACQUISITION_START                                                                                    \
   (const char[]) { 'D', 'S' }
 #define SWEEP_PROTOCOL_DATA_ACQUISITION_STOP                                                                                     \
   (const char[]) { 'D', 'X' }
-#define SWEEP_PROTOCOL_MOTOR_START                                                                                               \
-  (const char[]) { 'M', 'S' }
-#define SWEEP_PROTOCOL_MOTOR_STOP                                                                                                \
-  (const char[]) { 'M', 'X' }
 #define SWEEP_PROTOCOL_MOTOR_SPEED_ADJUST                                                                                        \
-  (const char[]) { 'M', 'A' }
+  (const char[]) { 'M', 'S' }
 #define SWEEP_PROTOCOL_MOTOR_INFORMATION                                                                                         \
   (const char[]) { 'M', 'I' }
 #define SWEEP_PROTOCOL_VERSION_INFORMATION                                                                                       \
@@ -33,6 +37,8 @@
   (const char[]) { 'P', 'L' }
 #define SWEEP_PROTOCOL_RESET_DEVICE                                                                                              \
   (const char[]) { 'R', 'R' }
+
+// Packets for communication
 
 typedef struct {
   uint8_t cmdByte1;
@@ -53,7 +59,7 @@ typedef struct {
   uint8_t cmdByte2;
   uint8_t cmdStatusByte1;
   uint8_t cmdStatusByte2;
-  uint8_t cmdSum; // see sweep_protocol_checksum_response_header
+  uint8_t cmdSum;
   uint8_t term1;
 } SWEEP_PACKED sweep_protocol_response_header_s;
 
@@ -65,7 +71,7 @@ typedef struct {
   uint8_t term1;
   uint8_t cmdStatusByte1;
   uint8_t cmdStatusByte2;
-  uint8_t cmdSum; // see sweep_protocol_checksum_response_param
+  uint8_t cmdSum;
   uint8_t term2;
 } SWEEP_PACKED sweep_protocol_response_param_s;
 
@@ -74,7 +80,7 @@ typedef struct {
   uint16_t angle; // see sweep_protocol_u16_to_f32
   uint16_t distance;
   uint8_t signal_strength;
-  uint8_t checksum; // see sweep_protocol_checksum_response_scan_packet
+  uint8_t checksum;
 } SWEEP_PACKED sweep_protocol_response_scan_packet_s;
 
 typedef struct {
@@ -109,25 +115,93 @@ typedef struct {
   uint8_t term;
 } SWEEP_PACKED sweep_protocol_response_info_motor_s;
 
-inline uint8_t sweep_protocol_checksum_response_header(sweep_protocol_response_header_s* v) {
-  return ((v->cmdStatusByte1 + v->cmdStatusByte2) & 0x3F) + 0x30;
-}
+// Read and write specific packets
 
-inline uint8_t sweep_protocol_checksum_response_param(sweep_protocol_response_param_s* v) {
-  return ((v->cmdStatusByte1 + v->cmdStatusByte2) & 0x3F) + 0x30;
-}
+void sweep_protocol_write_command(sweep_serial_device_s serial, const void* cmd, sweep_protocol_error_s* error);
 
-inline uint8_t sweep_protocol_checksum_response_scan_packet(sweep_protocol_response_scan_packet_s* v) {
-  uint64_t checksum = 0;
-  checksum += v->sync_error;
-  checksum += v->angle & 0xff00;
-  checksum += v->angle & 0x00ff;
-  checksum += v->distance & 0xff00;
-  checksum += v->distance & 0x00ff;
-  checksum += v->signal_strength;
-  return checksum % 255;
-}
+void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, const void* cmd, const void* args,
+                                                 sweep_protocol_error_s* error);
 
+void sweep_protocol_read_response_header(sweep_serial_device_s serial, const void* cmd, sweep_protocol_response_header_s* header,
+                                         sweep_protocol_error_s* error);
+
+void sweep_protocol_read_response_param(sweep_serial_device_s serial, const void* cmd, sweep_protocol_response_param_s* param,
+                                        sweep_protocol_error_s* error);
+
+void sweep_protocol_read_response_scan(sweep_serial_device_s serial, sweep_protocol_response_scan_packet_s* scan,
+                                       sweep_protocol_error_s* error);
+
+void sweep_protocol_read_response_info_motor(sweep_serial_device_s serial, const void* cmd,
+                                             sweep_protocol_response_info_motor_s* info, sweep_protocol_error_s* error);
+
+// Some protocol conversion utilities
 inline float sweep_protocol_u16_to_f32(uint16_t v) { return ((float)(v >> 4u)) + (v & 15u) / 16.0f; }
+
+inline void sweep_protocol_speed_to_ascii_bytes(int32_t speed, void* byte1, void* byte2) {
+  SWEEP_ASSERT(speed >= 0);
+  SWEEP_ASSERT(speed <= 10);
+  SWEEP_ASSERT(byte1);
+  SWEEP_ASSERT(byte2);
+
+  uint8_t* b1 = byte1;
+  uint8_t* b2 = byte2;
+
+  // Speed values are still ASCII codes, numbers begin at code point 48
+  const uint8_t ASCIINumberBlockOffset = 48;
+
+  uint8_t num1 = (speed / 10) + ASCIINumberBlockOffset;
+  uint8_t num2 = (speed % 10) + ASCIINumberBlockOffset;
+
+  *b1 = num1;
+  *b2 = num2;
+}
+
+inline int32_t sweep_protocol_ascii_bytes_to_speed(const void* byte1, const void* byte2) {
+  SWEEP_ASSERT(byte1);
+  SWEEP_ASSERT(byte2);
+
+  const uint8_t* b1 = byte1;
+  const uint8_t* b2 = byte2;
+
+  // Speed values are still ASCII codes, numbers begin at code point 48
+  const uint8_t ASCIINumberBlockOffset = 48;
+
+  uint8_t num1 = *b1 - ASCIINumberBlockOffset;
+  uint8_t num2 = *b2 - ASCIINumberBlockOffset;
+
+  int32_t speed = (num1 * 10) + (num2 * 1);
+
+  SWEEP_ASSERT(speed >= 0);
+  SWEEP_ASSERT(speed <= 10);
+
+  return speed;
+}
+
+inline int32_t sweep_protocol_ascii_bytes_to_sample_rate(const void* byte1, const void* byte2, const void* byte3,
+                                                         const void* byte4) {
+  SWEEP_ASSERT(byte1);
+  SWEEP_ASSERT(byte2);
+  SWEEP_ASSERT(byte3);
+  SWEEP_ASSERT(byte4);
+
+  const uint8_t* b1 = byte1;
+  const uint8_t* b2 = byte2;
+  const uint8_t* b3 = byte3;
+  const uint8_t* b4 = byte4;
+
+  // Speed values are still ASCII codes, numbers begin at code point 48
+  const uint8_t ASCIINumberBlockOffset = 48;
+
+  uint8_t num1 = *b1 - ASCIINumberBlockOffset;
+  uint8_t num2 = *b2 - ASCIINumberBlockOffset;
+  uint8_t num3 = *b3 - ASCIINumberBlockOffset;
+  uint8_t num4 = *b4 - ASCIINumberBlockOffset;
+
+  int32_t sample_rate = (num1 * 1000) + (num2 * 100) + (num3 * 10) + (num4 * 1);
+
+  SWEEP_ASSERT(sample_rate >= 0);
+
+  return sample_rate;
+}
 
 #endif

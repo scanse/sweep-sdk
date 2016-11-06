@@ -14,20 +14,20 @@ typedef struct sweep_device {
   bool scanning;
   int32_t motor_speed;
   int32_t sample_rate;
+  int32_t nth_scan_request;
 } sweep_device;
 
-typedef struct sweep_scan { int32_t count; } sweep_scan;
+typedef struct sweep_scan {
+  int32_t count;
+  int32_t nth;
+} sweep_scan;
 
 // Constructor hidden from users
 static sweep_error_s sweep_error_construct(const char* what) {
   SWEEP_ASSERT(what);
 
   sweep_error_s out = malloc(sizeof(sweep_error));
-
-  if (out == NULL) {
-    SWEEP_ASSERT(false && "out of memory during error reporting");
-    exit(EXIT_FAILURE);
-  }
+  SWEEP_ASSERT(out && "out of memory during error reporting");
 
   *out = (sweep_error){.what = what};
   return out;
@@ -168,7 +168,7 @@ int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error
 
 void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error) {
   SWEEP_ASSERT(device);
-  SWEEP_ASSERT(hz > 0);
+  SWEEP_ASSERT(hz >= 0 && hz <= 10);
   SWEEP_ASSERT(error);
 
   device->motor_speed = hz;
