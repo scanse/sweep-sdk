@@ -61,7 +61,7 @@ libsweep.sweep_device_reset.restype = None
 libsweep.sweep_device_reset.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 
 
-def error_to_exception(error):
+def _error_to_exception(error):
     assert error
     what = libsweep.sweep_error_message(error)
     libsweep.sweep_error_destruct(error)
@@ -103,7 +103,7 @@ class Sweep:
             device = libsweep.sweep_device_construct(port, bitrate, ctypes.byref(error))
 
         if error:
-            raise error_to_exception(error)
+            raise _error_to_exception(error)
 
         _.device = device
 
@@ -125,7 +125,7 @@ class Sweep:
         libsweep.sweep_device_start_scanning(_.device, ctypes.byref(error))
 
         if error:
-            raise error_to_exception(error)
+            raise _error_to_exception(error)
 
     def stop_scanning(_):
         _._assert_scoped();
@@ -134,7 +134,7 @@ class Sweep:
         libsweep.sweep_device_stop_scanning(_.device, ctypes.byref(error))
 
         if error:
-            raise error_to_exception(error)
+            raise _error_to_exception(error)
 
     def get_motor_speed(_):
         _._assert_scoped()
@@ -143,7 +143,7 @@ class Sweep:
         speed = libsweep.sweep_device_get_motor_speed(_.device, ctypes.byref(error))
 
         if error:
-            raise error_to_exception(error)
+            raise _error_to_exception(error)
 
         return speed
 
@@ -154,7 +154,7 @@ class Sweep:
         libsweep.sweep_device_set_motor_speed(_.device, speed, ctypes.byref(error))
 
         if error:
-            raise error_to_exception(error)
+            raise _error_to_exception(error)
 
     def get_sample_rate(_):
         _._assert_scoped()
@@ -163,7 +163,7 @@ class Sweep:
         rate = libsweep.sweep_device_get_sample_rate(_.device, ctypes.byref(error))
 
         if error:
-            raise error_to_exception(error)
+            raise _error_to_exception(error)
 
         return rate
 
@@ -176,7 +176,7 @@ class Sweep:
             scan = libsweep.sweep_device_get_scan(_.device, ctypes.byref(error))
 
             if error:
-                raise error_to_exception(error)
+                raise _error_to_exception(error)
 
             num_samples = libsweep.sweep_scan_get_number_of_samples(scan)
 
@@ -197,7 +197,7 @@ class Sweep:
         libsweep.sweep_device_reset(_.device, ctypes.byref(error))
 
         if error:
-            raise error_to_exception(error)
+            raise _error_to_exception(error)
 
 
 if __name__ == '__main__':
