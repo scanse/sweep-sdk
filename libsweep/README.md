@@ -132,11 +132,6 @@ In case of error a `sweep_error_s` will be written into `error`.
 Sets the `sweep_device_s`'s motor speed in Hz.
 In case of error a `sweep_error_s` will be written into `error`.
 
-##### `int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error)`
-
-Returns the `sweep_device_s`'s sample rate in Hz.
-In case of error a `sweep_error_s` will be written into `error`.
-
 ##### `void sweep_device_reset(sweep_device_s device, sweep_error_s* error)`
 
 Resets the `sweep_device_s` hardware.

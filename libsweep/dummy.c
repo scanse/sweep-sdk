@@ -13,7 +13,6 @@ typedef struct sweep_error {
 typedef struct sweep_device {
   bool scanning;
   int32_t motor_speed;
-  int32_t sample_rate;
   int32_t nth_scan_request;
 } sweep_device;
 
@@ -63,7 +62,7 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
     return NULL;
   }
 
-  *out = (sweep_device){.scanning = false, .motor_speed = 1, .sample_rate = 360, .nth_scan_request = 0};
+  *out = (sweep_device){.scanning = false, .motor_speed = 1, .nth_scan_request = 0};
 
   return out;
 }
@@ -172,14 +171,6 @@ void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error
   SWEEP_ASSERT(error);
 
   device->motor_speed = hz;
-}
-
-int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error) {
-  SWEEP_ASSERT(device);
-  SWEEP_ASSERT(error);
-
-  return device->sample_rate;
-  ;
 }
 
 void sweep_device_reset(sweep_device_s device, sweep_error_s* error) {

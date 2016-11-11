@@ -177,31 +177,4 @@ inline int32_t sweep_protocol_ascii_bytes_to_speed(const void* byte1, const void
   return speed;
 }
 
-inline int32_t sweep_protocol_ascii_bytes_to_sample_rate(const void* byte1, const void* byte2, const void* byte3,
-                                                         const void* byte4) {
-  SWEEP_ASSERT(byte1);
-  SWEEP_ASSERT(byte2);
-  SWEEP_ASSERT(byte3);
-  SWEEP_ASSERT(byte4);
-
-  const uint8_t* b1 = byte1;
-  const uint8_t* b2 = byte2;
-  const uint8_t* b3 = byte3;
-  const uint8_t* b4 = byte4;
-
-  // Speed values are still ASCII codes, numbers begin at code point 48
-  const uint8_t ASCIINumberBlockOffset = 48;
-
-  uint8_t num1 = *b1 - ASCIINumberBlockOffset;
-  uint8_t num2 = *b2 - ASCIINumberBlockOffset;
-  uint8_t num3 = *b3 - ASCIINumberBlockOffset;
-  uint8_t num4 = *b4 - ASCIINumberBlockOffset;
-
-  int32_t sample_rate = (num1 * 1000) + (num2 * 100) + (num3 * 10) + (num4 * 1);
-
-  SWEEP_ASSERT(sample_rate >= 0);
-
-  return sample_rate;
-}
-
 #endif

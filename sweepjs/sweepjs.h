@@ -21,7 +21,6 @@ private:
 
   static NAN_METHOD(getMotorSpeed);
   static NAN_METHOD(setMotorSpeed);
-  static NAN_METHOD(getSampleRate);
 
   static NAN_METHOD(reset);
 
