@@ -21,7 +21,7 @@ See [sweeppy.py](sweeppy.py) for interface and example.
 ### Interface
 
 ```python
-cass Sweep:
+class Sweep:
     def start_scanning(self) -> None
     def stop_scanning(self) -> None
 
