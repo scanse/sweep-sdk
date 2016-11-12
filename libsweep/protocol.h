@@ -1,6 +1,11 @@
 #ifndef SWEEP_PROTOCOL_2EADE195E243_H
 #define SWEEP_PROTOCOL_2EADE195E243_H
 
+/*
+ * Device communication protocol specifics.
+ * Implementation detail; not exported.
+ */
+
 #include <stdint.h>
 
 #include "serial.h"

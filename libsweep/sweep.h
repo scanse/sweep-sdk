@@ -8,8 +8,6 @@
 extern "C" {
 #endif
 
-/* ABI Stability */
-
 #if __GNUC__ >= 4
 #define SWEEP_API __attribute__((visibility("default")))
 #define SWEEP_PACKED __attribute__((packed))

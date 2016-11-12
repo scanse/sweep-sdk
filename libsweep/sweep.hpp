@@ -1,6 +1,17 @@
 #ifndef SWEEP_DC649F4E94D3_HPP
 #define SWEEP_DC649F4E94D3_HPP
 
+/*
+ * C++ Wrapper around the low-level primitives.
+ * Automatically handles resource management.
+ *
+ * sweep::sweep  - device to interact with
+ * sweep::scan   - a full scan returned by the device
+ * sweep::sample - a single sample in a full scan
+ *
+ * On error sweep::device_error gets thrown.
+ */
+
 #include <cstdint>
 #include <memory>
 #include <stdexcept>

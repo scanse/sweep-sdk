@@ -4,8 +4,6 @@
 /*
  * Communication with serial devices.
  * Implementation detail; not exported.
- *
- * TODO(daniel-j-h)
  */
 
 #include "sweep.h"
