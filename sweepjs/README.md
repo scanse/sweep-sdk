@@ -9,7 +9,7 @@ Requires `libsweep.so` to be installed.
     npm install
     npm test
 
-See the [example](example) directory for an example streaming data from the device to the browser in real-time using a Websocket server.
+See the [examples](examples) directory for an example streaming data from the device to the browser in real-time using a Websocket server.
 
 ### Interface
 
