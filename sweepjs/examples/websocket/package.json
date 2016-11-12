@@ -1,11 +1,11 @@
 {
   "name": "sweepjsd",
   "version": "0.0.1",
-  "description": "Sweep LiDAR Websocket Daemon",
+  "description": "Scanse Sweep Websocket Example",
   "author": "Daniel J. Hofmann",
   "license": "MIT",
   "scripts": {
-    "start": "node app"
+    "start": "node sweepjsd"
   },
   "dependencies": {
     "koa": "^1.2",
