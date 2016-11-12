@@ -40,7 +40,6 @@ matrix:
 before_install:
   - export CC=${CCOMPILER} CXX=${CXXCOMPILER}
   - sudo update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10
-  - exports NODE_PATH="$NODE_PATH:$(pwd)/sweepjs"
 
 install:
   # Make sure building and installing libsweep works
