@@ -1,0 +1,64 @@
+language: generic
+sudo: required
+dist: trusty
+
+
+matrix:
+  fast_finish: true
+
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-6', 'cmake', 'python3', 'nodejs', 'npm']
+      env: CCOMPILER='gcc-6' CXXCOMPILER='g++-6'
+
+    - os: linux
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-5', 'cmake', 'python3', 'nodejs', 'npm']
+      env: CCOMPILER='gcc-5' CXXCOMPILER='g++-5'
+
+    - os: linux
+      addons:
+        apt:
+          sources: ['llvm-toolchain-precise-3.8']
+          packages: ['clang-3.8', 'cmake', 'python3', 'nodejs', 'npm']
+      env: CCOMPILER='clang-3.8' CXXCOMPILER='clang++-3.8'
+
+    # Waiting on Travis whitelisting 3.9, see https://github.com/travis-ci/apt-source-whitelist/issues/300
+    #- os: linux
+    #  addons:
+    #    apt:
+    #      sources: ['llvm-toolchain-precise-3.9']
+    #      packages: ['clang-3.9']
+    #  env: CCOMPILER='clang-3.9' CXXCOMPILER='clang++-3.9'
+
+
+before_install:
+  - export CC=${CCOMPILER} CXX=${CXXCOMPILER}
+  - sudo update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10
+  - exports NODE_PATH="$NODE_PATH:$(pwd)/sweepjs"
+
+install:
+  # Make sure building and installing libsweep works
+  - pushd libsweep
+  - make
+  - sudo make install
+  - make clean
+  # Then build and install dummy library to test bindings against without device attached
+  - make dummy
+  - sudo make install
+  - popd
+
+script:
+  # Test SweepPy bindings against the dummy library
+  - pushd sweeppy
+  - python3 sweeppy.py
+  - popd
+  # Test SweepJs bindings against the dummy library
+  - pushd sweepjs
+  - npm install
+  - popd

@@ -1,5 +1,7 @@
 # Sweep SDK
 
+[![Continuous Integration](https://travis-ci.org/scanse/sweep-sdk.svg?branch=master)](https://travis-ci.org/scanse/sweep-sdk)
+
 SDK for Scanse Sweep LiDAR.
 
 - [libsweep](libsweep/README.md): low-level ABI/API-stable C library
