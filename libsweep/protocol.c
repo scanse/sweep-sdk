@@ -133,7 +133,7 @@ void sweep_protocol_read_response_header(sweep_serial_device_s serial, const voi
   bool ok = header->cmdByte1 == cmdBytes[0] && header->cmdByte2 == cmdBytes[1];
 
   if (!ok) {
-    *error = sweep_protocol_error_construct("invalid stop scan response commands");
+    *error = sweep_protocol_error_construct("invalid header response commands");
     return;
   }
 }
@@ -167,7 +167,7 @@ void sweep_protocol_read_response_param(sweep_serial_device_s serial, const void
   bool ok = param->cmdByte1 == cmdBytes[0] && param->cmdByte2 == cmdBytes[1];
 
   if (!ok) {
-    *error = sweep_protocol_error_construct("invalid stop scan response commands");
+    *error = sweep_protocol_error_construct("invalid param response commands");
     return;
   }
 }
@@ -191,7 +191,7 @@ void sweep_protocol_read_response_scan(sweep_serial_device_s serial, sweep_proto
   uint8_t checksum = sweep_protocol_checksum_response_scan_packet(scan);
 
   if (checksum != scan->checksum) {
-    *error = sweep_protocol_error_construct("invalid stop scan response commands");
+    *error = sweep_protocol_error_construct("invalid scan response commands");
     return;
   }
 }
