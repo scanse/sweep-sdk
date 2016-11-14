@@ -30,16 +30,6 @@ void sweep_protocol_error_destruct(sweep_protocol_error_s error);
   (const char[]) { 'I', 'V' }
 #define SWEEP_PROTOCOL_DEVICE_INFORMATION                                                                                        \
   (const char[]) { 'I', 'D' }
-#define SWEEP_PROTOCOL_PRINT_COMMANDS                                                                                            \
-  (const char[]) { 'P', 'C' }
-#define SWEEP_PROTOCOL_PRINT_VERSION_INFORMATION                                                                                 \
-  (const char[]) { 'P', 'V' }
-#define SWEEP_PROTOCOL_PRINT_DEVICE_INFORMATION                                                                                  \
-  (const char[]) { 'P', 'D' }
-#define SWEEP_PROTOCOL_PRINT_MOTOR_INFORMATION                                                                                   \
-  (const char[]) { 'P', 'M' }
-#define SWEEP_PROTOCOL_PRINT_LIDAR_INFORMATION                                                                                   \
-  (const char[]) { 'P', 'L' }
 #define SWEEP_PROTOCOL_RESET_DEVICE                                                                                              \
   (const char[]) { 'R', 'R' }
 
