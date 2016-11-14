@@ -1,16 +1,16 @@
 ### Interface
 UART  
-Bit Rate 	:115.2 Kbps  
-Parity		:None  
-Data Bit	:8  
-Stop Bit	:1  
-Flow Control	:None  
+Bit Rate    :115.2 Kbps  
+Parity      :None  
+Data Bit    :8  
+Stop Bit    :1  
+Flow Control    :None  
 
 ---
 ### Measurement Direction and Data Points
 
-Rotation Direction	:Counterclockwise  
-Detection Range	:360 degrees
+Rotation Direction  :Counterclockwise  
+Detection Range :360 degrees
 
 ---
 ### Data Encoding and Decoding
@@ -26,21 +26,30 @@ angle_f = 1.0f * ((float)(angle_i >> 4) + ((angle_i & 15) / 16.0f));
 
 #### (HOST -> SENSOR)
 Command with no parameter
-| Command Symbol (2 bytes) | Line Feed(LF)
+
+Command Symbol (2 bytes) | Line Feed(LF)
 | --- | --- |
+
 or  
+
 Command with parameter
-| Command Symbol (2 bytes) | Parameter (2 bytes) | Line Feed(LF)
+
+Command Symbol (2 bytes) | Parameter (2 bytes) | Line Feed(LF)
 | --- | --- | ---|
 
 
 #### (SENSOR -> HOST)
+
 Response with no parameter echoed
-| Command Symbol (2 bytes) | Status (2 bytes) | Sum of Status | Line Feed(LF)
-| --- | --- | ---| --- |
+
+Command Symbol (2 bytes) | Status (2 bytes) | Sum of Status | Line Feed(LF)  
+| --- | --- | ---| --- |  
+
 or  
+
 Command with parameter echoed
-| Command Symbol (2 bytes) | Parameter (2 bytes) | Line Feed(LF) | Status (2 bytes) | Sum of Status | Line Feed(LF)
+
+Command Symbol (2 bytes) | Parameter (2 bytes) | Line Feed(LF) | Status (2 bytes) | Sum of Status | Line Feed(LF)  
 | --- | --- | ---| --- | --- | --- |    
 
 #### Command Symbol
@@ -73,7 +82,9 @@ Example: [LF] 0 0 [LF] = P
 **IV** - Version Info  
 **ID** - Device Info  
 **RR** - Reset Device  
+
 ---
+
 #### DS - Start data acquisition
 * Initiates scanning
 * Responds with header containing status.  
@@ -86,6 +97,7 @@ D  |  S  |  LF
 
 #### (SENSOR -> HOST)
 Header response
+
 D  |  S  |  Status  |  SUM  |  LF
 | --- | --- | ---| --- | --- |
 
@@ -108,10 +120,10 @@ Azimuth is a float value - needs to be converted from 16bit int to float, use in
 **checksum** : Calculated by adding the 6 bytes of data then dividing by 255 and keeping the remainder.  (Sum of bytes 0-6) % 255
 
 Status  
-	00 -- Command received without any Error  
-	22 -- Stopped to verify error  
-	55 -- Hardware trouble  
-	99 -- Resuming operation  
+    00 -- Command received without any Error  
+    22 -- Stopped to verify error  
+    55 -- Hardware trouble  
+    99 -- Resuming operation  
 
 ---
 #### DX - Stop data acquisition
@@ -179,7 +191,9 @@ I  |  V  | Model (5 bytes) | Protocol (2 bytes) | Firmware V (2 bytes) | Hardwar
 | --- | --- | ---| --- | ---  | --- | --- | --- |
 
 Example:  
-	IVSWEEP01011100000001
+    IVSWEEP01011100000001
+    
+---
 
 #### ID - Device Info
 * Bit Rate
@@ -200,8 +214,10 @@ I  |  D  | Bit Rate (6 bytes) | Laser state | Mode | Diagnostic | Motor Speed (2
 | --- | --- | ---| --- | ---  | --- | --- | --- | --- |
 
 Example:  
-	IV115200110050500
-	
+    IV115200110050500
+
+---
+    
 #### RR - Reset Device
 * Reset Scanner
 
@@ -214,3 +230,4 @@ R | R | LF
 
 R | R | Status | Sum | LF
 | --- | --- | ---| --- | ---  |
+
