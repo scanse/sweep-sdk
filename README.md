@@ -8,6 +8,14 @@ SDK for Scanse Sweep LiDAR.
 - [SweepPy](sweeppy/README.md): Python bindings
 - [SweepJs](sweepjs/README.md): NodeJS bindings
 
+Real-time viewer for a device speed of 5 Hz:
+
+![viewer](https://cloud.githubusercontent.com/assets/527241/20300444/92ade432-ab1f-11e6-9d96-a585df3fe471.png)
+
+Density-based clustering on the point cloud:
+
+![dbscan](https://cloud.githubusercontent.com/assets/527241/20300478/b5ae968e-ab1f-11e6-8ee0-d24aedd835f9.png)
+
 ### License
 
 Copyright © 2016 Daniel J. Hofmann
