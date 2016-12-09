@@ -22,27 +22,11 @@
 namespace sweep {
 
 // Error reporting
+
 struct device_error final : std::runtime_error {
   using base = std::runtime_error;
   using base::base;
 };
-
-// Some implementation details
-namespace detail {
-struct error_to_exception {
-  operator ::sweep_error_s*() { return &error; }
-
-  ~error_to_exception() noexcept(false) {
-    if (error) {
-      device_error e{::sweep_error_message(error)};
-      ::sweep_error_destruct(error);
-      throw e;
-    }
-  }
-
-  ::sweep_error_s error = nullptr;
-};
-}
 
 // Interface
 
@@ -76,6 +60,22 @@ private:
 };
 
 // Implementation
+
+namespace detail {
+struct error_to_exception {
+  operator ::sweep_error_s*() { return &error; }
+
+  ~error_to_exception() noexcept(false) {
+    if (error) {
+      device_error e{::sweep_error_message(error)};
+      ::sweep_error_destruct(error);
+      throw e;
+    }
+  }
+
+  ::sweep_error_s error = nullptr;
+};
+}
 
 sweep::sweep() : device{::sweep_device_construct_simple(detail::error_to_exception{}), &::sweep_device_destruct} {}
 
