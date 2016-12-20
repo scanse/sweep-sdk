@@ -168,8 +168,8 @@ M  |  I  |  LF
 
 #### (SENSOR -> HOST)
 
-M  |  I   |  Speed(Hz) (2 bytes)  |  LF  |  Status  |  Sum  |  LF
-| --- | --- | ---| --- | --- | --- | --- |
+M  |  I   |  Speed(Hz) (2 bytes)  |  LF  |
+| --- | --- | ---| --- | --- |
 
 ---
 #### IV - Version Details
