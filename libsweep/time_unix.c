@@ -15,7 +15,7 @@ void sweep_sleep_microseconds(int32_t microseconds) {
 
   int64_t nanoseconds = microseconds * 1000;
 
-  struct timespec req = {0};
+  struct timespec req = {0, 0};
   req.tv_nsec = nanoseconds;
 
   while (nanosleep(&req, &req) == -1) {

@@ -287,7 +287,7 @@ int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error
     return 0;
   }
 
-  int32_t speed = sweep_protocol_ascii_bytes_to_speed(&response.motor_speed[0], &response.motor_speed[1]);
+  int32_t speed = sweep_protocol_ascii_bytes_to_speed(response.motor_speed);
 
   return speed;
 }
@@ -297,12 +297,12 @@ void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error
   SWEEP_ASSERT(hz >= 0 && hz <= 10);
   SWEEP_ASSERT(error);
 
-  char args[2] = {0};
-  sweep_protocol_speed_to_ascii_bytes(hz, &args[0], &args[1]);
+  uint8_t args[2] = {0};
+  sweep_protocol_speed_to_ascii_bytes(hz, args);
 
   sweep_protocol_error_s protocolerror = NULL;
 
-  sweep_protocol_write_command_with_arguments(device->serial, SWEEP_PROTOCOL_MOTOR_SPEED_ADJUST, &args, &protocolerror);
+  sweep_protocol_write_command_with_arguments(device->serial, SWEEP_PROTOCOL_MOTOR_SPEED_ADJUST, args, &protocolerror);
 
   if (protocolerror) {
     *error = sweep_error_construct("unable to send motor speed command");

@@ -55,16 +55,14 @@ static uint8_t sweep_protocol_checksum_response_scan_packet(sweep_protocol_respo
   return checksum % 255;
 }
 
-void sweep_protocol_write_command(sweep_serial_device_s serial, const void* cmd, sweep_protocol_error_s* error) {
+void sweep_protocol_write_command(sweep_serial_device_s serial, const uint8_t cmd[static 2], sweep_protocol_error_s* error) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
   SWEEP_ASSERT(error);
 
-  const uint8_t* cmdBytes = (const uint8_t*)cmd;
-
-  sweep_protocol_cmd_packet_s packet = {.cmdByte1 = cmdBytes[0], //
-                                        .cmdByte2 = cmdBytes[1], //
-                                        .cmdParamTerm = '\n'};   //
+  sweep_protocol_cmd_packet_s packet = {.cmdByte1 = cmd[0],    //
+                                        .cmdByte2 = cmd[1],    //
+                                        .cmdParamTerm = '\n'}; //
 
   sweep_serial_error_s serialerror = NULL;
 
@@ -77,21 +75,18 @@ void sweep_protocol_write_command(sweep_serial_device_s serial, const void* cmd,
   }
 }
 
-void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, const void* cmd, const void* args,
-                                                 sweep_protocol_error_s* error) {
+void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, const uint8_t cmd[static 2],
+                                                 const uint8_t arg[static 2], sweep_protocol_error_s* error) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
-  SWEEP_ASSERT(args);
+  SWEEP_ASSERT(arg);
   SWEEP_ASSERT(error);
 
-  const uint8_t* cmdBytes = (const uint8_t*)cmd;
-  const uint8_t* argBytes = (const uint8_t*)args;
-
-  sweep_protocol_cmd_param_packet_s packet = {.cmdByte1 = cmdBytes[0],      //
-                                              .cmdByte2 = cmdBytes[1],      //
-                                              .cmdParamByte1 = argBytes[0], //
-                                              .cmdParamByte2 = argBytes[1], //
-                                              .cmdParamTerm = '\n'};        //
+  sweep_protocol_cmd_param_packet_s packet = {.cmdByte1 = cmd[0],      //
+                                              .cmdByte2 = cmd[1],      //
+                                              .cmdParamByte1 = arg[0], //
+                                              .cmdParamByte2 = arg[1], //
+                                              .cmdParamTerm = '\n'};   //
 
   sweep_serial_error_s serialerror = NULL;
 
@@ -104,8 +99,8 @@ void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, c
   }
 }
 
-void sweep_protocol_read_response_header(sweep_serial_device_s serial, const void* cmd, sweep_protocol_response_header_s* header,
-                                         sweep_protocol_error_s* error) {
+void sweep_protocol_read_response_header(sweep_serial_device_s serial, const uint8_t cmd[static 2],
+                                         sweep_protocol_response_header_s* header, sweep_protocol_error_s* error) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
   SWEEP_ASSERT(header);
@@ -138,8 +133,8 @@ void sweep_protocol_read_response_header(sweep_serial_device_s serial, const voi
   }
 }
 
-void sweep_protocol_read_response_param(sweep_serial_device_s serial, const void* cmd, sweep_protocol_response_param_s* param,
-                                        sweep_protocol_error_s* error) {
+void sweep_protocol_read_response_param(sweep_serial_device_s serial, const uint8_t cmd[static 2],
+                                        sweep_protocol_response_param_s* param, sweep_protocol_error_s* error) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
   SWEEP_ASSERT(param);
@@ -196,7 +191,7 @@ void sweep_protocol_read_response_scan(sweep_serial_device_s serial, sweep_proto
   }
 }
 
-void sweep_protocol_read_response_info_motor(sweep_serial_device_s serial, const void* cmd,
+void sweep_protocol_read_response_info_motor(sweep_serial_device_s serial, const uint8_t cmd[static 2],
                                              sweep_protocol_response_info_motor_s* info, sweep_protocol_error_s* error) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
