@@ -272,6 +272,4 @@ R | R | LF
 
 #### (SENSOR -> HOST)
 
-R | R | Status | Sum | LF
-| --- | --- | ---| --- | ---  |
-
+No response
