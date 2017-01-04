@@ -78,6 +78,8 @@ Example: [LF] 0 0 [LF] = P
 **DS** - Start data acquisition  
 **DX** - Stop data acquisition  
 **MS** - Adjust Motor Speed  
+**LR** - Adjust LiDAR Sample Rate  
+**LI** - LiDAR Info  
 **MI** - Motor Information  
 **IV** - Version Info  
 **ID** - Device Info  
@@ -158,6 +160,42 @@ M |  S |  Speed(Hz) (2 bytes)  |  LF  |  Status  |  Sum  |  LF
 | --- | --- | ---| --- | --- | ---| --- |
 
 ---
+#### LR - Adjust LiDAR Sample Rate
+Default Sample Rate - 500-600Hz  
+
+#### (HOST -> SENSOR)
+
+L |  R |  Speed Parameter (2 bytes)  |  LF
+| --- | --- | ---| --- |
+
+Sample Rate Parameter Code:  
+01 = 500-600Hz  
+02 = 750-800Hz  
+03 = 1000-1050Hz  
+
+#### (SENSOR -> HOST)
+
+L |  R |  Sample Rate Code (2 bytes)  |  LF  |  Status  |  Sum  |  LF
+| --- | --- | ---| --- | ---| --- | --- | 
+
+---
+#### LI - LiDAR Information
+Returns current LiDAR Sample Rate Code  
+01 = 500-600Hz  
+02 = 750-800Hz  
+03 = 1000-1050Hz  
+
+#### (HOST -> SENSOR)
+
+L  |  I  |  LF
+| --- | --- | ---|
+
+#### (SENSOR -> HOST)
+
+L  |  I   |  Sample Rate Code (2 bytes)  |  LF  |
+| --- | --- | --- | --- |  
+
+---
 #### MI - Motor Information
 Returns current rotation frequency in Hz in ASCII 00 - 10 (increments of 1)
 
@@ -169,7 +207,7 @@ M  |  I  |  LF
 #### (SENSOR -> HOST)
 
 M  |  I   |  Speed(Hz) (2 bytes)  |  LF  |
-| --- | --- | ---| --- | --- |
+| --- | --- | ---| --- |
 
 ---
 #### IV - Version Details
