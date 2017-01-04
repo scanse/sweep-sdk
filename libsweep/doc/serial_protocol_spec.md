@@ -110,7 +110,13 @@ Data Block
 sync/error (1byte)  |  Azimuth - degrees(float) (2bytes)  |  Distance - cm(int) (2bytes)  |  Signal Strength (1byte)  | Checksum (1byte)
 | ------ | ------ | ------ | ------ | ------ |
 
-**sync / error** : 0 bit indicates the sync value, a value of 1 indicates the packet is the beginning of a new scan, a value of 0 indicates all other measurement packets. Bits 1-6 are reserved for error codes.
+**sync bit** :  
+0 bit indicates the sync value, a value of 1 indicates the packet is the beginning of a new scan, a value of 0 indicates all other measurement packets. Bits 1-6 are reserved for error codes, see below.
+
+**error code bits**  :   
+1st bit indicates whether or not there was a communication error with the LiDAR Module. A value of 1 indicates that there was an error, and a value of 0 indicates there was no error.
+
+bits 2-7 reserved for future use.
 
 **azimuth** : Angle that ranging was recorded at. 
 Azimuth is a float value - needs to be converted from 16bit int to float, use instructions at the top
