@@ -333,13 +333,4 @@ void sweep_device_reset(sweep_device_s device, sweep_error_s* error) {
     sweep_protocol_error_destruct(protocolerror);
     return;
   }
-
-  sweep_protocol_response_header_s response;
-  sweep_protocol_read_response_header(device->serial, SWEEP_PROTOCOL_RESET_DEVICE, &response, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to receive device reset command response");
-    sweep_protocol_error_destruct(protocolerror);
-    return;
-  }
 }
