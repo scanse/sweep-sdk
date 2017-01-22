@@ -19,10 +19,10 @@ typedef struct sweep_protocol_error {
 static sweep_protocol_error_s sweep_protocol_error_construct(const char* what) {
   SWEEP_ASSERT(what);
 
-  sweep_protocol_error_s out = malloc(sizeof(sweep_protocol_error));
+  sweep_protocol_error_s out = (sweep_protocol_error_s)malloc(sizeof(sweep_protocol_error));
   SWEEP_ASSERT(out && "out of memory during error reporting");
 
-  *out = (sweep_protocol_error){.what = what};
+  out->what = what;
   return out;
 }
 
@@ -68,9 +68,10 @@ void sweep_protocol_write_command(sweep_serial_device_s serial, const uint8_t cm
   SWEEP_ASSERT(cmd);
   SWEEP_ASSERT(error);
 
-  sweep_protocol_cmd_packet_s packet = {.cmdByte1 = cmd[0],    //
-                                        .cmdByte2 = cmd[1],    //
-                                        .cmdParamTerm = '\n'}; //
+  sweep_protocol_cmd_packet_s packet;
+  packet.cmdByte1 = cmd[0];    //
+  packet.cmdByte2 = cmd[1];    //
+  packet.cmdParamTerm = '\n';  //
 
   sweep_serial_error_s serialerror = NULL;
 
@@ -90,11 +91,12 @@ void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, c
   SWEEP_ASSERT(arg);
   SWEEP_ASSERT(error);
 
-  sweep_protocol_cmd_param_packet_s packet = {.cmdByte1 = cmd[0],      //
-                                              .cmdByte2 = cmd[1],      //
-                                              .cmdParamByte1 = arg[0], //
-                                              .cmdParamByte2 = arg[1], //
-                                              .cmdParamTerm = '\n'};   //
+  sweep_protocol_cmd_param_packet_s packet;
+  packet.cmdByte1 = cmd[0];      //
+  packet.cmdByte2 = cmd[1];      //
+  packet.cmdParamByte1 = arg[0]; //
+  packet.cmdParamByte2 = arg[1]; //
+  packet.cmdParamTerm = '\n';    //
 
   sweep_serial_error_s serialerror = NULL;
 

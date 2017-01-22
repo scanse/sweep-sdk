@@ -24,10 +24,10 @@ typedef struct sweep_serial_device { int32_t fd; } sweep_serial_device;
 static sweep_serial_error_s sweep_serial_error_construct(const char* what) {
   SWEEP_ASSERT(what);
 
-  sweep_serial_error_s out = malloc(sizeof(sweep_serial_error));
+  sweep_serial_error_s out = (sweep_serial_error_s)malloc(sizeof(sweep_serial_error));
   SWEEP_ASSERT(out && "out of memory during error reporting");
 
-  *out = (sweep_serial_error){.what = what};
+  out->what = what;
   return out;
 }
 
@@ -344,14 +344,14 @@ sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t bi
     return NULL;
   }
 
-  sweep_serial_device_s out = malloc(sizeof(sweep_serial_device));
+  sweep_serial_device_s out = (sweep_serial_device_s)malloc(sizeof(sweep_serial_device));
 
   if (out == NULL) {
     *error = sweep_serial_error_construct("oom during serial device creation");
     return NULL;
   }
 
-  *out = (sweep_serial_device){.fd = fd};
+  out->fd = fd;
 
   return out;
 }
