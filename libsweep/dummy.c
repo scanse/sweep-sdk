@@ -1,5 +1,5 @@
 #include "sweep.h"
-#include "time.h"
+#include "sweep_time.h"
 
 #include <stdlib.h>
 
