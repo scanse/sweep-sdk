@@ -112,27 +112,27 @@ typedef struct {
 
 // Read and write specific packets
 
-void sweep_protocol_write_command(sweep_serial_device_s serial, const uint8_t cmd[static 2], sweep_protocol_error_s* error);
+void sweep_protocol_write_command(sweep_serial_device_s serial, const uint8_t cmd[2], sweep_protocol_error_s* error);
 
-void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, const uint8_t cmd[static 2],
-                                                 const uint8_t arg[static 2], sweep_protocol_error_s* error);
+void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, const uint8_t cmd[2],
+                                                 const uint8_t arg[2], sweep_protocol_error_s* error);
 
-void sweep_protocol_read_response_header(sweep_serial_device_s serial, const uint8_t cmd[static 2],
+void sweep_protocol_read_response_header(sweep_serial_device_s serial, const uint8_t cmd[2],
                                          sweep_protocol_response_header_s* header, sweep_protocol_error_s* error);
 
-void sweep_protocol_read_response_param(sweep_serial_device_s serial, const uint8_t cmd[static 2],
+void sweep_protocol_read_response_param(sweep_serial_device_s serial, const uint8_t cmd[2],
                                         sweep_protocol_response_param_s* param, sweep_protocol_error_s* error);
 
 void sweep_protocol_read_response_scan(sweep_serial_device_s serial, sweep_protocol_response_scan_packet_s* scan,
                                        sweep_protocol_error_s* error);
 
-void sweep_protocol_read_response_info_motor(sweep_serial_device_s serial, const uint8_t cmd[static 2],
+void sweep_protocol_read_response_info_motor(sweep_serial_device_s serial, const uint8_t cmd[2],
                                              sweep_protocol_response_info_motor_s* info, sweep_protocol_error_s* error);
 
 // Some protocol conversion utilities
 inline float sweep_protocol_u16_to_f32(uint16_t v) { return ((float)(v >> 4u)) + (v & 15u) / 16.0f; }
 
-inline void sweep_protocol_speed_to_ascii_bytes(int32_t speed, uint8_t bytes[static 2]) {
+inline void sweep_protocol_speed_to_ascii_bytes(int32_t speed, uint8_t bytes[2]) {
   SWEEP_ASSERT(speed >= 0);
   SWEEP_ASSERT(speed <= 10);
   SWEEP_ASSERT(bytes);
@@ -147,7 +147,7 @@ inline void sweep_protocol_speed_to_ascii_bytes(int32_t speed, uint8_t bytes[sta
   bytes[1] = num2;
 }
 
-inline int32_t sweep_protocol_ascii_bytes_to_speed(const uint8_t bytes[static 2]) {
+inline int32_t sweep_protocol_ascii_bytes_to_speed(const uint8_t bytes[2]) {
   SWEEP_ASSERT(bytes);
 
   // Speed values are still ASCII codes, numbers begin at code point 48
