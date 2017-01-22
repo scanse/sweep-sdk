@@ -3,6 +3,14 @@
 
 #include "protocol.h"
 
+const uint8_t SWEEP_PROTOCOL_DATA_ACQUISITION_START[2] = { 'D', 'S' };
+const uint8_t SWEEP_PROTOCOL_DATA_ACQUISITION_STOP[2] = { 'D', 'X' };
+const uint8_t SWEEP_PROTOCOL_MOTOR_SPEED_ADJUST[2] = { 'M', 'S' };
+const uint8_t SWEEP_PROTOCOL_MOTOR_INFORMATION[2] = { 'M', 'I' };
+const uint8_t SWEEP_PROTOCOL_VERSION_INFORMATION[2] = { 'I', 'V' };
+const uint8_t SWEEP_PROTOCOL_DEVICE_INFORMATION[2] = { 'I', 'D' };
+const uint8_t SWEEP_PROTOCOL_RESET_DEVICE[2] = { 'R', 'R' };
+
 typedef struct sweep_protocol_error {
   const char* what; // always literal, do not free
 } sweep_protocol_error;

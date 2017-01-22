@@ -18,20 +18,13 @@ void sweep_protocol_error_destruct(sweep_protocol_error_s error);
 
 // Command Symbols
 
-#define SWEEP_PROTOCOL_DATA_ACQUISITION_START                                                                                    \
-  (const uint8_t[]) { 'D', 'S' }
-#define SWEEP_PROTOCOL_DATA_ACQUISITION_STOP                                                                                     \
-  (const uint8_t[]) { 'D', 'X' }
-#define SWEEP_PROTOCOL_MOTOR_SPEED_ADJUST                                                                                        \
-  (const uint8_t[]) { 'M', 'S' }
-#define SWEEP_PROTOCOL_MOTOR_INFORMATION                                                                                         \
-  (const uint8_t[]) { 'M', 'I' }
-#define SWEEP_PROTOCOL_VERSION_INFORMATION                                                                                       \
-  (const uint8_t[]) { 'I', 'V' }
-#define SWEEP_PROTOCOL_DEVICE_INFORMATION                                                                                        \
-  (const uint8_t[]) { 'I', 'D' }
-#define SWEEP_PROTOCOL_RESET_DEVICE                                                                                              \
-  (const uint8_t[]) { 'R', 'R' }
+extern const uint8_t SWEEP_PROTOCOL_DATA_ACQUISITION_START[2];
+extern const uint8_t SWEEP_PROTOCOL_DATA_ACQUISITION_STOP[2];
+extern const uint8_t SWEEP_PROTOCOL_MOTOR_SPEED_ADJUST[2];
+extern const uint8_t SWEEP_PROTOCOL_MOTOR_INFORMATION[2];
+extern const uint8_t SWEEP_PROTOCOL_VERSION_INFORMATION[2];
+extern const uint8_t SWEEP_PROTOCOL_DEVICE_INFORMATION[2];
+extern const uint8_t SWEEP_PROTOCOL_RESET_DEVICE[2];
 
 // Packets for communication
 
