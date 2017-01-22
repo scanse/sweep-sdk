@@ -1,7 +1,7 @@
 #include "sweep.h"
 #include "protocol.h"
 #include "serial.h"
-#include "time.h"
+#include "sweep_time.h"
 
 #include <stdlib.h>
 
