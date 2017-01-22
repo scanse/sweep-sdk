@@ -55,7 +55,7 @@ static uint8_t sweep_protocol_checksum_response_scan_packet(sweep_protocol_respo
   return checksum % 255;
 }
 
-void sweep_protocol_write_command(sweep_serial_device_s serial, const uint8_t cmd[static 2], sweep_protocol_error_s* error) {
+void sweep_protocol_write_command(sweep_serial_device_s serial, const uint8_t cmd[2], sweep_protocol_error_s* error) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
   SWEEP_ASSERT(error);
@@ -75,8 +75,8 @@ void sweep_protocol_write_command(sweep_serial_device_s serial, const uint8_t cm
   }
 }
 
-void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, const uint8_t cmd[static 2],
-                                                 const uint8_t arg[static 2], sweep_protocol_error_s* error) {
+void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, const uint8_t cmd[2],
+                                                 const uint8_t arg[2], sweep_protocol_error_s* error) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
   SWEEP_ASSERT(arg);
@@ -99,7 +99,7 @@ void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, c
   }
 }
 
-void sweep_protocol_read_response_header(sweep_serial_device_s serial, const uint8_t cmd[static 2],
+void sweep_protocol_read_response_header(sweep_serial_device_s serial, const uint8_t cmd[2],
                                          sweep_protocol_response_header_s* header, sweep_protocol_error_s* error) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
@@ -133,7 +133,7 @@ void sweep_protocol_read_response_header(sweep_serial_device_s serial, const uin
   }
 }
 
-void sweep_protocol_read_response_param(sweep_serial_device_s serial, const uint8_t cmd[static 2],
+void sweep_protocol_read_response_param(sweep_serial_device_s serial, const uint8_t cmd[2],
                                         sweep_protocol_response_param_s* param, sweep_protocol_error_s* error) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
@@ -191,7 +191,7 @@ void sweep_protocol_read_response_scan(sweep_serial_device_s serial, sweep_proto
   }
 }
 
-void sweep_protocol_read_response_info_motor(sweep_serial_device_s serial, const uint8_t cmd[static 2],
+void sweep_protocol_read_response_info_motor(sweep_serial_device_s serial, const uint8_t cmd[2],
                                              sweep_protocol_response_info_motor_s* info, sweep_protocol_error_s* error) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
