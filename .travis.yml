@@ -18,6 +18,13 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-6', 'cmake', 'python3', 'nodejs', 'npm']
+      env: CCOMPILER='g++-6' CXXCOMPILER='g++-6'
+
+    - os: linux
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
           packages: ['g++-5', 'cmake', 'python3', 'nodejs', 'npm']
       env: CCOMPILER='gcc-5' CXXCOMPILER='g++-5'
 
