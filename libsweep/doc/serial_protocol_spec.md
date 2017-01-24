@@ -19,17 +19,18 @@ This document outlines the communication protocol for the Scanse Sweep scanning 
 
 ---
 ### Naming Convention
-`Sensor:` Sweep Device
-`Host:` Controller (computer, microcontroller etc)
+`Sensor`: Sweep Device  
+`Host`:Controller (computer, microcontroller etc)
 
-In general, Sweep's communication protocol can be thought of as a set of `commands` and `receipts`. 
-`Command:` the term given to messages sent from the host to the sensor (host->sensor)
+In general, Sweep's communication protocol can be thought of as a set of `commands` and `receipts`.  
+`Command:` the term given to messages sent from the host to the sensor (host->sensor)  
 `Receipt:` the term given to messages sent from the sensor to the host (sensor -> host). 
 
 ---
 ### Data Encoding and Decoding
 
-The protocol design specifies that all transmitted bytes (both commands and receipts) are legible ASCII characters, in addition to CR and LF. This means that numeric codes (ex: motor speed code '05') are also transmitted as ASCII characters, and not decimal values. This design was chosen so that commands and receipts could be read directly from the terminal. 
+The protocol design specifies that all transmitted bytes (both commands and receipts) are legible ASCII characters, in addition to CR and LF. This means that numeric codes (ex: motor speed code '05') are also transmitted as ASCII characters, and not decimal values. This design was chosen so that commands and receipts could be read directly from the terminal.  
+
 **Note:** The only exception is the `Data Block` receipt, which must permit arbitrary byte values. See the Data Block receipt section for encoding. 
 
 ---
@@ -105,6 +106,7 @@ sync/error (1byte)  |  Azimuth - degrees(float) (2bytes)  |  Distance - cm(int) 
 The `Data Block` receipt is 7 bytes long and contains all the information about a single sensor reading.
 
 - **Sync/Error Byte**: The sync/error byte is multi-purpose, and encodes information about the rotation of the Sweep sensor, as well as any error information. Consider the individuals bits:
+    
     e6 | e5 | e4 | e3 | e2 | e1 | e0 | sync
     | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
 
@@ -142,8 +144,9 @@ M |  S |  Speed Parameter (2 bytes)  |  LF
 | --- | --- | ---| --- |
 
 Speed Parameter:
-00 - 10 :  10 different speed levels according to Hz, increments of 1. ie: 01,02,..  (Note: ASCII encoded, ie: '05' = 0x3035) 
-00 = Motor stopped
+00 - 10 :  10 different speed levels according to Hz, increments of 1. ie: 01,02,..  
+00 = Motor stopped  
+(Note: ASCII encoded, ie: '05' = 0x3035)  
 
 #### (SENSOR -> HOST)
 
@@ -190,7 +193,7 @@ L  |  I   |  Sample Rate Code (2 bytes)  |  LF  |
 
 ---
 #### MI - Motor Information
-* Returns current motor speed code 00 - 10. (ie: rotation frequency in Hz)
+* Returns current motor speed code 00 - 10. (ie: rotation frequency in Hz)  
 (Note: motor speed code is ASCII encoded, ie: in '05' = 0x3035)
 
 #### (HOST -> SENSOR)
