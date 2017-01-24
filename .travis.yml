@@ -2,7 +2,6 @@ language: generic
 sudo: required
 dist: trusty
 
-
 matrix:
   fast_finish: true
 
@@ -11,27 +10,37 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-6', 'cmake', 'python3', 'python3-pip', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
+          packages: ['g++-6', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
       env: CCOMPILER='gcc-6' CXXCOMPILER='g++-6'
 
     - os: linux
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-5', 'cmake', 'python3', 'python3-pip', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
+          packages: ['g++-5', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
       env: CCOMPILER='gcc-5' CXXCOMPILER='g++-5'
 
     - os: linux
       addons:
         apt:
           sources: ['llvm-toolchain-precise-3.8']
-          packages: ['clang-3.8', 'cmake', 'python3', 'python3-pip', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
+          packages: ['clang-3.8', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
       env: CCOMPILER='clang-3.8' CXXCOMPILER='clang++-3.8'
 
+    - os: osx
+      osx_image: xcode8.2
+      node_js: 4
+      env: CCOMPILER='clang' CXXCOMPILER='clang++'
+
+    - os: osx
+      osx_image: xcode8.2
+      node_js: 6
+      env: CCOMPILER='clang' CXXCOMPILER='clang++'
 
 before_install:
   - export CC=${CCOMPILER} CXX=${CXXCOMPILER}
-  - sudo update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then sudo update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10; fi
+  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew update && brew install python3; fi
 
 install:
   # Make sure building libsweep works
@@ -44,11 +53,10 @@ install:
   - cmake .. -DCMAKE_BUILD_TYPE=Debug -DDUMMY=On
   - cmake --build .
   - sudo cmake --build . --target install
-  - sudo ldconfig
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then sudo ldconfig; fi
   - popd
   # Install Python bindings
   - pushd sweeppy
-  - pip3 install setuptools # apparently this version of 3 doesn't have setuptools
   - sudo python2 setup.py install
   - sudo python3 setup.py install
   - popd

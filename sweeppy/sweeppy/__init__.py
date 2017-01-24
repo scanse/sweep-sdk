@@ -1,7 +1,8 @@
 import ctypes
+import ctypes.util
 import collections
 
-libsweep = ctypes.cdll.LoadLibrary('libsweep.so')
+libsweep = ctypes.cdll.LoadLibrary(ctypes.util.find_library('sweep'))
 
 libsweep.sweep_get_version.restype = ctypes.c_int32
 libsweep.sweep_get_version.argtypes = None
