@@ -25,10 +25,10 @@ typedef struct sweep_scan {
 static sweep_error_s sweep_error_construct(const char* what) {
   SWEEP_ASSERT(what);
 
-  sweep_error_s out = malloc(sizeof(sweep_error));
+  sweep_error_s out = (sweep_error_s)malloc(sizeof(sweep_error));
   SWEEP_ASSERT(out && "out of memory during error reporting");
 
-  *out = (sweep_error){.what = what};
+  out->what = what;
   return out;
 }
 
@@ -55,14 +55,16 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
   SWEEP_ASSERT(bitrate > 0);
   SWEEP_ASSERT(error);
 
-  sweep_device_s out = malloc(sizeof(sweep_device));
+  sweep_device_s out = (sweep_device_s)malloc(sizeof(sweep_device));
 
   if (out == NULL) {
     *error = sweep_error_construct("oom during sweep device creation");
     return NULL;
   }
 
-  *out = (sweep_device){.scanning = false, .motor_speed = 1, .nth_scan_request = 0};
+  out->scanning = false;
+  out->motor_speed = 1;
+  out->nth_scan_request = 0;
 
   return out;
 }
@@ -91,14 +93,15 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
 
-  sweep_scan_s out = malloc(sizeof(sweep_scan));
+  sweep_scan_s out = (sweep_scan_s)malloc(sizeof(sweep_scan));
 
   if (out == NULL) {
     *error = sweep_error_construct("oom during sweep device scan creation");
     return NULL;
   }
 
-  *out = (sweep_scan){.count = device->scanning ? 16 : 0, .nth = device->nth_scan_request};
+  out->count = device->scanning ? 16 : 0;
+  out->nth = device->nth_scan_request;
 
   device->nth_scan_request += 1;
 
