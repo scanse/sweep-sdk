@@ -1,7 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 
-#include "sweep_time.h"
 #include "sweep.h"
+#include "sweep_time.h"
 
 #include <errno.h>
 #include <time.h>

@@ -3,13 +3,13 @@
 
 #include "protocol.h"
 
-const uint8_t SWEEP_PROTOCOL_DATA_ACQUISITION_START[2] = { 'D', 'S' };
-const uint8_t SWEEP_PROTOCOL_DATA_ACQUISITION_STOP[2] = { 'D', 'X' };
-const uint8_t SWEEP_PROTOCOL_MOTOR_SPEED_ADJUST[2] = { 'M', 'S' };
-const uint8_t SWEEP_PROTOCOL_MOTOR_INFORMATION[2] = { 'M', 'I' };
-const uint8_t SWEEP_PROTOCOL_VERSION_INFORMATION[2] = { 'I', 'V' };
-const uint8_t SWEEP_PROTOCOL_DEVICE_INFORMATION[2] = { 'I', 'D' };
-const uint8_t SWEEP_PROTOCOL_RESET_DEVICE[2] = { 'R', 'R' };
+const uint8_t SWEEP_PROTOCOL_DATA_ACQUISITION_START[2] = {'D', 'S'};
+const uint8_t SWEEP_PROTOCOL_DATA_ACQUISITION_STOP[2] = {'D', 'X'};
+const uint8_t SWEEP_PROTOCOL_MOTOR_SPEED_ADJUST[2] = {'M', 'S'};
+const uint8_t SWEEP_PROTOCOL_MOTOR_INFORMATION[2] = {'M', 'I'};
+const uint8_t SWEEP_PROTOCOL_VERSION_INFORMATION[2] = {'I', 'V'};
+const uint8_t SWEEP_PROTOCOL_DEVICE_INFORMATION[2] = {'I', 'D'};
+const uint8_t SWEEP_PROTOCOL_RESET_DEVICE[2] = {'R', 'R'};
 
 typedef struct sweep_protocol_error {
   const char* what; // always literal, do not free
@@ -84,8 +84,8 @@ void sweep_protocol_write_command(sweep_serial_device_s serial, const uint8_t cm
   }
 }
 
-void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, const uint8_t cmd[2],
-                                                 const uint8_t arg[2], sweep_protocol_error_s* error) {
+void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, const uint8_t cmd[2], const uint8_t arg[2],
+                                                 sweep_protocol_error_s* error) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
   SWEEP_ASSERT(arg);

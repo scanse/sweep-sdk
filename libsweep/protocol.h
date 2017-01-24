@@ -107,8 +107,8 @@ typedef struct {
 
 void sweep_protocol_write_command(sweep_serial_device_s serial, const uint8_t cmd[2], sweep_protocol_error_s* error);
 
-void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, const uint8_t cmd[2],
-                                                 const uint8_t arg[2], sweep_protocol_error_s* error);
+void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, const uint8_t cmd[2], const uint8_t arg[2],
+                                                 sweep_protocol_error_s* error);
 
 void sweep_protocol_read_response_header(sweep_serial_device_s serial, const uint8_t cmd[2],
                                          sweep_protocol_response_header_s* header, sweep_protocol_error_s* error);
