@@ -17,6 +17,9 @@ int main() try {
       std::cout << "angle " << sample.angle << " distance " << sample.distance << " strength " << sample.signal_strength << "\n";
     }
   }
+
+  device.stop_scanning();
+
 } catch (const sweep::device_error& e) {
   std::cerr << "Error: " << e.what() << std::endl;
 }

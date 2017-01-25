@@ -95,6 +95,10 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
 void sweep_device_destruct(sweep_device_s device) {
   SWEEP_ASSERT(device);
 
+  sweep_error_s ignore = NULL;
+  sweep_device_stop_scanning(device, &ignore);
+  (void)ignore; // nothing we can do here
+
   sweep_serial_device_destruct(device->serial);
 
   free(device);

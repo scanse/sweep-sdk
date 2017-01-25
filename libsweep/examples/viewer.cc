@@ -113,6 +113,9 @@ int main() try {
       pointCloud = std::move(localPointCloud);
     }
   }
+
+  device.stop_scanning();
+
 } catch (const sweep::device_error& e) {
   std::cerr << "Error: " << e.what() << std::endl;
 }

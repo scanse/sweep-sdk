@@ -62,6 +62,10 @@ int main() {
     sweep_scan_destruct(scan);
   }
 
+  // Stop capturing scans
+  sweep_device_stop_scanning(sweep, &error);
+  check(error);
+
   // Shut down and cleanup Sweep device
   sweep_device_destruct(sweep);
   return EXIT_SUCCESS;

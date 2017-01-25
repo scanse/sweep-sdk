@@ -359,6 +359,10 @@ sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t bi
 void sweep_serial_device_destruct(sweep_serial_device_s serial) {
   SWEEP_ASSERT(serial);
 
+  sweep_serial_error_s ignore = NULL;
+  sweep_serial_device_flush(serial, &ignore);
+  (void)ignore; // nothing we can do here
+
   free(serial);
 }
 
