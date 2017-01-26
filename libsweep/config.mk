@@ -5,9 +5,9 @@ UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
   PREFIX ?= /usr
-  CFLAGS += -O2 -Wall -Wextra -pedantic -std=c99 -Wnonnull -fvisibility=hidden -fPIC -pthread
+  CXXFLAGS += -O2 -Wall -Wextra -pedantic -std=c++11 -fvisibility=hidden -fPIC -fno-rtti -fno-exceptions -pthread
   LDFLAGS += -shared -Wl,-soname,libsweep.so.$(VERSION_MAJOR)
-  LDLIBS += -lpthread
+  LDLIBS += -lstdc++ -lpthread
 else ifeq ($(UNAME), Darwin)
   $(error macOS build system support missing)
 else
