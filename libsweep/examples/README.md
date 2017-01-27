@@ -14,7 +14,7 @@ To build:
     mkdir build
     cd build
     cmake ..
-    cmake --build .
+    make
 ```
 
 **Note:** the viewer requires SFML2 to be installed.

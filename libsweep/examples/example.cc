@@ -14,7 +14,7 @@ int main() try {
     auto scan = device.get_scan();
 
     for (auto sample : scan.samples) {
-      std::cout << "angle " << sample.angle << " distance " << sample.distance << " strength " << sample.signal_strength << "\n";
+      std::cout << "Angle: " << sample.angle/1000.f << ", Distance: " << sample.distance << ", Signal Strength: " << sample.signal_strength << "\n";
     }
   }
 

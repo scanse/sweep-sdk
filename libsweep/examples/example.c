@@ -52,10 +52,11 @@ int main() {
     // For each sample in a full 360 degree scan print angle and distance.
     // In case you're doing expensive work here consider using a decoupled producer / consumer pattern.
     for (int32_t n = 0; n < sweep_scan_get_number_of_samples(scan); ++n) {
-      int32_t angle = sweep_scan_get_angle(scan, n);
+      // convert milli-degree (int) to degrees (float)
+      float angle = sweep_scan_get_angle(scan, n) / 1000.f;
       int32_t distance = sweep_scan_get_distance(scan, n);
       int32_t signal = sweep_scan_get_signal_strength(scan, n);
-      fprintf(stdout, "Angle %" PRId32 ", Distance %" PRId32 ", Signal Strength: %" PRId32 "\n", angle, distance, signal);
+      fprintf(stdout, "n: %d, Angle: %f, Distance: %d, Signal Strength: %d\n", n, angle, distance, signal);
     }
 
     // Cleanup scan response
