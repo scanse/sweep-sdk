@@ -14,7 +14,8 @@ int main() try {
     const sweep::scan scan = device.get_scan();
 
     for (const sweep::sample& sample : scan.samples) {
-      std::cout << "angle " << sample.angle << " distance " << sample.distance << " strength " << sample.signal_strength << "\n";
+      std::cout << "Angle: " << sample.angle / 1000.f << ", Distance: " << sample.distance << ", Strength "
+                << sample.signal_strength << "\n";
     }
   }
 

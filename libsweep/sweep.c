@@ -23,18 +23,18 @@ typedef struct sweep_device {
  * Struct: sweep_scan
  * ------------------
  * Contains the data for sensor readings in a scan
- * 
+ *
  *  angle: array of azimuth values (1 for each reading)
  *        (in millidegrees, ie: 241.375deg stored as 241375millideg)
  *  distance: array of range values (1 for each reading)
  *        (in centimeters)
  *  signal_strength: array of signal strength values (1 for each reading)
  *        (integer values between 0:255, higher is better)
- *  count: number of sensor readings in the scan 
+ *  count: number of sensor readings in the scan
  */
 typedef struct sweep_scan {
-  int32_t angle[SWEEP_MAX_SAMPLES]; // in millidegrees 
-  int32_t distance[SWEEP_MAX_SAMPLES]; // in cm
+  int32_t angle[SWEEP_MAX_SAMPLES];           // in millidegrees
+  int32_t distance[SWEEP_MAX_SAMPLES];        // in cm
   int32_t signal_strength[SWEEP_MAX_SAMPLES]; // range 0:255
   int32_t count;
 } sweep_scan;
@@ -242,11 +242,11 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
   for (int32_t it = 0; it < last - first; ++it) {
     // convert the angle from its compact serial format to a float value in degrees
     // then convert from degrees to milli-degrees, and store it in a signed int32_t
-    out->angle[it] = (int32_t) (sweep_protocol_u16_to_f32(responses[first + it].angle) * 1000.f);
+    out->angle[it] = (int32_t)(sweep_protocol_u16_to_f32(responses[first + it].angle) * 1000.f);
     // store the distance in a signed int32
-    out->distance[it] = (int32_t) responses[first + it].distance;
+    out->distance[it] = (int32_t)responses[first + it].distance;
     // store the signal strength in a signed int32
-    out->signal_strength[it] = (int32_t) responses[first + it].signal_strength;
+    out->signal_strength[it] = (int32_t)responses[first + it].signal_strength;
   }
 
   return out;
