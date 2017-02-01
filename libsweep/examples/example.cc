@@ -11,10 +11,10 @@ int main() try {
   device.start_scanning();
 
   for (auto n = 0; n < 10; ++n) {
-    auto scan = device.get_scan();
+    const sweep::scan scan = device.get_scan();
 
-    for (auto sample : scan.samples) {
-      std::cout << "Angle: " << sample.angle/1000.f << ", Distance: " << sample.distance << ", Signal Strength: " << sample.signal_strength << "\n";
+    for (const sweep::sample& sample : scan.samples) {
+      std::cout << "angle " << sample.angle << " distance " << sample.distance << " strength " << sample.signal_strength << "\n";
     }
   }
 
