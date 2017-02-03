@@ -1,26 +1,46 @@
 include config.mk
 
-all: libsweep.so
+# Default will build the normal libsweep library (not dummy)
+all: buildOutputDirs $(BIN_DIR)/$(target)
 
-libsweep.so: sweep.o protocol.o serial_unix.o time_unix.o
-	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+# Creates the output directories for the generated files
+buildOutputDirs:
+	$(MKDIR_P) $(BIN_DIR)
+	$(MKDIR_P) $(OBJ_ARCH_DIR)
 
-dummy: dummy.o time_unix.o
-	$(CC) $(LDFLAGS) -o libsweep.so $^ $(LDLIBS)
+# Sweep library (format encoded by $(target))
+$(BIN_DIR)/$(target): $(OBJ_FILES)
+	$(LINKER) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
+# Object files
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) $(LDFLAGS) $(INC_DIRS) -c $< -o $@
+
+# Create the output directories, and then build the dummy
+dummy: buildOutputDirs dummy_build
+
+# build the dummy libsweep library
+dummy_build: $(DUMMY_OBJ_FILES)
+	$(LINKER) $(CFLAGS) $(LDFLAGS) -o $(BIN_DIR)/$(target) $^ $(LDLIBS)
 
 install:
-	mkdir -p $(PREFIX)/include/sweep
-	install -m 0644 sweep.h $(PREFIX)/include/sweep
-	install -m 0644 sweep.hpp $(PREFIX)/include/sweep
-	mkdir -p $(PREFIX)/lib
-	install -m 0644 libsweep.so $(PREFIX)/lib
-	ln -sf $(PREFIX)/lib/libsweep.so $(PREFIX)/lib/libsweep.so.$(VERSION_MAJOR)
-	ln -sf $(PREFIX)/lib/libsweep.so $(PREFIX)/lib/libsweep.so.$(VERSION_MAJOR).$(VERSION_MINOR)
+	$(MKDIR_P) $(INSTALL_DIR_INCLUDES)
+	install -m 0644 $(INC_DIR)/sweep.h $(INSTALL_DIR_INCLUDES)
+	install -m 0644 $(INC_DIR)/sweep.hpp $(INSTALL_DIR_INCLUDES)
+	$(MKDIR_P) $(INSTALL_DIR_LIB)
+	install -m 0644 $(BIN_DIR)/$(target) $(INSTALL_DIR_LIB)
+	ln -sf $(INSTALL_DIR_LIB)/$(target) $(INSTALL_DIR_LIB)/$(target).$(VERSION_MAJOR)
+	ln -sf $(INSTALL_DIR_LIB)/$(target) $(INSTALL_DIR_LIB)/$(target).$(VERSION_MAJOR).$(VERSION_MINOR)
+
+uninstall:
+	@$(RM) $(INSTALL_DIR_LIB)/libsweep*
+	@$(RM) $(INSTALL_DIR_INCLUDES)/sweep*
 
 watch:
 	while ! inotifywait -e modify *.c *.h; do make; done
 
 clean:
 	@$(RM) *.so *.o
+	@$(RM) -rf bin obj
 
 .PHONY: clean install watch

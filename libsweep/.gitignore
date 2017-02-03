@@ -1,3 +1,5 @@
 a.out
 *.so
 *.o
+obj/
+bin/
