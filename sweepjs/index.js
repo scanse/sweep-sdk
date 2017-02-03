@@ -8,7 +8,7 @@ var util = require('util')
 if (require.main === module) {
   console.log('self-testing module');
 
-  var sweep = new sweepjs.Sweep();
+  var sweep = new sweepjs.Sweep("/dev/ttyUSB0");
 
   sweep.startScanning();
 

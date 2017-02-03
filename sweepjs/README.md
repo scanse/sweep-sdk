@@ -14,7 +14,7 @@ See the [examples](examples) directory for an example streaming data from the de
 ### Interface
 
 ```javascript
-sweep = new Sweep();
+sweep = new Sweep("/dev/ttyUSB0");
 
 sweep.startScanning();
 sweep.stopScanning();
