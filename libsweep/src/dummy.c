@@ -44,10 +44,11 @@ void sweep_error_destruct(sweep_error_s error) {
   free(error);
 }
 
-sweep_device_s sweep_device_construct_simple(sweep_error_s* error) {
+sweep_device_s sweep_device_construct_simple(const char* port, sweep_error_s* error) {
+  SWEEP_ASSERT(port);
   SWEEP_ASSERT(error);
 
-  return sweep_device_construct("/dev/ttyUSB0", 115200, error);
+  return sweep_device_construct(port, 115200, error);
 }
 
 sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_error_s* error) {
@@ -105,7 +106,7 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
 
   device->nth_scan_request += 1;
 
-  sweep_sleep_microseconds(0.1 /*second*/ * 1000 * 1000);
+  sweep_sleep_milliseconds(0.1 /*second*/ * 1000);
 
   return out;
 }

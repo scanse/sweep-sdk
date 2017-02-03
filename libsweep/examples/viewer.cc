@@ -25,7 +25,12 @@ static const sf::Color kColorDenim{80, 102, 127};
 using PointCloud = std::vector<sf::CircleShape>;
 using PointCloudMutex = std::mutex;
 
-int main() try {
+int main(int argc, char* argv[]) try {
+  if (argc != 2) {
+    std::cout << "Usage: ./example-viewer <portname>\n";
+    return 1;
+  }
+
   sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Example Viewer for Scanse Sweep LiDAR");
   window.setFramerateLimit(30);
   window.setActive(false); // activated on render thread
@@ -60,7 +65,7 @@ int main() try {
   thread.launch();
 
   // Now start scanning in the second thread, swapping in new points for every scan
-  sweep::sweep device;
+  sweep::sweep device(argv[1]);
   device.start_scanning();
 
   sweep::scan scan;

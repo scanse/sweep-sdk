@@ -5,8 +5,13 @@
 
 #include <sweep/sweep.hpp>
 
-int main() try {
-  sweep::sweep device;
+int main(int argc, char* argv[]) try {
+  if (argc != 2) {
+    std::cout << "Usage: ./example-c++ <portname>\n";
+    return 1;
+  }
+
+  sweep::sweep device(argv[1]);
 
   device.start_scanning();
 

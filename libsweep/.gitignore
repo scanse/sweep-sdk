@@ -1,5 +1,6 @@
 a.out
 *.so
 *.o
+*.dll
 obj/
 bin/

@@ -8,7 +8,7 @@ buildOutputDirs:
 	$(MKDIR_P) $(BIN_DIR)
 	$(MKDIR_P) $(OBJ_ARCH_DIR)
 
-# Sweep library (format encoded by $(target))
+# Sweep library .dll or .so (format included in $(target))
 $(BIN_DIR)/$(target): $(OBJ_FILES)
 	$(LINKER) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
@@ -40,7 +40,7 @@ watch:
 	while ! inotifywait -e modify *.c *.h; do make; done
 
 clean:
-	@$(RM) *.so *.o
+	@$(RM) *.so *.o *.dll
 	@$(RM) -rf bin obj
 
 .PHONY: clean install watch
