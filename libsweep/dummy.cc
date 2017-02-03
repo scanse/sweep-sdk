@@ -1,7 +1,8 @@
 #include "sweep.h"
-#include "sweep_time.h"
 
 #include <stdlib.h>
+#include <chrono>
+#include <thread>
 
 int32_t sweep_get_version(void) { return SWEEP_VERSION; }
 bool sweep_is_abi_compatible(void) { return sweep_get_version() >> 16u == SWEEP_VERSION_MAJOR; }
@@ -105,7 +106,8 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
 
   device->nth_scan_request += 1;
 
-  sweep_sleep_microseconds(0.1 /*second*/ * 1000 * 1000);
+  // pause for 0.1 second
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   return out;
 }

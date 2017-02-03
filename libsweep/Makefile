@@ -2,10 +2,10 @@ include config.mk
 
 all: libsweep.so
 
-libsweep.so: sweep.o protocol.o serial_unix.o time_unix.o
+libsweep.so: sweep.o protocol.o serial_unix.o
 	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-dummy: dummy.o time_unix.o
+dummy: dummy.o
 	$(CC) $(LDFLAGS) -o libsweep.so $^ $(LDLIBS)
 
 install:

@@ -1,9 +1,10 @@
 #include "sweep.h"
 #include "protocol.h"
 #include "serial.h"
-#include "sweep_time.h"
 
 #include <stdlib.h>
+#include <chrono>
+#include <thread>
 
 int32_t sweep_get_version(void) { return SWEEP_VERSION; }
 bool sweep_is_abi_compatible(void) { return sweep_get_version() >> 16u == SWEEP_VERSION_MAJOR; }
@@ -148,7 +149,7 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
     return;
   }
 
-  sweep_sleep_microseconds(5000);
+  std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
   sweep_serial_error_s serialerror = NULL;
   sweep_serial_device_flush(device->serial, &serialerror);
