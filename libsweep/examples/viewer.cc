@@ -3,7 +3,6 @@
 
 #include <cmath>
 
-#include <algorithm>
 #include <iostream>
 #include <mutex>
 #include <utility>
@@ -15,7 +14,7 @@
 #include <SFML/Window.hpp>
 
 // Zoom into 5x5 meter area
-const constexpr auto kMaxLaserDistance = 5 * 100;
+const constexpr auto kMaxLaserDistance = 5 * 100.;
 
 // Use cream for the background and denim for points
 static const sf::Color kColorCream{250, 240, 230};
@@ -77,8 +76,11 @@ int main() try {
     for (auto sample : scan.samples) {
       const constexpr auto kDegreeToRadian = 0.017453292519943295;
 
-      // Cap distance for zooming in
-      const auto distance = static_cast<double>(std::min(sample.distance, kMaxLaserDistance));
+      const auto distance = static_cast<double>(sample.distance);
+
+      // Discard samples above our we zoomed-in view box
+      if (distance > kMaxLaserDistance)
+        continue;
 
       // From milli degree to degree and adjust to device orientation
       const auto degree = std::fmod((static_cast<double>(sample.angle) / 1000. + 90.), 360.);
