@@ -37,6 +37,8 @@ typedef struct {
   uint8_t cmdParamTerm;
 } SWEEP_PACKED cmd_packet_s;
 
+static_assert(sizeof(cmd_packet_s) == 3, "cmd packet size mismatch");
+
 typedef struct {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
@@ -44,6 +46,8 @@ typedef struct {
   uint8_t cmdParamByte2;
   uint8_t cmdParamTerm;
 } SWEEP_PACKED cmd_param_packet_s;
+
+static_assert(sizeof(cmd_param_packet_s) == 5, "cmd param packet size mismatch");
 
 typedef struct {
   uint8_t cmdByte1;
@@ -53,6 +57,8 @@ typedef struct {
   uint8_t cmdSum;
   uint8_t term1;
 } SWEEP_PACKED response_header_s;
+
+static_assert(sizeof(response_header_s) == 6, "response header size mismatch");
 
 typedef struct {
   uint8_t cmdByte1;
@@ -66,6 +72,8 @@ typedef struct {
   uint8_t term2;
 } SWEEP_PACKED response_param_s;
 
+static_assert(sizeof(response_param_s) == 9, "response param size mismatch");
+
 typedef struct {
   uint8_t sync_error;
   uint16_t angle; // see u16_to_f32
@@ -73,6 +81,8 @@ typedef struct {
   uint8_t signal_strength;
   uint8_t checksum;
 } SWEEP_PACKED response_scan_packet_s;
+
+static_assert(sizeof(response_scan_packet_s) == 7, "response scan packet size mismatch");
 
 typedef struct {
   uint8_t cmdByte1;
@@ -85,6 +95,8 @@ typedef struct {
   uint8_t sample_rate[4];
   uint8_t term;
 } SWEEP_PACKED response_info_device_s;
+
+static_assert(sizeof(response_info_device_s) == 18, "response info device size mismatch");
 
 typedef struct {
   uint8_t cmdByte1;
@@ -99,12 +111,16 @@ typedef struct {
   uint8_t term;
 } SWEEP_PACKED response_info_version_s;
 
+static_assert(sizeof(response_info_version_s) == 21, "response info version size mismatch");
+
 typedef struct {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
   uint8_t motor_speed[2];
   uint8_t term;
 } SWEEP_PACKED response_info_motor_s;
+
+static_assert(sizeof(response_info_motor_s) == 5, "response info motor size mismatch");
 
 // Read and write specific packets
 
