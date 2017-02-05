@@ -15,7 +15,7 @@
 #include <unistd.h>
 
 typedef struct sweep_serial_error {
-  const char* what; // always literal, do not free
+  const char* what; // always literal, do not deallocate
 } sweep_serial_error;
 
 typedef struct sweep_serial_device { int32_t fd; } sweep_serial_device;
@@ -24,10 +24,7 @@ typedef struct sweep_serial_device { int32_t fd; } sweep_serial_device;
 static sweep_serial_error_s sweep_serial_error_construct(const char* what) {
   SWEEP_ASSERT(what);
 
-  sweep_serial_error_s out = (sweep_serial_error_s)malloc(sizeof(sweep_serial_error));
-  SWEEP_ASSERT(out && "out of memory during error reporting");
-
-  out->what = what;
+  auto out = new sweep_serial_error{what};
   return out;
 }
 
@@ -40,7 +37,7 @@ const char* sweep_serial_error_message(sweep_serial_error_s error) {
 void sweep_serial_error_destruct(sweep_serial_error_s error) {
   SWEEP_ASSERT(error);
 
-  free(error);
+  delete error;
 }
 
 static speed_t sweep_serial_detail_get_baud(int32_t bitrate, sweep_serial_error_s* error) {
@@ -252,7 +249,7 @@ static bool sweep_serial_detail_wait_readable(sweep_serial_device_s serial, swee
   FD_ZERO(&readfds);
   FD_SET(serial->fd, &readfds);
 
-  int32_t ret = select(serial->fd + 1, &readfds, NULL, NULL, NULL);
+  int32_t ret = select(serial->fd + 1, &readfds, nullptr, nullptr, nullptr);
 
   if (ret == -1) {
     // Select was interrupted
@@ -282,19 +279,19 @@ sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t bi
 
   if (fd == -1) {
     *error = sweep_serial_error_construct("opening serial port failed");
-    return NULL;
+    return nullptr;
   }
 
   if (!isatty(fd)) {
     *error = sweep_serial_error_construct("serial port is not a TTY");
-    return NULL;
+    return nullptr;
   }
 
   struct termios options;
 
   if (tcgetattr(fd, &options) == -1) {
     *error = sweep_serial_error_construct("querying terminal options failed");
-    return NULL;
+    return nullptr;
   }
 
   // Input Flags
@@ -316,12 +313,12 @@ sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t bi
   options.c_cflag &= ~(PARENB | CSTOPB | CSIZE);
 
   // setup baud rate
-  sweep_serial_error_s bauderror = NULL;
+  sweep_serial_error_s bauderror = nullptr;
   speed_t baud = sweep_serial_detail_get_baud(bitrate, &bauderror);
 
   if (bauderror) {
     *error = bauderror;
-    return NULL;
+    return nullptr;
   }
 
   cfsetispeed(&options, baud);
@@ -330,7 +327,7 @@ sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t bi
   // flush the port
   if (tcflush(fd, TCIFLUSH) == -1) {
     *error = sweep_serial_error_construct("flushing the serial port failed");
-    return NULL;
+    return nullptr;
   }
 
   // set port attributes
@@ -341,29 +338,21 @@ sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t bi
       SWEEP_ASSERT(false && "closing file descriptor during error handling failed");
     }
 
-    return NULL;
+    return nullptr;
   }
 
-  sweep_serial_device_s out = (sweep_serial_device_s)malloc(sizeof(sweep_serial_device));
-
-  if (out == NULL) {
-    *error = sweep_serial_error_construct("oom during serial device creation");
-    return NULL;
-  }
-
-  out->fd = fd;
-
+  auto out = new sweep_serial_device{fd};
   return out;
 }
 
 void sweep_serial_device_destruct(sweep_serial_device_s serial) {
   SWEEP_ASSERT(serial);
 
-  sweep_serial_error_s ignore = NULL;
+  sweep_serial_error_s ignore = nullptr;
   sweep_serial_device_flush(serial, &ignore);
   (void)ignore; // nothing we can do here
 
-  free(serial);
+  delete serial;
 }
 
 void sweep_serial_device_read(sweep_serial_device_s serial, void* to, int32_t len, sweep_serial_error_s* error) {
@@ -375,7 +364,7 @@ void sweep_serial_device_read(sweep_serial_device_s serial, void* to, int32_t le
   // the following implements reliable full read xor error
   int32_t bytes_read = 0;
 
-  sweep_serial_error_s waiterror = NULL;
+  sweep_serial_error_s waiterror = nullptr;
 
   while (bytes_read < len) {
     if (sweep_serial_detail_wait_readable(serial, &waiterror) && !waiterror) {

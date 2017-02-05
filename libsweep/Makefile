@@ -18,7 +18,7 @@ install:
 	ln -sf $(PREFIX)/lib/libsweep.so $(PREFIX)/lib/libsweep.so.$(VERSION_MAJOR).$(VERSION_MINOR)
 
 watch:
-	while ! inotifywait -e modify *.c *.h; do make; done
+	while inotifywait -e modify *.cc *.h; do make; done
 
 clean:
 	@$(RM) *.so *.o

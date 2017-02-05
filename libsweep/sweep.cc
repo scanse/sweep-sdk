@@ -2,7 +2,6 @@
 #include "protocol.h"
 #include "serial.h"
 
-#include <stdlib.h>
 #include <chrono>
 #include <thread>
 
@@ -10,7 +9,7 @@ int32_t sweep_get_version(void) { return SWEEP_VERSION; }
 bool sweep_is_abi_compatible(void) { return sweep_get_version() >> 16u == SWEEP_VERSION_MAJOR; }
 
 typedef struct sweep_error {
-  const char* what; // always literal, do not free
+  const char* what; // always literal, do not deallocate
 } sweep_error;
 
 typedef struct sweep_device {
@@ -31,10 +30,7 @@ typedef struct sweep_scan {
 static sweep_error_s sweep_error_construct(const char* what) {
   SWEEP_ASSERT(what);
 
-  sweep_error_s out = (sweep_error_s)malloc(sizeof(sweep_error));
-  SWEEP_ASSERT(out && "out of memory during error reporting");
-
-  out->what = what;
+  auto out = new sweep_error{what};
   return out;
 }
 
@@ -47,7 +43,7 @@ const char* sweep_error_message(sweep_error_s error) {
 void sweep_error_destruct(sweep_error_s error) {
   SWEEP_ASSERT(error);
 
-  free(error);
+  delete error;
 }
 
 sweep_device_s sweep_device_construct_simple(sweep_error_s* error) {
@@ -61,33 +57,24 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
   SWEEP_ASSERT(bitrate > 0);
   SWEEP_ASSERT(error);
 
-  sweep_serial_error_s serialerror = NULL;
+  sweep_serial_error_s serialerror = nullptr;
   sweep_serial_device_s serial = sweep_serial_device_construct(port, bitrate, &serialerror);
 
   if (serialerror) {
     *error = sweep_error_construct(sweep_serial_error_message(serialerror));
     sweep_serial_error_destruct(serialerror);
-    return NULL;
+    return nullptr;
   }
 
-  sweep_device_s out = (sweep_device_s)malloc(sizeof(sweep_device));
+  auto out = new sweep_device{serial, /*is_scanning=*/true};
 
-  if (out == NULL) {
-    *error = sweep_error_construct("oom during sweep device creation");
-    sweep_serial_device_destruct(serial);
-    return NULL;
-  }
-
-  out->serial = serial;
-  out->is_scanning = true;
-
-  sweep_error_s stoperror = NULL;
+  sweep_error_s stoperror = nullptr;
   sweep_device_stop_scanning(out, &stoperror);
 
   if (stoperror) {
     *error = stoperror;
     sweep_device_destruct(out);
-    return NULL;
+    return nullptr;
   }
 
   return out;
@@ -96,13 +83,13 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
 void sweep_device_destruct(sweep_device_s device) {
   SWEEP_ASSERT(device);
 
-  sweep_error_s ignore = NULL;
+  sweep_error_s ignore = nullptr;
   sweep_device_stop_scanning(device, &ignore);
   (void)ignore; // nothing we can do here
 
   sweep_serial_device_destruct(device->serial);
 
-  free(device);
+  delete device;
 }
 
 void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
@@ -112,7 +99,7 @@ void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
   if (device->is_scanning)
     return;
 
-  sweep_protocol_error_s protocolerror = NULL;
+  sweep_protocol_error_s protocolerror = nullptr;
   sweep_protocol_write_command(device->serial, SWEEP_PROTOCOL_DATA_ACQUISITION_START, &protocolerror);
 
   if (protocolerror) {
@@ -140,7 +127,7 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
   if (!device->is_scanning)
     return;
 
-  sweep_protocol_error_s protocolerror = NULL;
+  sweep_protocol_error_s protocolerror = nullptr;
   sweep_protocol_write_command(device->serial, SWEEP_PROTOCOL_DATA_ACQUISITION_STOP, &protocolerror);
 
   if (protocolerror) {
@@ -149,9 +136,10 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
     return;
   }
 
+  // Wait until device stopped sending
   std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
-  sweep_serial_error_s serialerror = NULL;
+  sweep_serial_error_s serialerror = nullptr;
   sweep_serial_device_flush(device->serial, &serialerror);
 
   if (serialerror) {
@@ -184,7 +172,7 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
 
-  sweep_protocol_error_s protocolerror = NULL;
+  sweep_protocol_error_s protocolerror = nullptr;
 
   sweep_protocol_response_scan_packet_s responses[SWEEP_MAX_SAMPLES];
 
@@ -197,7 +185,7 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
     if (protocolerror) {
       *error = sweep_error_construct("unable to receive sweep scan response");
       sweep_protocol_error_destruct(protocolerror);
-      return NULL;
+      return nullptr;
     }
 
     // Only gather a full scan. We could improve this logic to improve on throughput
@@ -215,12 +203,7 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
     }
   }
 
-  sweep_scan_s out = (sweep_scan_s)malloc(sizeof(sweep_scan));
-
-  if (out == NULL) {
-    *error = sweep_error_construct("oom during sweep scan creation");
-    return NULL;
-  }
+  auto out = new sweep_scan;
 
   SWEEP_ASSERT(last - first >= 0);
   SWEEP_ASSERT(last - first < SWEEP_MAX_SAMPLES);
@@ -269,14 +252,14 @@ int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample) {
 void sweep_scan_destruct(sweep_scan_s scan) {
   SWEEP_ASSERT(scan);
 
-  free(scan);
+  delete scan;
 }
 
 int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
 
-  sweep_protocol_error_s protocolerror = NULL;
+  sweep_protocol_error_s protocolerror = nullptr;
 
   sweep_protocol_write_command(device->serial, SWEEP_PROTOCOL_MOTOR_INFORMATION, &protocolerror);
 
@@ -308,7 +291,7 @@ void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error
   uint8_t args[2] = {0};
   sweep_protocol_speed_to_ascii_bytes(hz, args);
 
-  sweep_protocol_error_s protocolerror = NULL;
+  sweep_protocol_error_s protocolerror = nullptr;
 
   sweep_protocol_write_command_with_arguments(device->serial, SWEEP_PROTOCOL_MOTOR_SPEED_ADJUST, args, &protocolerror);
 
@@ -332,7 +315,7 @@ void sweep_device_reset(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
 
-  sweep_protocol_error_s protocolerror = NULL;
+  sweep_protocol_error_s protocolerror = nullptr;
 
   sweep_protocol_write_command(device->serial, SWEEP_PROTOCOL_RESET_DEVICE, &protocolerror);
 

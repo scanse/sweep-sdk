@@ -12,17 +12,14 @@ const uint8_t SWEEP_PROTOCOL_DEVICE_INFORMATION[2] = {'I', 'D'};
 const uint8_t SWEEP_PROTOCOL_RESET_DEVICE[2] = {'R', 'R'};
 
 typedef struct sweep_protocol_error {
-  const char* what; // always literal, do not free
+  const char* what; // always literal, do not deallocate
 } sweep_protocol_error;
 
 // Constructor hidden from users
 static sweep_protocol_error_s sweep_protocol_error_construct(const char* what) {
   SWEEP_ASSERT(what);
 
-  sweep_protocol_error_s out = (sweep_protocol_error_s)malloc(sizeof(sweep_protocol_error));
-  SWEEP_ASSERT(out && "out of memory during error reporting");
-
-  out->what = what;
+  auto out = new sweep_protocol_error{what};
   return out;
 }
 
@@ -35,7 +32,7 @@ const char* sweep_protocol_error_message(sweep_protocol_error_s error) {
 void sweep_protocol_error_destruct(sweep_protocol_error_s error) {
   SWEEP_ASSERT(error);
 
-  free(error);
+  delete error;
 }
 
 static uint8_t sweep_protocol_checksum_response_header(sweep_protocol_response_header_s* v) {
@@ -73,7 +70,7 @@ void sweep_protocol_write_command(sweep_serial_device_s serial, const uint8_t cm
   packet.cmdByte2 = cmd[1];
   packet.cmdParamTerm = '\n';
 
-  sweep_serial_error_s serialerror = NULL;
+  sweep_serial_error_s serialerror = nullptr;
 
   sweep_serial_device_write(serial, &packet, sizeof(sweep_protocol_cmd_packet_s), &serialerror);
 
@@ -98,7 +95,7 @@ void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, c
   packet.cmdParamByte2 = arg[1];
   packet.cmdParamTerm = '\n';
 
-  sweep_serial_error_s serialerror = NULL;
+  sweep_serial_error_s serialerror = nullptr;
 
   sweep_serial_device_write(serial, &packet, sizeof(sweep_protocol_cmd_param_packet_s), &serialerror);
 
@@ -118,7 +115,7 @@ void sweep_protocol_read_response_header(sweep_serial_device_s serial, const uin
 
   const uint8_t* cmdBytes = (const uint8_t*)cmd;
 
-  sweep_serial_error_s serialerror = NULL;
+  sweep_serial_error_s serialerror = nullptr;
 
   sweep_serial_device_read(serial, header, sizeof(sweep_protocol_response_header_s), &serialerror);
 
@@ -152,7 +149,7 @@ void sweep_protocol_read_response_param(sweep_serial_device_s serial, const uint
 
   const uint8_t* cmdBytes = (const uint8_t*)cmd;
 
-  sweep_serial_error_s serialerror = NULL;
+  sweep_serial_error_s serialerror = nullptr;
 
   sweep_serial_device_read(serial, param, sizeof(sweep_protocol_response_param_s), &serialerror);
 
@@ -183,7 +180,7 @@ void sweep_protocol_read_response_scan(sweep_serial_device_s serial, sweep_proto
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(error);
 
-  sweep_serial_error_s serialerror = NULL;
+  sweep_serial_error_s serialerror = nullptr;
 
   sweep_serial_device_read(serial, scan, sizeof(sweep_protocol_response_scan_packet_s), &serialerror);
 
@@ -210,7 +207,7 @@ void sweep_protocol_read_response_info_motor(sweep_serial_device_s serial, const
 
   const uint8_t* cmdBytes = (const uint8_t*)cmd;
 
-  sweep_serial_error_s serialerror = NULL;
+  sweep_serial_error_s serialerror = nullptr;
 
   sweep_serial_device_read(serial, info, sizeof(sweep_protocol_response_info_motor_s), &serialerror);
 

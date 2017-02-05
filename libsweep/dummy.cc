@@ -1,6 +1,5 @@
 #include "sweep.h"
 
-#include <stdlib.h>
 #include <chrono>
 #include <thread>
 
@@ -8,7 +7,7 @@ int32_t sweep_get_version(void) { return SWEEP_VERSION; }
 bool sweep_is_abi_compatible(void) { return sweep_get_version() >> 16u == SWEEP_VERSION_MAJOR; }
 
 typedef struct sweep_error {
-  const char* what; // always literal, do not free
+  const char* what; // always literal, do not deallocate
 } sweep_error;
 
 typedef struct sweep_device {
@@ -22,17 +21,6 @@ typedef struct sweep_scan {
   int32_t nth;
 } sweep_scan;
 
-// Constructor hidden from users
-static sweep_error_s sweep_error_construct(const char* what) {
-  SWEEP_ASSERT(what);
-
-  sweep_error_s out = (sweep_error_s)malloc(sizeof(sweep_error));
-  SWEEP_ASSERT(out && "out of memory during error reporting");
-
-  out->what = what;
-  return out;
-}
-
 const char* sweep_error_message(sweep_error_s error) {
   SWEEP_ASSERT(error);
 
@@ -42,7 +30,7 @@ const char* sweep_error_message(sweep_error_s error) {
 void sweep_error_destruct(sweep_error_s error) {
   SWEEP_ASSERT(error);
 
-  free(error);
+  delete error;
 }
 
 sweep_device_s sweep_device_construct_simple(sweep_error_s* error) {
@@ -56,24 +44,14 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
   SWEEP_ASSERT(bitrate > 0);
   SWEEP_ASSERT(error);
 
-  sweep_device_s out = (sweep_device_s)malloc(sizeof(sweep_device));
-
-  if (out == NULL) {
-    *error = sweep_error_construct("oom during sweep device creation");
-    return NULL;
-  }
-
-  out->scanning = false;
-  out->motor_speed = 1;
-  out->nth_scan_request = 0;
-
+  auto out = new sweep_device{/*scanning=*/false, /*motor_speed=*/1, /*nth_scan_request=*/0};
   return out;
 }
 
 void sweep_device_destruct(sweep_device_s device) {
   SWEEP_ASSERT(device);
 
-  free(device);
+  delete device;
 }
 
 void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
@@ -94,19 +72,11 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
 
-  sweep_scan_s out = (sweep_scan_s)malloc(sizeof(sweep_scan));
-
-  if (out == NULL) {
-    *error = sweep_error_construct("oom during sweep device scan creation");
-    return NULL;
-  }
-
-  out->count = device->scanning ? 16 : 0;
-  out->nth = device->nth_scan_request;
+  auto out = new sweep_scan{/*count=*/device->scanning ? 16 : 0, /*nth=*/device->nth_scan_request};
 
   device->nth_scan_request += 1;
 
-  // pause for 0.1 second
+  // Artificially introduce slowdown, to simulate device rotation
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   return out;
@@ -160,7 +130,7 @@ int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample) {
 void sweep_scan_destruct(sweep_scan_s scan) {
   SWEEP_ASSERT(scan);
 
-  free(scan);
+  delete scan;
 }
 
 int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error) {
