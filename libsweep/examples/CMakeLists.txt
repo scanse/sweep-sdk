@@ -18,9 +18,9 @@ target_include_directories(example-c SYSTEM PRIVATE ${LIBSWEEP_INCLUDE_DIR})
 
 
 # TOOD: make SFML based viewer optional
-include(FindPkgConfig)
-pkg_check_modules(LIBSFML REQUIRED sfml-all)
+#include(FindPkgConfig)
+#pkg_check_modules(LIBSFML REQUIRED sfml-all)
 
-add_executable(example-viewer viewer.cc)
-target_link_libraries(example-viewer PRIVATE ${LIBSWEEP_LIBRARY} ${LIBSFML_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-target_include_directories(example-viewer SYSTEM PRIVATE ${LIBSWEEP_INCLUDE_DIR} ${LIBSFML_INCLUDE_DIRS})
+#add_executable(example-viewer viewer.cc)
+#target_link_libraries(example-viewer PRIVATE ${LIBSWEEP_LIBRARY} ${LIBSFML_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+#target_include_directories(example-viewer SYSTEM PRIVATE ${LIBSWEEP_INCLUDE_DIR} ${LIBSFML_INCLUDE_DIRS})

@@ -8,6 +8,6 @@
 
 #include <stdint.h>
 
-void sweep_sleep_microseconds(int32_t microseconds);
+void sweep_sleep_milliseconds(int32_t milliseconds);
 
 #endif

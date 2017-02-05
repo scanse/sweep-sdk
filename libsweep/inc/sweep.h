@@ -36,7 +36,7 @@ typedef struct sweep_scan* sweep_scan_s;
 SWEEP_API const char* sweep_error_message(sweep_error_s error);
 SWEEP_API void sweep_error_destruct(sweep_error_s error);
 
-SWEEP_API sweep_device_s sweep_device_construct_simple(sweep_error_s* error);
+SWEEP_API sweep_device_s sweep_device_construct_simple(const char* port, sweep_error_s* error);
 SWEEP_API sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_error_s* error);
 SWEEP_API void sweep_device_destruct(sweep_device_s device);
 

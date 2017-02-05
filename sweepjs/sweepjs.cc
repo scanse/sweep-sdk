@@ -38,8 +38,8 @@ struct ErrorToNanException {
   ::sweep_error_s error = nullptr;
 };
 
-Sweep::Sweep() {
-  auto devptr = ::sweep_device_construct_simple(ErrorToException{});
+Sweep::Sweep(const char* port) {
+  auto devptr = ::sweep_device_construct_simple(port, ErrorToException{});
   auto defer = [](::sweep_device_s dev) { ::sweep_device_destruct(dev); };
 
   device = {devptr, defer};
@@ -74,7 +74,7 @@ NAN_MODULE_INIT(Sweep::Init) {
 
 NAN_METHOD(Sweep::New) {
   // auto-detect or port, bitrate
-  const auto simple = info.Length() == 0;
+  const auto simple = info.Length() == 1 && info[0]->IsString();
   const auto config = info.Length() == 2 && info[0]->IsString() && info[1]->IsNumber();
 
   if (!simple && !config) {
@@ -85,18 +85,16 @@ NAN_METHOD(Sweep::New) {
     Sweep* self = nullptr;
 
     try {
+      const Nan::Utf8String utf8port{info[0]};
+      if (!(*utf8port)) {
+        return Nan::ThrowError("UTF-8 conversion error for serial port string");
+      }
+      const auto port = *utf8port;
+
       if (simple) {
-        self = new Sweep();
+        self = new Sweep(port);
       } else if (config) {
-        const Nan::Utf8String utf8port{info[0]};
-
-        if (!(*utf8port)) {
-          return Nan::ThrowError("UTF-8 conversion error for serial port string");
-        }
-
-        const auto port = *utf8port;
         const auto bitrate = Nan::To<int32_t>(info[1]).FromJust();
-
         self = new Sweep(port, bitrate);
       } else {
         return Nan::ThrowError("Unable to create device"); // unreachable
