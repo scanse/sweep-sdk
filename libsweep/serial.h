@@ -10,17 +10,23 @@
 
 #include <stdint.h>
 
-typedef struct sweep_serial_device* sweep_serial_device_s;
-typedef struct sweep_serial_error* sweep_serial_error_s;
+namespace sweep {
+namespace serial {
 
-const char* sweep_serial_error_message(sweep_serial_error_s error);
-void sweep_serial_error_destruct(sweep_serial_error_s error);
+typedef struct device* device_s;
+typedef struct error* error_s;
 
-sweep_serial_device_s sweep_serial_device_construct(const char* port, int32_t bitrate, sweep_serial_error_s* error);
-void sweep_serial_device_destruct(sweep_serial_device_s serial);
+const char* error_message(error_s error);
+void error_destruct(error_s error);
 
-void sweep_serial_device_read(sweep_serial_device_s serial, void* to, int32_t len, sweep_serial_error_s* error);
-void sweep_serial_device_write(sweep_serial_device_s serial, const void* from, int32_t len, sweep_serial_error_s* error);
-void sweep_serial_device_flush(sweep_serial_device_s serial, sweep_serial_error_s* error);
+device_s device_construct(const char* port, int32_t bitrate, error_s* error);
+void device_destruct(device_s serial);
+
+void device_read(device_s serial, void* to, int32_t len, error_s* error);
+void device_write(device_s serial, const void* from, int32_t len, error_s* error);
+void device_flush(device_s serial, error_s* error);
+
+} // ns serial
+} // ns sweep
 
 #endif

@@ -11,20 +11,23 @@
 #include "serial.h"
 #include "sweep.h"
 
-typedef struct sweep_protocol_error* sweep_protocol_error_s;
+namespace sweep {
+namespace protocol {
 
-const char* sweep_protocol_error_message(sweep_protocol_error_s error);
-void sweep_protocol_error_destruct(sweep_protocol_error_s error);
+typedef struct error* error_s;
+
+const char* error_message(error_s error);
+void error_destruct(error_s error);
 
 // Command Symbols
 
-extern const uint8_t SWEEP_PROTOCOL_DATA_ACQUISITION_START[2];
-extern const uint8_t SWEEP_PROTOCOL_DATA_ACQUISITION_STOP[2];
-extern const uint8_t SWEEP_PROTOCOL_MOTOR_SPEED_ADJUST[2];
-extern const uint8_t SWEEP_PROTOCOL_MOTOR_INFORMATION[2];
-extern const uint8_t SWEEP_PROTOCOL_VERSION_INFORMATION[2];
-extern const uint8_t SWEEP_PROTOCOL_DEVICE_INFORMATION[2];
-extern const uint8_t SWEEP_PROTOCOL_RESET_DEVICE[2];
+extern const uint8_t DATA_ACQUISITION_START[2];
+extern const uint8_t DATA_ACQUISITION_STOP[2];
+extern const uint8_t MOTOR_SPEED_ADJUST[2];
+extern const uint8_t MOTOR_INFORMATION[2];
+extern const uint8_t VERSION_INFORMATION[2];
+extern const uint8_t DEVICE_INFORMATION[2];
+extern const uint8_t RESET_DEVICE[2];
 
 // Packets for communication
 
@@ -32,7 +35,7 @@ typedef struct {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
   uint8_t cmdParamTerm;
-} SWEEP_PACKED sweep_protocol_cmd_packet_s;
+} SWEEP_PACKED cmd_packet_s;
 
 typedef struct {
   uint8_t cmdByte1;
@@ -40,7 +43,7 @@ typedef struct {
   uint8_t cmdParamByte1;
   uint8_t cmdParamByte2;
   uint8_t cmdParamTerm;
-} SWEEP_PACKED sweep_protocol_cmd_param_packet_s;
+} SWEEP_PACKED cmd_param_packet_s;
 
 typedef struct {
   uint8_t cmdByte1;
@@ -49,7 +52,7 @@ typedef struct {
   uint8_t cmdStatusByte2;
   uint8_t cmdSum;
   uint8_t term1;
-} SWEEP_PACKED sweep_protocol_response_header_s;
+} SWEEP_PACKED response_header_s;
 
 typedef struct {
   uint8_t cmdByte1;
@@ -61,15 +64,15 @@ typedef struct {
   uint8_t cmdStatusByte2;
   uint8_t cmdSum;
   uint8_t term2;
-} SWEEP_PACKED sweep_protocol_response_param_s;
+} SWEEP_PACKED response_param_s;
 
 typedef struct {
   uint8_t sync_error;
-  uint16_t angle; // see sweep_protocol_u16_to_f32
+  uint16_t angle; // see u16_to_f32
   uint16_t distance;
   uint8_t signal_strength;
   uint8_t checksum;
-} SWEEP_PACKED sweep_protocol_response_scan_packet_s;
+} SWEEP_PACKED response_scan_packet_s;
 
 typedef struct {
   uint8_t cmdByte1;
@@ -81,7 +84,7 @@ typedef struct {
   uint8_t motor_speed[2];
   uint8_t sample_rate[4];
   uint8_t term;
-} SWEEP_PACKED sweep_protocol_response_info_device_s;
+} SWEEP_PACKED response_info_device_s;
 
 typedef struct {
   uint8_t cmdByte1;
@@ -94,38 +97,33 @@ typedef struct {
   uint8_t hardware_version;
   uint8_t serial_no[8];
   uint8_t term;
-} SWEEP_PACKED sweep_protocol_response_info_version_s;
+} SWEEP_PACKED response_info_version_s;
 
 typedef struct {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
   uint8_t motor_speed[2];
   uint8_t term;
-} SWEEP_PACKED sweep_protocol_response_info_motor_s;
+} SWEEP_PACKED response_info_motor_s;
 
 // Read and write specific packets
 
-void sweep_protocol_write_command(sweep_serial_device_s serial, const uint8_t cmd[2], sweep_protocol_error_s* error);
+void write_command(sweep::serial::device_s serial, const uint8_t cmd[2], error_s* error);
 
-void sweep_protocol_write_command_with_arguments(sweep_serial_device_s serial, const uint8_t cmd[2], const uint8_t arg[2],
-                                                 sweep_protocol_error_s* error);
+void write_command_with_arguments(sweep::serial::device_s serial, const uint8_t cmd[2], const uint8_t arg[2], error_s* error);
 
-void sweep_protocol_read_response_header(sweep_serial_device_s serial, const uint8_t cmd[2],
-                                         sweep_protocol_response_header_s* header, sweep_protocol_error_s* error);
+void read_response_header(sweep::serial::device_s serial, const uint8_t cmd[2], response_header_s* header, error_s* error);
 
-void sweep_protocol_read_response_param(sweep_serial_device_s serial, const uint8_t cmd[2],
-                                        sweep_protocol_response_param_s* param, sweep_protocol_error_s* error);
+void read_response_param(sweep::serial::device_s serial, const uint8_t cmd[2], response_param_s* param, error_s* error);
 
-void sweep_protocol_read_response_scan(sweep_serial_device_s serial, sweep_protocol_response_scan_packet_s* scan,
-                                       sweep_protocol_error_s* error);
+void read_response_scan(sweep::serial::device_s serial, response_scan_packet_s* scan, error_s* error);
 
-void sweep_protocol_read_response_info_motor(sweep_serial_device_s serial, const uint8_t cmd[2],
-                                             sweep_protocol_response_info_motor_s* info, sweep_protocol_error_s* error);
+void read_response_info_motor(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_s* info, error_s* error);
 
 // Some protocol conversion utilities
-inline float sweep_protocol_u16_to_f32(uint16_t v) { return ((float)(v >> 4u)) + (v & 15u) / 16.0f; }
+inline float u16_to_f32(uint16_t v) { return ((float)(v >> 4u)) + (v & 15u) / 16.0f; }
 
-inline void sweep_protocol_speed_to_ascii_bytes(int32_t speed, uint8_t bytes[2]) {
+inline void speed_to_ascii_bytes(int32_t speed, uint8_t bytes[2]) {
   SWEEP_ASSERT(speed >= 0);
   SWEEP_ASSERT(speed <= 10);
   SWEEP_ASSERT(bytes);
@@ -140,7 +138,7 @@ inline void sweep_protocol_speed_to_ascii_bytes(int32_t speed, uint8_t bytes[2])
   bytes[1] = num2;
 }
 
-inline int32_t sweep_protocol_ascii_bytes_to_speed(const uint8_t bytes[2]) {
+inline int32_t ascii_bytes_to_speed(const uint8_t bytes[2]) {
   SWEEP_ASSERT(bytes);
 
   // Speed values are still ASCII codes, numbers begin at code point 48
@@ -156,5 +154,8 @@ inline int32_t sweep_protocol_ascii_bytes_to_speed(const uint8_t bytes[2]) {
 
   return speed;
 }
+
+} // ns protocol
+} // ns sweep
 
 #endif
