@@ -103,7 +103,7 @@ int main() try {
 
       // Base transparency on signal strength
       auto color = kColorDenim;
-      color.a = (sample.signal_strength / 100.0f) * 255.0f;
+      color.a = sample.signal_strength;
       point.setFillColor(color);
 
       localPointCloud.push_back(std::move(point));

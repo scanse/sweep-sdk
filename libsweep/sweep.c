@@ -20,9 +20,9 @@ typedef struct sweep_device {
 #define SWEEP_MAX_SAMPLES 4096
 
 typedef struct sweep_scan {
-  int32_t angle[SWEEP_MAX_SAMPLES];
-  int32_t distance[SWEEP_MAX_SAMPLES];
-  int32_t signal_strength[SWEEP_MAX_SAMPLES];
+  int32_t angle[SWEEP_MAX_SAMPLES];           // in millidegrees
+  int32_t distance[SWEEP_MAX_SAMPLES];        // in cm
+  int32_t signal_strength[SWEEP_MAX_SAMPLES]; // range 0:255
   int32_t count;
 } sweep_scan;
 
@@ -227,9 +227,11 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
   out->count = last - first;
 
   for (int32_t it = 0; it < last - first; ++it) {
+    // convert the angle from its compact serial format to a float value in degrees
+    // then convert from degrees to milli-degrees, and store it
     out->angle[it] = sweep_protocol_u16_to_f32(responses[first + it].angle) * 1000.f;
     out->distance[it] = responses[first + it].distance;
-    out->signal_strength[it] = (responses[first + it].signal_strength / 256.f) * 100.f;
+    out->signal_strength[it] = responses[first + it].signal_strength;
   }
 
   return out;
