@@ -218,7 +218,7 @@ Returns the distance in centi-meter for the `sample`th sample in the `sweep_scan
 int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample)
 ```
 
-Returns the signal strength (1 low -- 100 high) for the `sample`th sample in the `sweep_scan_s`.
+Returns the signal strength (0 low -- 255 high) for the `sample`th sample in the `sweep_scan_s`.
 
 
 ### License
