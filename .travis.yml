@@ -11,28 +11,28 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-6', 'cmake', 'python3', 'nodejs', 'npm']
+          packages: ['g++-6', 'cmake', 'python3', 'nodejs', 'npm', 'libsfml-dev']
       env: CCOMPILER='gcc-6' CXXCOMPILER='g++-6'
 
     - os: linux
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-6', 'cmake', 'python3', 'nodejs', 'npm']
+          packages: ['g++-6', 'cmake', 'python3', 'nodejs', 'npm', 'libsfml-dev']
       env: CCOMPILER='g++-6' CXXCOMPILER='g++-6'
 
     - os: linux
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-5', 'cmake', 'python3', 'nodejs', 'npm']
+          packages: ['g++-5', 'cmake', 'python3', 'nodejs', 'npm', 'libsfml-dev']
       env: CCOMPILER='gcc-5' CXXCOMPILER='g++-5'
 
     - os: linux
       addons:
         apt:
           sources: ['llvm-toolchain-precise-3.8']
-          packages: ['clang-3.8', 'cmake', 'python3', 'nodejs', 'npm']
+          packages: ['clang-3.8', 'cmake', 'python3', 'nodejs', 'npm', 'libsfml-dev']
       env: CCOMPILER='clang-3.8' CXXCOMPILER='clang++-3.8'
 
     # Waiting on Travis whitelisting 3.9, see https://github.com/travis-ci/apt-source-whitelist/issues/300
@@ -60,6 +60,15 @@ install:
   - popd
 
 script:
+  # Test libsweep examples against the dummy library
+  - pushd libsweep/examples
+  - mkdir build
+  - cd build
+  - cmake ..
+  - cmake --build .
+  - ./example-c
+  - ./example-c++
+  - popd
   # Test SweepPy bindings against the dummy library
   - pushd sweeppy
   - python3 sweeppy.py
