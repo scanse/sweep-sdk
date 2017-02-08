@@ -10,11 +10,27 @@
 extern "C" {
 #endif
 
+#if defined _WIN32 || defined __CYGWIN__ || defined __MINGW32__
+// If we are building a dll, set SWEEP_API to export symbols
+#ifdef SWEEP_EXPORTS
+#ifdef __GNUC__
+#define SWEEP_API __attribute__((dllexport))
+#else
+#define SWEEP_API __declspec(dllexport)
+#endif
+#else
+#ifdef __GNUC__
+#define SWEEP_API __attribute__((dllimport))
+#else
+#define SWEEP_API __declspec(dllimport)
+#endif
+#endif
+#else
 #if __GNUC__ >= 4
 #define SWEEP_API __attribute__((visibility("default")))
 #else
-#error "Only Clang and GCC supported at the moment, please open a ticket"
 #define SWEEP_API
+#endif
 #endif
 
 #ifndef SWEEP_ASSERT
@@ -32,7 +48,7 @@ typedef struct sweep_scan* sweep_scan_s;
 SWEEP_API const char* sweep_error_message(sweep_error_s error);
 SWEEP_API void sweep_error_destruct(sweep_error_s error);
 
-SWEEP_API sweep_device_s sweep_device_construct_simple(sweep_error_s* error);
+SWEEP_API sweep_device_s sweep_device_construct_simple(const char* port, sweep_error_s* error);
 SWEEP_API sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_error_s* error);
 SWEEP_API void sweep_device_destruct(sweep_device_s device);
 

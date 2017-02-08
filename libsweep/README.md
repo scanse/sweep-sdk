@@ -4,18 +4,51 @@ Low-level Scanse Sweep LiDAR library. Comes as C99 library `sweep.h` with option
 
 ### Quick Start
 
-    mkdir -p build
-    cd build
-    cmake .. -DCMAKE_BUILD_TYPE=Release
-    cmake --build .
-    sudo cmake --build . --target install
-    sudo ldconfig
+```bash
+mkdir -p build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build .
+sudo cmake --build . --target install
+sudo ldconfig
+```
 
 If you don't have a Sweep device yet you can build a dummy `libsweep.so` always returning static point cloud data:
 
-    cmake .. -DCMAKE_BUILD_TYPE=Release -DDUMMY=On
+```bash
+cmake .. -DCMAKE_BUILD_TYPE=Release -DDUMMY=On
+```
 
 This dummy library is API and ABI compatible. Once your device arrives switch out the `libsweep.so` shared library and you're good to go.
+
+For Windows users open a command prompt with administrative access:
+
+```bash
+mkdir build
+cd build
+cmake .. -G "Visual Studio 14 2015 Win64"
+cmake --build . --config Release
+cmake --build . --target install --config Release
+```
+
+The above command assumes Visual Studio 2015. If you have a different version installed, change the value. ie:
+
+    Visual Studio 11 2012 Win64 = Generates Visual Studio 11 (VS 2012) project files for x64 architecture
+    Visual Studio 12 2013 Win64 = Generates Visual Studio 12 (VS 2013) project files for x64 architecture
+    Visual Studio 14 2015 Win64 = Generates Visual Studio 14 (VS 2015) project files for x64 architecture
+    Visual Studio 15 2017 Win64 = Generates Visual Studio 15 (VS 2017) project files for x64 architecture
+
+Additionally, the above commands assume you want to build a x64 (64bit) verison of the library. To build a x86 (32 bit) version, simply drop the `Win64`. i.e.:
+
+    Visual Studio 14 2015 = Generates Visual Studio 14 (VS 2015) project files for x86 architecture
+
+To build the dummy library add the dummy flag to the command:
+
+```bash
+cmake ..  -DDUMMY=On -G "Visual Studio 14 2015 Win64"
+```
+
+Then be sure to add the installation directories for the library and the header files to the environment `PATH` variable. For the above installation that would be something like `C:\Program Files\sweep\lib` for the library and `C:\Program Files\sweep\inlcude\sweep` for the headers. You may have to restart the computer before the changes take effect.
 
 ### Usage
 
@@ -128,10 +161,10 @@ Opaque type representing a Sweep device.
 All direct device interaction happens on this type.
 
 ```c++
-sweep_device_s sweep_device_construct_simple(sweep_error_s* error)
+sweep_device_s sweep_device_construct_simple(const char* port, sweep_error_s* error)
 ```
 
-Constructs a `sweep_device_s` using defaults to detect the hardware.
+Constructs a `sweep_device_s` based on a serial device port (e.g. `/dev/ttyUSB0` on Linux or `COM5` on Windows).
 In case of error a `sweep_error_s` will be written into `error`.
 
 ```c++

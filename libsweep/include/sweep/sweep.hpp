@@ -42,7 +42,7 @@ struct scan {
 
 class sweep {
 public:
-  sweep();
+  sweep(const char* port);
   sweep(const char* port, std::int32_t bitrate);
 
   void start_scanning();
@@ -80,7 +80,8 @@ struct error_to_exception {
 };
 }
 
-sweep::sweep() : device{::sweep_device_construct_simple(detail::error_to_exception{}), &::sweep_device_destruct} {}
+sweep::sweep(const char* port)
+    : device{::sweep_device_construct_simple(port, detail::error_to_exception{}), &::sweep_device_destruct} {}
 
 sweep::sweep(const char* port, std::int32_t bitrate)
     : device{::sweep_device_construct(port, bitrate, detail::error_to_exception{}), &::sweep_device_destruct} {}

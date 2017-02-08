@@ -12,7 +12,7 @@ app.use(srv(__dirname, {index: 'index.html'}));
 app.listen(8080);
 
 
-const sweep = new sweepjs.Sweep();
+const sweep = new sweepjs.Sweep('/dev/ttyUSB0');
 sweep.startScanning();
 
 

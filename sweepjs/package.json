@@ -11,7 +11,7 @@
   "license": "MIT",
   "main": "./build/Release/sweepjs",
   "scripts": {
-    "test": "node index"
+    "test": "node index /dev/ttyUSB0"
   },
   "dependencies": {
     "nan": "^2.2"

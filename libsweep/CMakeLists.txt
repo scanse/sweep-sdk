@@ -23,11 +23,19 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(libsweep_OS unix)
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  message(FATAL_ERROR "Windows not yet supported")
   set(libsweep_OS win)
+
+  # Turn on the ability to create folders to organize projects (.vcproj)
+  # It creates "CMakePredefinedTargets" folder by default and adds CMake
+  # defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj to that folder
+  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+  # define SWEEP_EXPORTS such that sweep.h will export symbols marked by SWEEP_API
+  add_definitions(-DSWEEP_EXPORTS)
 
 else()
   message(FATAL_ERROR "System not yet supported. Please open a ticket.")
+
 endif()
 
 
@@ -53,7 +61,7 @@ else()
 endif()
 
 set(libsweep_SOURCES ${libsweep_OS_SOURCES} ${libsweep_IMPL_SOURCES} src/protocol.cc)
-file(GLOB libsweep_HEADERS include/sweep/*.h include/sweep/*.hpp)
+file(GLOB libsweep_HEADERS include/*.h include/sweep/*.h include/sweep/*.hpp)
 
 add_library(sweep SHARED ${libsweep_SOURCES} ${libsweep_HEADERS})
 target_include_directories(sweep PRIVATE include include/sweep ${CMAKE_CURRENT_BINARY_DIR}/include)

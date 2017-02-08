@@ -13,7 +13,7 @@
 #include "net.pb.h"
 
 static void usage() {
-  std::cout << "Usage: example-net [ publisher | subscriber ]\n";
+  std::cout << "Usage: example-net /dev/ttyUSB0 [ publisher | subscriber ]\n";
   std::exit(EXIT_SUCCESS);
 }
 
@@ -46,13 +46,13 @@ void subscriber() {
   }
 }
 
-void publisher() try {
+void publisher(const std::string& dev) try {
   zmq::context_t ctx{/*io_threads=*/1};
   zmq::socket_t pub{ctx, ZMQ_PUB};
 
   pub.bind("tcp://127.0.0.1:5555");
 
-  sweep::sweep device;
+  sweep::sweep device{dev.c_str()};
   device.start_scanning();
 
   std::cout << "Publishing. Each dot is a full 360 degree scan." << std::endl;
@@ -85,14 +85,14 @@ void publisher() try {
   std::cerr << "Error: " << e.what() << '\n';
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char* argv[]) {
   std::vector<std::string> args{argv, argv + argc};
 
-  if (args.size() != 2)
+  if (args.size() != 3)
     usage();
 
-  const auto isPublisher = args[1] == "publisher";
-  const auto isSubscriber = args[1] == "subscriber";
+  const auto isPublisher = args[2] == "publisher";
+  const auto isSubscriber = args[2] == "subscriber";
 
   if (!isPublisher && !isSubscriber)
     usage();
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
   } sentry;
 
   if (isPublisher)
-    publisher();
+    publisher(args[1]);
 
   if (isSubscriber)
     subscriber();

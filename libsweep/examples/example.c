@@ -22,15 +22,23 @@ static void check(sweep_error_s error) {
     die(error);
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    fprintf(stdout, "Usage: ./example-c device\n");
+    return EXIT_FAILURE;
+  }
+
   // Makes sure the installed library is compatible with the interface
   assert(sweep_is_abi_compatible());
+
+  // Grab the port name from the input argument
+  const char* port = argv[1];
 
   // All functions which can potentially fail write into an error object
   sweep_error_s error = NULL;
 
   // Create a Sweep device from default USB serial port; there is a second constructor for advanced usage
-  sweep_device_s sweep = sweep_device_construct_simple(&error);
+  sweep_device_s sweep = sweep_device_construct_simple(port, &error);
   check(error);
 
   // The Sweep's rotating speed in Hz

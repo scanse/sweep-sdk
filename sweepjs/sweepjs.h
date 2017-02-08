@@ -31,7 +31,7 @@ private:
 
   // Wrapped Object
 
-  Sweep();
+  Sweep(const char* port);
   Sweep(const char* port, int32_t bitrate);
 
   // Non-Copyable

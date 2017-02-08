@@ -1,9 +1,14 @@
+import sys
 from sweeppy import Sweep
 
 
 def main():
-    with Sweep() as sweep:
+    if len(sys.argv) < 2:
+        sys.exit('python test.py /dev/ttyUSB0')
 
+    dev = sys.argv[1]
+
+    with Sweep(dev) as sweep:
         speed = sweep.get_motor_speed()
         rate = sweep.get_sample_rate()
 
@@ -18,6 +23,7 @@ def main():
 
             if n == 3:
                 break
+
 
 if __name__ == '__main__':
     main()

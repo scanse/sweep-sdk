@@ -17,7 +17,7 @@ libsweep.sweep_error_destruct.restype = None
 libsweep.sweep_error_destruct.argtypes = [ctypes.c_void_p]
 
 libsweep.sweep_device_construct_simple.restype = ctypes.c_void_p
-libsweep.sweep_device_construct_simple.argtypes = [ctypes.c_void_p]
+libsweep.sweep_device_construct_simple.argtypes = [ctypes.c_char_p, ctypes.c_void_p]
 
 libsweep.sweep_device_construct.restype = ctypes.c_void_p
 libsweep.sweep_device_construct.argtypes = [ctypes.c_char_p, ctypes.c_int32, ctypes.c_void_p]
@@ -81,7 +81,7 @@ class Sample(collections.namedtuple('Sample', 'angle distance signal_strength'))
 
 
 class Sweep:
-    def __init__(_, port = None, bitrate = None):
+    def __init__(_, port, bitrate = None):
         _.scoped = False
         _.args = [port, bitrate]
 
@@ -93,13 +93,14 @@ class Sweep:
 
         error = ctypes.c_void_p();
 
-        simple = not any(_.args)
+        simple = not _.args[1]
         config = all(_.args)
 
-        assert simple or config, 'No arguments for auto-detection or port, bitrate, required'
+        assert simple or config, 'No arguments for bitrate, required'
 
         if simple:
-            device = libsweep.sweep_device_construct_simple(ctypes.byref(error))
+            port = ctypes.string_at(_.args[0])
+            device = libsweep.sweep_device_construct_simple(port, ctypes.byref(error))
 
         if config:
             port = ctypes.string_at(_.args[0])

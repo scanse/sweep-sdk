@@ -8,15 +8,16 @@ var util = require('util')
 if (require.main === module) {
   console.log('self-testing module');
 
-  var sweep = new sweepjs.Sweep();
-
-  sweep.startScanning();
+  var portName = process.argv[2];
+  var sweep = new sweepjs.Sweep(portName);
 
   var speed = sweep.getMotorSpeed();
   var rate = sweep.getSampleRate();
 
   console.log(util.format('Motor speed: %d Hz', speed));
   console.log(util.format('Sample rate: %d Hz', rate));
+
+  sweep.startScanning();
 
   sweep.scan(function (err, samples) {
     if (err) {

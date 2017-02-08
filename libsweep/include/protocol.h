@@ -195,8 +195,14 @@ inline int32_t ascii_bytes_to_integral(const uint8_t bytes[2]) {
   // Numbers begin at ASCII code point 48
   const uint8_t ASCIINumberBlockOffset = 48;
 
-  const uint8_t num1 = bytes[0] - ASCIINumberBlockOffset;
-  const uint8_t num2 = bytes[1] - ASCIINumberBlockOffset;
+  SWEEP_ASSERT(bytes[0] >= ASCIINumberBlockOffset);
+  SWEEP_ASSERT(bytes[1] >= ASCIINumberBlockOffset);
+
+  const uint8_t num1 = static_cast<uint8_t>(bytes[0] - ASCIINumberBlockOffset);
+  const uint8_t num2 = static_cast<uint8_t>(bytes[1] - ASCIINumberBlockOffset);
+
+  SWEEP_ASSERT(num1 <= 9);
+  SWEEP_ASSERT(num2 <= 9);
 
   const int32_t integral = (num1 * 10) + (num2 * 1);
 

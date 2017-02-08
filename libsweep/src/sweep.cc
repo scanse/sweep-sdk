@@ -46,10 +46,10 @@ void sweep_error_destruct(sweep_error_s error) {
   delete error;
 }
 
-sweep_device_s sweep_device_construct_simple(sweep_error_s* error) {
+sweep_device_s sweep_device_construct_simple(const char* port, sweep_error_s* error) {
   SWEEP_ASSERT(error);
 
-  return sweep_device_construct("/dev/ttyUSB0", 115200, error);
+  return sweep_device_construct(port, 115200, error);
 }
 
 sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_error_s* error) {
@@ -208,7 +208,7 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
   for (int32_t it = 0; it < received; ++it) {
     // Convert angle from compact serial format to float (in degrees).
     // In addition convert from degrees to milli-degrees.
-    out->angle[it] = sweep::protocol::u16_to_f32(responses[it].angle) * 1000.f;
+    out->angle[it] = static_cast<int32_t>(sweep::protocol::u16_to_f32(responses[it].angle) * 1000.f);
     out->distance[it] = responses[it].distance;
     out->signal_strength[it] = responses[it].signal_strength;
   }

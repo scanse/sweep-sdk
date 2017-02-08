@@ -1,12 +1,18 @@
 // Make use of the CMake build system or compile manually, e.g. with:
 // g++ -std=c++11 example.cc -lsweep
 
+#include <cstdlib>
 #include <iostream>
 
 #include <sweep/sweep.hpp>
 
-int main() try {
-  sweep::sweep device;
+int main(int argc, char* argv[]) try {
+  if (argc != 2) {
+    std::cerr << "Usage: ./example-c++ device\n";
+    return EXIT_FAILURE;
+  }
+
+  sweep::sweep device{argv[1]};
 
   std::cout << "Motor Speed: " << device.get_motor_speed() << " Hz" << std::endl;
   std::cout << "Sample Rate: " << device.get_sample_rate() << " Hz" << std::endl;
