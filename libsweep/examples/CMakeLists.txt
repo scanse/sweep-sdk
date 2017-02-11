@@ -28,3 +28,17 @@ if (LIBSFML_FOUND)
 else()
   message(STATUS "SFML2 required for real-time viewer (libsfml-dev)")
 endif()
+
+
+# Optional Protobuf + ZeroMQ networking example
+find_package(Protobuf 2.4.1)
+pkg_check_modules(LIBZMQ libzmq)
+
+if (PROTOBUF_FOUND AND LIBZMQ_FOUND)
+  protobuf_generate_cpp(ProtoSources ProtoHeaders net.proto)
+  add_executable(example-net net.cc ${ProtoSources} ${ProtoHeaders})
+  target_link_libraries(example-net PRIVATE ${LIBSWEEP_LIBRARY} ${PROTOBUF_LITE_LIBRARIES} ${LIBZMQ_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  target_include_directories(example-net SYSTEM PRIVATE ${LIBSWEEP_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIRS} ${LIBZMQ_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+else()
+  message(STATUS "Protobuf2 and ZeroMQ required for networking example (libprotobuf-dev protobuf-compiler libzmq-dev)")
+endif()

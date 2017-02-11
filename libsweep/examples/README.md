@@ -17,14 +17,29 @@ To build:
     cmake --build .
 ```
 
-**Note:** the viewer requires SFML2 to be installed.
+**Note:**
+- The viewer requires SFML2 to be installed.
+- The pub-sub networking example requires Protobuf and ZeroMQ to be installed.
 
 
 ```bash
-    # run the examples
-    ./example-c
-    ./example-c++
-    ./example-viewer
+./example-c
+./example-c++
+```
+
+Real-time viewer:
+
+```bash
+./example-viewer
+```
+
+Pub-Sub networking example.
+Start a publisher sending out full 360 degree scans via the network (localhost).
+Then start some subscribers connecting to the publisher.
+
+```bash
+./example-net publisher
+./example-net subscriber
 ```
 
 ### License

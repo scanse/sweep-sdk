@@ -1,0 +1,9 @@
+package sweep.proto;
+
+option optimize_for = LITE_RUNTIME;
+
+message scan {
+  repeated int32 angle = 1 [packed=true];
+  repeated int32 distance = 2 [packed=true];
+  repeated int32 signal_strength = 3 [packed=true];
+}
