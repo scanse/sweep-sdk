@@ -188,10 +188,17 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
       return nullptr;
     }
 
+    const bool is_sync = responses[received].sync_error & sweep::protocol::response_scan_packet_sync::sync;
+    const bool has_error = (responses[received].sync_error >> 1) != 0; // shift out sync bit, others are errors
+
+    // Discard, try again. At the moment there is only a communication error bit. This may change.
+    if (has_error)
+      continue;
+
     // Only gather a full scan. We could improve this logic to improve on throughput
     // with complicating the code much more (think spsc queue of all responses).
     // On the other hand, we could also discard the sync bit and check repeating angles.
-    if (responses[received].sync_error == 1) {
+    if (is_sync) {
       if (first != 0 && last == SWEEP_MAX_SAMPLES) {
         last = received;
         break;
