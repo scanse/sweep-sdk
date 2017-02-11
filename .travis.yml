@@ -11,30 +11,22 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-6', 'cmake', 'python3', 'nodejs', 'npm', 'libsfml-dev']
+          packages: ['g++-6', 'cmake', 'python3', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
       env: CCOMPILER='gcc-6' CXXCOMPILER='g++-6'
 
     - os: linux
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-5', 'cmake', 'python3', 'nodejs', 'npm', 'libsfml-dev']
+          packages: ['g++-5', 'cmake', 'python3', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
       env: CCOMPILER='gcc-5' CXXCOMPILER='g++-5'
 
     - os: linux
       addons:
         apt:
           sources: ['llvm-toolchain-precise-3.8']
-          packages: ['clang-3.8', 'cmake', 'python3', 'nodejs', 'npm', 'libsfml-dev']
+          packages: ['clang-3.8', 'cmake', 'python3', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
       env: CCOMPILER='clang-3.8' CXXCOMPILER='clang++-3.8'
-
-    # Waiting on Travis whitelisting 3.9, see https://github.com/travis-ci/apt-source-whitelist/issues/300
-    #- os: linux
-    #  addons:
-    #    apt:
-    #      sources: ['llvm-toolchain-precise-3.9']
-    #      packages: ['clang-3.9']
-    #  env: CCOMPILER='clang-3.9' CXXCOMPILER='clang++-3.9'
 
 
 before_install:
