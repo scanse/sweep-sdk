@@ -10,6 +10,8 @@ const uint8_t DATA_ACQUISITION_START[2] = {'D', 'S'};
 const uint8_t DATA_ACQUISITION_STOP[2] = {'D', 'X'};
 const uint8_t MOTOR_SPEED_ADJUST[2] = {'M', 'S'};
 const uint8_t MOTOR_INFORMATION[2] = {'M', 'I'};
+const uint8_t SAMPLE_RATE_ADJUST[2] = {'L', 'R'};
+const uint8_t SAMPLE_RATE_INFORMATION[2] = {'L', 'I'};
 const uint8_t VERSION_INFORMATION[2] = {'I', 'V'};
 const uint8_t DEVICE_INFORMATION[2] = {'I', 'D'};
 const uint8_t RESET_DEVICE[2] = {'R', 'R'};
@@ -114,8 +116,6 @@ void read_response_header(serial::device_s serial, const uint8_t cmd[2], respons
   SWEEP_ASSERT(header);
   SWEEP_ASSERT(error);
 
-  const uint8_t* cmdBytes = (const uint8_t*)cmd;
-
   serial::error_s serialerror = nullptr;
 
   serial::device_read(serial, header, sizeof(response_header_s), &serialerror);
@@ -133,7 +133,7 @@ void read_response_header(serial::device_s serial, const uint8_t cmd[2], respons
     return;
   }
 
-  bool ok = header->cmdByte1 == cmdBytes[0] && header->cmdByte2 == cmdBytes[1];
+  bool ok = header->cmdByte1 == cmd[0] && header->cmdByte2 == cmd[1];
 
   if (!ok) {
     *error = error_construct("invalid header response commands");
@@ -146,8 +146,6 @@ void read_response_param(serial::device_s serial, const uint8_t cmd[2], response
   SWEEP_ASSERT(cmd);
   SWEEP_ASSERT(param);
   SWEEP_ASSERT(error);
-
-  const uint8_t* cmdBytes = (const uint8_t*)cmd;
 
   serial::error_s serialerror = nullptr;
 
@@ -166,7 +164,7 @@ void read_response_param(serial::device_s serial, const uint8_t cmd[2], response
     return;
   }
 
-  bool ok = param->cmdByte1 == cmdBytes[0] && param->cmdByte2 == cmdBytes[1];
+  bool ok = param->cmdByte1 == cmd[0] && param->cmdByte2 == cmd[1];
 
   if (!ok) {
     *error = error_construct("invalid param response commands");
@@ -203,8 +201,6 @@ void read_response_info_motor(serial::device_s serial, const uint8_t cmd[2], res
   SWEEP_ASSERT(info);
   SWEEP_ASSERT(error);
 
-  const uint8_t* cmdBytes = (const uint8_t*)cmd;
-
   serial::error_s serialerror = nullptr;
 
   serial::device_read(serial, info, sizeof(response_info_motor_s), &serialerror);
@@ -215,10 +211,35 @@ void read_response_info_motor(serial::device_s serial, const uint8_t cmd[2], res
     return;
   }
 
-  bool ok = info->cmdByte1 == cmdBytes[0] && info->cmdByte2 == cmdBytes[1];
+  bool ok = info->cmdByte1 == cmd[0] && info->cmdByte2 == cmd[1];
 
   if (!ok) {
     *error = error_construct("invalid motor info response commands");
+    return;
+  }
+}
+
+void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_sample_rate_s* info,
+                                    error_s* error) {
+  SWEEP_ASSERT(serial);
+  SWEEP_ASSERT(cmd);
+  SWEEP_ASSERT(info);
+  SWEEP_ASSERT(error);
+
+  serial::error_s serialerror = nullptr;
+
+  serial::device_read(serial, info, sizeof(response_info_sample_rate_s), &serialerror);
+
+  if (serialerror) {
+    *error = error_construct("unable to read response sample rate info");
+    serial::error_destruct(serialerror);
+    return;
+  }
+
+  bool ok = info->cmdByte1 == cmd[0] && info->cmdByte2 == cmd[1];
+
+  if (!ok) {
+    *error = error_construct("invalid sample rate info response commands");
     return;
   }
 }

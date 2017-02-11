@@ -22,6 +22,9 @@ sweep.stopScanning();
 speed = sweep.getMotorSpeed();
 sweep.setMotorSpeed(Number);
 
+rate = sweep.getSampleRate();
+sweep.setSampleRate(Number);
+
 sweep.scan(function (err, samples) {
   handle(err);
 

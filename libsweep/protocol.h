@@ -25,6 +25,8 @@ extern const uint8_t DATA_ACQUISITION_START[2];
 extern const uint8_t DATA_ACQUISITION_STOP[2];
 extern const uint8_t MOTOR_SPEED_ADJUST[2];
 extern const uint8_t MOTOR_INFORMATION[2];
+extern const uint8_t SAMPLE_RATE_ADJUST[2];
+extern const uint8_t SAMPLE_RATE_INFORMATION[2];
 extern const uint8_t VERSION_INFORMATION[2];
 extern const uint8_t DEVICE_INFORMATION[2];
 extern const uint8_t RESET_DEVICE[2];
@@ -122,6 +124,15 @@ typedef struct {
 
 static_assert(sizeof(response_info_motor_s) == 5, "response info motor size mismatch");
 
+typedef struct {
+  uint8_t cmdByte1;
+  uint8_t cmdByte2;
+  uint8_t sample_rate[2];
+  uint8_t term;
+} SWEEP_PACKED response_info_sample_rate_s;
+
+static_assert(sizeof(response_info_sample_rate_s) == 5, "response info sample rate siye mismatch");
+
 // Read and write specific packets
 
 void write_command(sweep::serial::device_s serial, const uint8_t cmd[2], error_s* error);
@@ -136,39 +147,42 @@ void read_response_scan(sweep::serial::device_s serial, response_scan_packet_s* 
 
 void read_response_info_motor(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_s* info, error_s* error);
 
+void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_sample_rate_s* info,
+                                    error_s* error);
+
 // Some protocol conversion utilities
 inline float u16_to_f32(uint16_t v) { return ((float)(v >> 4u)) + (v & 15u) / 16.0f; }
 
-inline void speed_to_ascii_bytes(int32_t speed, uint8_t bytes[2]) {
-  SWEEP_ASSERT(speed >= 0);
-  SWEEP_ASSERT(speed <= 10);
+inline void integral_to_ascii_bytes(const int32_t integral, uint8_t bytes[2]) {
+  SWEEP_ASSERT(integral >= 0);
+  SWEEP_ASSERT(integral <= 99);
   SWEEP_ASSERT(bytes);
 
-  // Speed values are still ASCII codes, numbers begin at code point 48
+  // Numbers begin at ASCII code point 48
   const uint8_t ASCIINumberBlockOffset = 48;
 
-  uint8_t num1 = (speed / 10) + ASCIINumberBlockOffset;
-  uint8_t num2 = (speed % 10) + ASCIINumberBlockOffset;
+  const uint8_t num1 = (integral / 10) + ASCIINumberBlockOffset;
+  const uint8_t num2 = (integral % 10) + ASCIINumberBlockOffset;
 
   bytes[0] = num1;
   bytes[1] = num2;
 }
 
-inline int32_t ascii_bytes_to_speed(const uint8_t bytes[2]) {
+inline int32_t ascii_bytes_to_integral(const uint8_t bytes[2]) {
   SWEEP_ASSERT(bytes);
 
-  // Speed values are still ASCII codes, numbers begin at code point 48
+  // Numbers begin at ASCII code point 48
   const uint8_t ASCIINumberBlockOffset = 48;
 
-  uint8_t num1 = bytes[0] - ASCIINumberBlockOffset;
-  uint8_t num2 = bytes[1] - ASCIINumberBlockOffset;
+  const uint8_t num1 = bytes[0] - ASCIINumberBlockOffset;
+  const uint8_t num2 = bytes[1] - ASCIINumberBlockOffset;
 
-  int32_t speed = (num1 * 10) + (num2 * 1);
+  const int32_t integral = (num1 * 10) + (num2 * 1);
 
-  SWEEP_ASSERT(speed >= 0);
-  SWEEP_ASSERT(speed <= 10);
+  SWEEP_ASSERT(integral >= 0);
+  SWEEP_ASSERT(integral <= 99);
 
-  return speed;
+  return integral;
 }
 
 } // ns protocol

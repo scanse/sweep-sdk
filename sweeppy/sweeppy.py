@@ -54,6 +54,12 @@ libsweep.sweep_device_get_motor_speed.argtypes = [ctypes.c_void_p, ctypes.c_void
 libsweep.sweep_device_set_motor_speed.restype = None
 libsweep.sweep_device_set_motor_speed.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_void_p]
 
+libsweep.sweep_device_get_sample_rate.restype = ctypes.c_int32
+libsweep.sweep_device_get_sample_rate.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+
+libsweep.sweep_device_set_sample_rate.restype = None
+libsweep.sweep_device_set_sample_rate.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_void_p]
+
 libsweep.sweep_device_reset.restype = None
 libsweep.sweep_device_reset.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 
@@ -153,6 +159,26 @@ class Sweep:
         if error:
             raise _error_to_exception(error)
 
+    def get_sample_rate(_):
+        _._assert_scoped()
+
+        error = ctypes.c_void_p()
+        speed = libsweep.sweep_device_get_sample_rate(_.device, ctypes.byref(error))
+
+        if error:
+            raise _error_to_exception(error)
+
+        return speed
+
+    def set_sample_rate(_, speed):
+        _._assert_scoped()
+
+        error = ctypes.c_void_p()
+        libsweep.sweep_device_set_sample_rate(_.device, speed, ctypes.byref(error))
+
+        if error:
+            raise _error_to_exception(error)
+
     def get_scans(_):
         _._assert_scoped()
 
@@ -191,7 +217,10 @@ if __name__ == '__main__':
         sweep.start_scanning()
 
         speed = sweep.get_motor_speed()
-        sweep.set_motor_speed(speed + 1)
+        rate = sweep.get_sample_rate()
+
+        print('Motor Speed: {} Hz'.format(speed))
+        print('Sample Rate: {} Hz'.format(rate))
 
         # get_scans is coroutine-based generator lazily returning scans ad infinitum
         for n, scan in enumerate(sweep.get_scans()):

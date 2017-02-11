@@ -12,6 +12,12 @@ if (require.main === module) {
 
   sweep.startScanning();
 
+  var speed = sweep.getMotorSpeed();
+  var rate = sweep.getSampleRate();
+
+  console.log(util.format('Motor speed: %d Hz', speed));
+  console.log(util.format('Sample rate: %d Hz', rate));
+
   sweep.scan(function (err, samples) {
     if (err) {
       return console.log(err);

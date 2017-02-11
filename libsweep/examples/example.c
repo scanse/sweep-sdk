@@ -39,6 +39,12 @@ int main() {
 
   fprintf(stdout, "Motor Speed: %" PRId32 " Hz\n", speed);
 
+  // The Sweep's sample rate in Hz
+  int32_t rate = sweep_device_get_sample_rate(sweep, &error);
+  check(error);
+
+  fprintf(stdout, "Sample Rate: %" PRId32 " Hz\n", rate);
+
   // Capture scans
   sweep_device_start_scanning(sweep, &error);
   check(error);

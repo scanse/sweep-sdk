@@ -51,6 +51,9 @@ public:
   std::int32_t get_motor_speed();
   void set_motor_speed(std::int32_t speed);
 
+  std::int32_t get_sample_rate();
+  void set_sample_rate(std::int32_t speed);
+
   scan get_scan();
 
   void reset();
@@ -90,6 +93,12 @@ std::int32_t sweep::get_motor_speed() { return ::sweep_device_get_motor_speed(de
 
 void sweep::set_motor_speed(std::int32_t speed) {
   ::sweep_device_set_motor_speed(device.get(), speed, detail::error_to_exception{});
+}
+
+std::int32_t sweep::get_sample_rate() { return ::sweep_device_get_sample_rate(device.get(), detail::error_to_exception{}); }
+
+void sweep::set_sample_rate(std::int32_t rate) {
+  ::sweep_device_set_sample_rate(device.get(), rate, detail::error_to_exception{});
 }
 
 scan sweep::get_scan() {
