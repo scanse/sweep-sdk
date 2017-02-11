@@ -168,6 +168,22 @@ The device supports speeds of 1 Hz to 10 Hz.
 In case of error a `sweep_error_s` will be written into `error`.
 
 ```c++
+int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error)
+```
+
+Returns the `sweep_device_s`'s sample rate in Hz.
+In case of error a `sweep_error_s` will be written into `error`.
+
+```c++
+void sweep_device_set_sample_rate(sweep_device_s device, int32_t hz, sweep_error_s* error)
+```
+
+Sets the `sweep_device_s`'s sample rate in Hz.
+The device supports sample rates of 500 Hz, 750 Hz and 1000 Hz.
+The device guarantees for those sample rates but they can be slightly higher by a maximum of roughly 50-100 Hz.
+In case of error a `sweep_error_s` will be written into `error`.
+
+```c++
 void sweep_device_reset(sweep_device_s device, sweep_error_s* error)
 ```
 

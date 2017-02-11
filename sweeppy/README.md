@@ -20,13 +20,16 @@ See [sweeppy.py](sweeppy.py) for interface and example.
 
 ### Interface
 
-```python
+```
 class Sweep:
     def start_scanning(self) -> None
     def stop_scanning(self) -> None
 
     def get_motor_speed(self) -> int
     def set_motor_speed(self, speed) -> None
+
+    def get_sample_rate(self) -> int
+    def set_sample_rate(self, speed) -> None
 
     def get_scans(self) -> Iterable[Scan]
 

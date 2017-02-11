@@ -278,7 +278,8 @@ int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error
     return 0;
   }
 
-  int32_t speed = sweep::protocol::ascii_bytes_to_speed(response.motor_speed);
+  int32_t speed = sweep::protocol::ascii_bytes_to_integral(response.motor_speed);
+  SWEEP_ASSERT(speed >= 0);
 
   return speed;
 }
@@ -289,7 +290,7 @@ void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error
   SWEEP_ASSERT(error);
 
   uint8_t args[2] = {0};
-  sweep::protocol::speed_to_ascii_bytes(hz, args);
+  sweep::protocol::integral_to_ascii_bytes(hz, args);
 
   sweep::protocol::error_s protocolerror = nullptr;
 
@@ -306,6 +307,96 @@ void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error
 
   if (protocolerror) {
     *error = sweep_error_construct("unable to receive motor speed command response");
+    sweep::protocol::error_destruct(protocolerror);
+    return;
+  }
+}
+
+int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(error);
+
+  sweep::protocol::error_s protocolerror = nullptr;
+
+  sweep::protocol::write_command(device->serial, sweep::protocol::SAMPLE_RATE_INFORMATION, &protocolerror);
+
+  if (protocolerror) {
+    *error = sweep_error_construct("unable to send sample rate command");
+    sweep::protocol::error_destruct(protocolerror);
+    return 0;
+  }
+
+  sweep::protocol::response_info_sample_rate_s response;
+  sweep::protocol::read_response_info_sample_rate(device->serial, sweep::protocol::SAMPLE_RATE_INFORMATION, &response,
+                                                  &protocolerror);
+
+  if (protocolerror) {
+    *error = sweep_error_construct("unable to receive sample rate command response");
+    sweep::protocol::error_destruct(protocolerror);
+    return 0;
+  }
+
+  // 01: 500-600Hz, 02: 750-800Hz, 03: 1000-1050Hz
+  int32_t code = sweep::protocol::ascii_bytes_to_integral(response.sample_rate);
+  int32_t rate = 0;
+
+  switch (code) {
+  case 1:
+    rate = 500;
+    break;
+  case 2:
+    rate = 750;
+    break;
+  case 3:
+    rate = 1000;
+    break;
+  default:
+    SWEEP_ASSERT(false && "sample rate code unknown");
+  }
+
+  return rate;
+}
+
+void sweep_device_set_sample_rate(sweep_device_s device, int32_t hz, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(hz == 500 || hz == 750 || hz == 1000);
+  SWEEP_ASSERT(error);
+
+  // 01: 500-600Hz, 02: 750-800Hz, 03: 1000-1050Hz
+  int32_t code = 1;
+
+  switch (hz) {
+  case 500:
+    code = 1;
+    break;
+  case 750:
+    code = 2;
+    break;
+  case 1000:
+    code = 3;
+    break;
+  default:
+    SWEEP_ASSERT(false && "sample rate unknown");
+  }
+
+  uint8_t args[2] = {0};
+  sweep::protocol::integral_to_ascii_bytes(code, args);
+
+  sweep::protocol::error_s protocolerror = nullptr;
+
+  sweep::protocol::write_command_with_arguments(device->serial, sweep::protocol::SAMPLE_RATE_ADJUST, args, &protocolerror);
+
+  if (protocolerror) {
+    *error = sweep_error_construct("unable to send sample rate command");
+    sweep::protocol::error_destruct(protocolerror);
+    return;
+  }
+
+  sweep::protocol::response_param_s response;
+  sweep::protocol::read_response_param(device->serial, sweep::protocol::SAMPLE_RATE_ADJUST, &response, &protocolerror);
+
+  if (protocolerror) {
+    *error = sweep_error_construct("unable to receive sample rate command response");
     sweep::protocol::error_destruct(protocolerror);
     return;
   }

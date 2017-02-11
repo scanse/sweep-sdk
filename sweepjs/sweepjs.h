@@ -22,6 +22,9 @@ private:
   static NAN_METHOD(getMotorSpeed);
   static NAN_METHOD(setMotorSpeed);
 
+  static NAN_METHOD(getSampleRate);
+  static NAN_METHOD(setSampleRate);
+
   static NAN_METHOD(reset);
 
   static Nan::Persistent<v8::Function>& constructor();

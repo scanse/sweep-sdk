@@ -64,6 +64,8 @@ NAN_MODULE_INIT(Sweep::Init) {
   SetPrototypeMethod(fnTp, "scan", scan);
   SetPrototypeMethod(fnTp, "getMotorSpeed", getMotorSpeed);
   SetPrototypeMethod(fnTp, "setMotorSpeed", setMotorSpeed);
+  SetPrototypeMethod(fnTp, "getSampleRate", getSampleRate);
+  SetPrototypeMethod(fnTp, "setSampleRate", setSampleRate);
   SetPrototypeMethod(fnTp, "reset", reset);
 
   const auto fn = Nan::GetFunction(fnTp).ToLocalChecked();
@@ -220,6 +222,30 @@ NAN_METHOD(Sweep::setMotorSpeed) {
   const auto speed = Nan::To<int32_t>(info[0]).FromJust();
 
   ::sweep_device_set_motor_speed(self->device.get(), speed, ErrorToNanException{});
+}
+
+NAN_METHOD(Sweep::getSampleRate) {
+  auto* const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
+
+  if (info.Length() != 0) {
+    return Nan::ThrowTypeError("No arguments expected");
+  }
+
+  const auto rate = ::sweep_device_get_sample_rate(self->device.get(), ErrorToNanException{});
+
+  info.GetReturnValue().Set(Nan::New(rate));
+}
+
+NAN_METHOD(Sweep::setSampleRate) {
+  auto* const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
+
+  if (info.Length() != 1 && !info[0]->IsNumber()) {
+    return Nan::ThrowTypeError("Sample rate in Hz as number expected");
+  }
+
+  const auto rate = Nan::To<int32_t>(info[0]).FromJust();
+
+  ::sweep_device_set_sample_rate(self->device.get(), rate, ErrorToNanException{});
 }
 
 NAN_METHOD(Sweep::reset) {

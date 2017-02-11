@@ -13,6 +13,7 @@ typedef struct sweep_error {
 typedef struct sweep_device {
   bool scanning;
   int32_t motor_speed;
+  int32_t sample_rate;
   int32_t nth_scan_request;
 } sweep_device;
 
@@ -44,7 +45,7 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
   SWEEP_ASSERT(bitrate > 0);
   SWEEP_ASSERT(error);
 
-  auto out = new sweep_device{/*scanning=*/false, /*motor_speed=*/1, /*nth_scan_request=*/0};
+  auto out = new sweep_device{/*scanning=*/false, /*motor_speed=*/5, /*sample_rate*/ 500, /*nth_scan_request=*/0};
   return out;
 }
 
@@ -124,7 +125,7 @@ int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
-  return 100;
+  return 200;
 }
 
 void sweep_scan_destruct(sweep_scan_s scan) {
@@ -146,6 +147,21 @@ void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error
   SWEEP_ASSERT(error);
 
   device->motor_speed = hz;
+}
+
+int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(error);
+
+  return device->sample_rate;
+}
+
+void sweep_device_set_sample_rate(sweep_device_s device, int32_t hz, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(hz == 500 || hz == 750 || hz == 1000);
+  SWEEP_ASSERT(error);
+
+  device->sample_rate = hz;
 }
 
 void sweep_device_reset(sweep_device_s device, sweep_error_s* error) {
