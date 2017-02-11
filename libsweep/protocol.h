@@ -77,14 +77,29 @@ typedef struct {
 static_assert(sizeof(response_param_s) == 9, "response param size mismatch");
 
 typedef struct {
-  uint8_t sync_error;
-  uint16_t angle; // see u16_to_f32
+  uint8_t sync_error; // see response_scan_packet_sync::bits below
+  uint16_t angle;     // see u16_to_f32
   uint16_t distance;
   uint8_t signal_strength;
   uint8_t checksum;
 } SWEEP_PACKED response_scan_packet_s;
 
 static_assert(sizeof(response_scan_packet_s) == 7, "response scan packet size mismatch");
+
+namespace response_scan_packet_sync {
+enum bits : uint8_t {
+  sync = 1 << 0,                // beginning of new full scan
+  communication_error = 1 << 1, // communication error
+
+  // Reserved for future error bits
+  reserved2 = 1 << 2,
+  reserved3 = 1 << 3,
+  reserved4 = 1 << 4,
+  reserved5 = 1 << 5,
+  reserved6 = 1 << 6,
+  reserved7 = 1 << 7,
+};
+}
 
 typedef struct {
   uint8_t cmdByte1;
