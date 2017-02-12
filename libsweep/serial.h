@@ -7,24 +7,29 @@
  */
 
 #include "sweep.h"
+#include "Error.h"
 
-#include <stdint.h>
+#include <memory>
 
 namespace sweep {
 namespace serial {
 
-typedef struct device* device_s;
-typedef struct error* error_s;
+struct Error : public ErrorBase {
+	using ErrorBase::ErrorBase;
+};
 
-const char* error_message(error_s error);
-void error_destruct(error_s error);
+class Device {
+public:
+	Device(const char* port, int32_t bitrate);
+	Device(Device&& other) = default;
+	~Device();
 
-device_s device_construct(const char* port, int32_t bitrate, error_s* error);
-void device_destruct(device_s serial);
-
-void device_read(device_s serial, void* to, int32_t len, error_s* error);
-void device_write(device_s serial, const void* from, int32_t len, error_s* error);
-void device_flush(device_s serial, error_s* error);
+	void read(void* to, int32_t len);
+	void write(const void* from, int32_t len);
+	void flush();
+private:
+	std::unique_ptr<struct State> _state;
+};
 
 } // ns serial
 } // ns sweep
