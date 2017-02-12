@@ -10,11 +10,11 @@ extern "C" {
 
 #if __GNUC__ >= 4
 #define SWEEP_API __attribute__((visibility("default")))
-#define SWEEP_PACKED __attribute__((packed))
+#elif _MSC_VER >= 1900
+#define SWEEP_API
 #else
 #error "Only Clang and GCC supported at the moment, please open a ticket"
 #define SWEEP_API
-#define SWEEP_PACKED
 #endif
 
 #define SWEEP_VERSION_MAJOR 0
