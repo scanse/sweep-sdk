@@ -11,21 +11,21 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-6', 'cmake', 'python3', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
+          packages: ['g++-6', 'cmake', 'python3', 'python3-pip', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
       env: CCOMPILER='gcc-6' CXXCOMPILER='g++-6'
 
     - os: linux
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-5', 'cmake', 'python3', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
+          packages: ['g++-5', 'cmake', 'python3', 'python3-pip', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
       env: CCOMPILER='gcc-5' CXXCOMPILER='g++-5'
 
     - os: linux
       addons:
         apt:
           sources: ['llvm-toolchain-precise-3.8']
-          packages: ['clang-3.8', 'cmake', 'python3', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
+          packages: ['clang-3.8', 'cmake', 'python3', 'python3-pip', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
       env: CCOMPILER='clang-3.8' CXXCOMPILER='clang++-3.8'
 
 
@@ -43,6 +43,12 @@ install:
   - make dummy
   - sudo make install
   - popd
+  # Install Python bindings
+  - pushd sweeppy
+  - pip3 install setuptools # apparently this version of 3 doesn't have setuptools
+  - sudo python2 setup.py install
+  - sudo python3 setup.py install
+  - popd
 
 script:
   # Test libsweep examples against the dummy library
@@ -56,7 +62,8 @@ script:
   - popd
   # Test SweepPy bindings against the dummy library
   - pushd sweeppy
-  - python3 sweeppy.py
+  - python2 tests/test.py
+  - python3 tests/test.py
   - popd
   # Test SweepJs bindings against the dummy library
   - pushd sweepjs
