@@ -1,10 +1,9 @@
-cmake_minimum_required(VERSION 3.1)
-project(sweep-examples LANGUAGES C CXX)
+cmake_minimum_required(VERSION 2.8.11)
+project(sweep-examples C CXX)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Wextra -pedantic")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -pedantic")
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake")
 find_package(Threads REQUIRED)
 find_package(Sweep REQUIRED)
 

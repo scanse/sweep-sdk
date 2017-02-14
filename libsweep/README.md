@@ -4,13 +4,16 @@ Low-level Scanse Sweep LiDAR library. Comes as C99 library `sweep.h` with option
 
 ### Quick Start
 
-    make
-    sudo make install
+    mkdir -p build
+    cd build
+    cmake .. -DCMAKE_BUILD_TYPE=Release
+    cmake --build .
+    sudo cmake --build . --target install
+    sudo ldconfig
 
 If you don't have a Sweep device yet you can build a dummy `libsweep.so` always returning static point cloud data:
 
-    make dummy
-    sudo make install
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DDUMMY=On
 
 This dummy library is API and ABI compatible. Once your device arrives switch out the `libsweep.so` shared library and you're good to go.
 
@@ -23,6 +26,12 @@ For example:
 
     gcc -Wall -Wextra -pedantic -std=c99 examples/example.c -lsweep
     g++ -Wall -Wextra -pedantic -std=c++11 examples/example.cc -lsweep
+
+In addition, we provide CMake integration. In your `CMakeLists.txt`:
+
+    FindPackage(Sweep REQUIRED)
+    target_link_libraries(.. ${LIBSWEEP_LIBRARY})
+    target_include_directories(.. ${LIBSWEEP_INCLUDE_DIR})
 
 See [example.c](examples/example.c) and [example.cc](examples/example.cc) for a C and C++ example, respectively.
 

@@ -44,6 +44,9 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
   SWEEP_ASSERT(port);
   SWEEP_ASSERT(bitrate > 0);
   SWEEP_ASSERT(error);
+  (void)port;
+  (void)bitrate;
+  (void)error;
 
   auto out = new sweep_device{/*scanning=*/false, /*motor_speed=*/5, /*sample_rate*/ 500, /*nth_scan_request=*/0};
   return out;
@@ -58,6 +61,8 @@ void sweep_device_destruct(sweep_device_s device) {
 void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+  (void)device;
+  (void)error;
 
   device->scanning = true;
 }
@@ -65,6 +70,8 @@ void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
 void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+  (void)device;
+  (void)error;
 
   device->scanning = false;
 }
@@ -72,6 +79,8 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
 sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+  (void)device;
+  (void)error;
 
   auto out = new sweep_scan{/*count=*/device->scanning ? 16 : 0, /*nth=*/device->nth_scan_request};
 
@@ -117,6 +126,8 @@ int32_t sweep_scan_get_angle(sweep_scan_s scan, int32_t sample) {
 int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
+  (void)scan;
+  (void)sample;
 
   return 2 * 100; // 2 meter
 }
@@ -124,6 +135,8 @@ int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample) {
 int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
+  (void)scan;
+  (void)sample;
 
   return 200;
 }
@@ -137,6 +150,8 @@ void sweep_scan_destruct(sweep_scan_s scan) {
 int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+  (void)device;
+  (void)error;
 
   return device->motor_speed;
 }
@@ -145,6 +160,7 @@ void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(hz >= 0 && hz <= 10);
   SWEEP_ASSERT(error);
+  (void)error;
 
   device->motor_speed = hz;
 }
@@ -152,6 +168,7 @@ void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error
 int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+  (void)error;
 
   return device->sample_rate;
 }
@@ -160,6 +177,7 @@ void sweep_device_set_sample_rate(sweep_device_s device, int32_t hz, sweep_error
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(hz == 500 || hz == 750 || hz == 1000);
   SWEEP_ASSERT(error);
+  (void)error;
 
   device->sample_rate = hz;
 }
@@ -167,4 +185,6 @@ void sweep_device_set_sample_rate(sweep_device_s device, int32_t hz, sweep_error
 void sweep_device_reset(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+  (void)device;
+  (void)error;
 }

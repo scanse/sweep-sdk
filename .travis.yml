@@ -34,14 +34,17 @@ before_install:
   - sudo update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10
 
 install:
-  # Make sure building and installing libsweep works
+  # Make sure building libsweep works
   - pushd libsweep
-  - make
-  - sudo make install
-  - make clean
+  - mkdir -p build
+  - cd build
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug
+  - cmake --build .
   # Then build and install dummy library to test bindings against without device attached
-  - make dummy
-  - sudo make install
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DDUMMY=On
+  - cmake --build .
+  - sudo cmake --build . --target install
+  - sudo ldconfig
   - popd
   # Install Python bindings
   - pushd sweeppy

@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <sweep/config.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,10 +18,6 @@ extern "C" {
 #define SWEEP_API
 #define SWEEP_PACKED
 #endif
-
-#define SWEEP_VERSION_MAJOR 0
-#define SWEEP_VERSION_MINOR 1
-#define SWEEP_VERSION ((SWEEP_VERSION_MAJOR << 16u) | SWEEP_VERSION_MINOR)
 
 #ifndef SWEEP_ASSERT
 #include <assert.h>
