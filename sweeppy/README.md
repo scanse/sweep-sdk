@@ -7,6 +7,8 @@ Requires `libsweep.so` to be installed.
 ### Quick Start
 
 ```python
+from sweeppy import Sweep
+
 with Sweep() as sweep:
     sweep.start_scanning()
 
@@ -16,7 +18,7 @@ with Sweep() as sweep:
 
 Note: `Sweep` objects need to be scoped using the `with` statement for resource management.
 
-See [sweeppy.py](sweeppy.py) for interface and example.
+See [sweeppy.py](sweeppy/__init__.py) for interface and example.
 
 ### Interface
 
@@ -43,8 +45,6 @@ class Sample:
     self.distance -> int
     self.signal_strength -> int
 ```
-
-See the `libsweep`
 
 ### License
 

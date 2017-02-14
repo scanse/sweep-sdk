@@ -210,21 +210,3 @@ class Sweep:
 
         if error:
             raise _error_to_exception(error)
-
-
-if __name__ == '__main__':
-    with Sweep() as sweep:
-        sweep.start_scanning()
-
-        speed = sweep.get_motor_speed()
-        rate = sweep.get_sample_rate()
-
-        print('Motor Speed: {} Hz'.format(speed))
-        print('Sample Rate: {} Hz'.format(rate))
-
-        # get_scans is coroutine-based generator lazily returning scans ad infinitum
-        for n, scan in enumerate(sweep.get_scans()):
-            print('{}\n'.format(scan))
-
-            if n == 3:
-                break
