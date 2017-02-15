@@ -1,8 +1,15 @@
 # SweepPy
 
-Python Scanse Sweep LiDAR library.
+Python Scanse Sweep LiDAR library. Work with Python2 and Python3.
 
 Requires `libsweep.so` to be installed.
+
+### Installation
+
+Install `sweeppy` module for Python3 locally:
+
+    python3 setup.py install --user
+
 
 ### Quick Start
 
@@ -18,7 +25,7 @@ with Sweep() as sweep:
 
 Note: `Sweep` objects need to be scoped using the `with` statement for resource management.
 
-See [sweeppy.py](sweeppy/__init__.py) for interface and example.
+See [sweeppy.py](sweeppy/__init__.py) for interface and [test.py](tests/test.py) for example usage.
 
 ### Interface
 
