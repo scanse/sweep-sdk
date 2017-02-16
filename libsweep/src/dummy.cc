@@ -80,6 +80,7 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
 sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+  SWEEP_ASSERT(device->is_scanning);
   (void)device;
   (void)error;
 
@@ -190,6 +191,7 @@ void sweep_device_set_sample_rate(sweep_device_s device, int32_t hz, sweep_error
 void sweep_device_reset(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+  SWEEP_ASSERT(!device->is_scanning);
   (void)device;
   (void)error;
 }
