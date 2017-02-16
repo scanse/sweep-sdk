@@ -8,10 +8,10 @@
 int main() try {
   sweep::sweep device;
 
-  device.start_scanning();
-
   std::cout << "Motor Speed: " << device.get_motor_speed() << " Hz" << std::endl;
   std::cout << "Sample Rate: " << device.get_sample_rate() << " Hz" << std::endl;
+
+  device.start_scanning();
 
   for (auto n = 0; n < 10; ++n) {
     const sweep::scan scan = device.get_scan();
