@@ -95,6 +95,7 @@ void sweep_device_destruct(sweep_device_s device) {
 void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+  SWEEP_ASSERT(!device->is_scanning);
 
   if (device->is_scanning)
     return;
@@ -265,6 +266,7 @@ void sweep_scan_destruct(sweep_scan_s scan) {
 int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+  SWEEP_ASSERT(!device->is_scanning);
 
   sweep::protocol::error_s protocolerror = nullptr;
 
@@ -295,6 +297,7 @@ void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(hz >= 0 && hz <= 10);
   SWEEP_ASSERT(error);
+  SWEEP_ASSERT(!device->is_scanning);
 
   uint8_t args[2] = {0};
   sweep::protocol::integral_to_ascii_bytes(hz, args);
@@ -322,6 +325,7 @@ void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error
 int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
+  SWEEP_ASSERT(!device->is_scanning);
 
   sweep::protocol::error_s protocolerror = nullptr;
 
@@ -368,6 +372,7 @@ void sweep_device_set_sample_rate(sweep_device_s device, int32_t hz, sweep_error
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(hz == 500 || hz == 750 || hz == 1000);
   SWEEP_ASSERT(error);
+  SWEEP_ASSERT(!device->is_scanning);
 
   // 01: 500-600Hz, 02: 750-800Hz, 03: 1000-1050Hz
   int32_t code = 1;
