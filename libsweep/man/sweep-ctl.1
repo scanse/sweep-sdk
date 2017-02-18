@@ -1,0 +1,45 @@
+.TH "sweep\-ctl" "1" "February 18, 2017" "User Manuals" ""
+.SH NAME
+.PP
+sweep\-ctl \- get and set Sweep LiDAR hardware properties
+.SH SYNOPSIS
+.PP
+sweep\-ctl dev get|set key [value]
+.SH DESCRIPTION
+.PP
+Command line tool to interact with the Sweep LiDAR device.
+.SH OPTIONS
+.TP
+.B get property
+Returns value currently set for property.
+.RS
+.RE
+.TP
+.B set property value
+Sets value for property.
+.RS
+.RE
+.SH PROPERTIES
+.TP
+.B motor_speed
+The device\[aq]s motor speed in Hz.
+.RS
+.RE
+.TP
+.B sample_rate
+The device\[aq]s sample rate in Hz.
+.RS
+.RE
+.SH EXAMPLE
+.IP
+.nf
+\f[C]
+$\ sweep\-ctl\ /dev/ttyUSB0\ get\ motor_speed
+3
+
+$\ sweep\-ctl\ /dev/ttyUSB0\ set\ motor_speed\ 5
+5
+\f[]
+.fi
+.SH AUTHORS
+Daniel Hofmann.

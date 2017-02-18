@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "sweep.h"
+#include <sweep/sweep.h>
 
 namespace sweep {
 
@@ -121,7 +121,7 @@ scan sweep::get_scan() {
   }
 
   return result;
-};
+}
 
 void sweep::reset() { ::sweep_device_reset(device.get(), detail::error_to_exception{}); }
 
