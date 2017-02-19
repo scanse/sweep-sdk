@@ -25,7 +25,9 @@ using PointCloud = std::vector<sf::CircleShape>;
 using PointCloudMutex = std::mutex;
 
 int main() try {
-  sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Example Viewer for Scanse Sweep LiDAR");
+  sf::ContextSettings settings;
+  settings.antialiasingLevel = 8;
+  sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Example Viewer for Scanse Sweep LiDAR", sf::Style::Default, settings);
   window.setFramerateLimit(30);
   window.setActive(false); // activated on render thread
 
@@ -98,7 +100,7 @@ int main() try {
       x = (x / (2 * kMaxLaserDistance)) * windowMinSize;
       y = (y / (2 * kMaxLaserDistance)) * windowMinSize;
 
-      sf::CircleShape point{2.0f, 4};
+      sf::CircleShape point{3.0f, 8};
       point.setPosition(x, windowMinSize - y);
 
       // Base transparency on signal strength
