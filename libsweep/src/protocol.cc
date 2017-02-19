@@ -2,13 +2,13 @@
 #include <stdlib.h>
 
 #include "protocol.h"
-#include "../include/Error.hpp"
+#include "error.hpp"
 
 namespace sweep {
 namespace protocol {
 
-struct Error : ::sweep::ErrorBase {
-  using ::sweep::ErrorBase::ErrorBase;
+struct error : ::sweep::error_base {
+  using ::sweep::error_base::error_base;
 };
 
 const uint8_t DATA_ACQUISITION_START[2] = {'D', 'S'};
@@ -83,13 +83,13 @@ void read_response_header(serial::device_s serial, const uint8_t cmd[2], respons
   uint8_t checksum = checksum_response_header(header);
 
   if (checksum != header->cmdSum) {
-    throw Error{"invalid response header checksum"};
+    throw error{"invalid response header checksum"};
   }
 
   bool ok = header->cmdByte1 == cmd[0] && header->cmdByte2 == cmd[1];
 
   if (!ok) {
-    throw Error{"invalid header response commands"};
+    throw error{"invalid header response commands"};
   }
 }
 
@@ -103,13 +103,13 @@ void read_response_param(serial::device_s serial, const uint8_t cmd[2], response
   uint8_t checksum = checksum_response_param(param);
 
   if (checksum != param->cmdSum) {
-    throw Error{"invalid response param header checksum"};
+    throw error{"invalid response param header checksum"};
   }
 
   bool ok = param->cmdByte1 == cmd[0] && param->cmdByte2 == cmd[1];
 
   if (!ok) {
-    throw Error{"invalid param response commands"};
+    throw error{"invalid param response commands"};
   }
 }
 
@@ -122,7 +122,7 @@ void read_response_scan(serial::device_s serial, response_scan_packet_s* scan) {
   uint8_t checksum = checksum_response_scan_packet(scan);
 
   if (checksum != scan->checksum) {
-    throw Error{"invalid scan response commands"};
+    throw error{"invalid scan response commands"};
   }
 }
 
@@ -136,7 +136,7 @@ void read_response_info_motor(serial::device_s serial, const uint8_t cmd[2], res
   bool ok = info->cmdByte1 == cmd[0] && info->cmdByte2 == cmd[1];
 
   if (!ok) {
-    throw Error{"invalid motor info response commands"};
+    throw error{"invalid motor info response commands"};
   }
 }
 
@@ -150,7 +150,7 @@ void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_
   bool ok = info->cmdByte1 == cmd[0] && info->cmdByte2 == cmd[1];
 
   if (!ok) {
-    throw Error{"invalid sample rate info response commands"};
+    throw error{"invalid sample rate info response commands"};
   }
 }
 

@@ -1,7 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "serial.h"
-#include "../../include/Error.hpp"
+#include "error.hpp"
 
 #include <errno.h>
 #include <stdbool.h>
@@ -18,8 +18,8 @@
 namespace sweep {
 namespace serial {
 
-struct Error : ::sweep::ErrorBase {
-  using ::sweep::ErrorBase::ErrorBase;
+struct error : ::sweep::error_base {
+  using ::sweep::error_base::error_base;
 };
 
 typedef struct device { int32_t fd; } device;
@@ -216,7 +216,7 @@ static speed_t get_baud(int32_t bitrate) {
     break;
 #endif
   default:
-    throw Error{"baud rate could not be determined"};
+    throw error{"baud rate could not be determined"};
   }
 
   return baud;
@@ -239,7 +239,7 @@ static bool wait_readable(device_s serial) {
     }
 
     // Otherwise there was some error
-    throw Error{"blocking on data to read failed"};
+    throw error{"blocking on data to read failed"};
   } else if (ret) {
     // Data Available
     return true;
@@ -257,17 +257,17 @@ device_s device_construct(const char* port, int32_t bitrate) {
   int32_t fd = open(port, O_RDWR | O_NOCTTY | O_NONBLOCK);
 
   if (fd == -1) {
-    throw Error{"opening serial port failed"};
+    throw error{"opening serial port failed"};
   }
 
   if (!isatty(fd)) {
-    throw Error{"serial port is not a TTY"};
+    throw error{"serial port is not a TTY"};
   }
 
   struct termios options;
 
   if (tcgetattr(fd, &options) == -1) {
-    throw Error{"querying terminal options failed"};
+    throw error{"querying terminal options failed"};
   }
 
   // Input Flags
@@ -296,7 +296,7 @@ device_s device_construct(const char* port, int32_t bitrate) {
 
   // flush the port
   if (tcflush(fd, TCIFLUSH) == -1) {
-    throw Error{"flushing the serial port failed"};
+    throw error{"flushing the serial port failed"};
   }
 
   // set port attributes
@@ -305,7 +305,7 @@ device_s device_construct(const char* port, int32_t bitrate) {
       SWEEP_ASSERT(false && "closing file descriptor during error handling failed");
     }
 
-    throw Error{"setting terminal options failed"};
+    throw error{"setting terminal options failed"};
   }
 
   auto out = new device{fd};
@@ -339,7 +339,7 @@ void device_read(device_s serial, void* to, int32_t len) {
         if (errno == EAGAIN || errno == EINTR) {
           continue;
         } else {
-          throw Error{"reading from serial device failed"};
+          throw error{"reading from serial device failed"};
         }
       } else {
         bytes_read += ret;
@@ -365,7 +365,7 @@ void device_write(device_s serial, const void* from, int32_t len) {
       if (errno == EAGAIN || errno == EINTR) {
         continue;
       } else {
-        throw Error{"writing to serial device failed"};
+        throw error{"writing to serial device failed"};
       }
     } else {
       bytes_written += ret;
@@ -379,7 +379,7 @@ void device_flush(device_s serial) {
   SWEEP_ASSERT(serial);
 
   if (tcflush(serial->fd, TCIFLUSH) == -1) {
-    throw Error{"flushing the serial port failed"};
+    throw error{"flushing the serial port failed"};
   }
 }
 

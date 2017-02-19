@@ -1,7 +1,7 @@
 #include "sweep.h"
 #include "protocol.h"
 #include "serial.h"
-#include "../include/Error.hpp"
+#include "error.hpp"
 
 #include <chrono>
 #include <thread>
@@ -43,10 +43,6 @@ void sweep_error_destruct(sweep_error_s error) {
 
 // internal implementations of functions - can throw exceptions
 namespace {
-
-struct Error : ::sweep::ErrorBase {
-  using ::sweep::ErrorBase::ErrorBase;
-};
 
 // forward declarations for internal definitions
 sweep_device_s sweep_device_construct_simple();
@@ -266,11 +262,18 @@ void sweep_device_reset(sweep_device_s device) {
 template <class F> auto translateException(F&& f, sweep_error_s* error) -> decltype(std::forward<F>(f)()) {
   try {
     return std::forward<F>(f)();
-  } catch (const sweep::ErrorBase& e) {
-    *error = new sweep_error{e.what()};
-  } catch (const std::bad_alloc&) {
+  }
+  catch (const std::bad_alloc&)
+  {
+    //TODO: maybe call std::terminate instead?
     *error = new sweep_error{"Could not allocate enough memory"};
-  } catch (...) {
+  }
+  catch (const std::exception& e)
+  {
+    *error = new sweep_error{e.what()};
+  }
+  catch (...)
+  {
     *error = new sweep_error{"Unknown exception"};
   }
   return {};
@@ -279,11 +282,18 @@ template <class F> auto translateException(F&& f, sweep_error_s* error) -> declt
 template <class F> void translateExceptionV(F&& f, sweep_error_s* error) {
   try {
     std::forward<F>(f)();
-  } catch (const sweep::ErrorBase& e) {
-    *error = new sweep_error{e.what()};
-  } catch (const std::bad_alloc&) {
+  }
+  catch (const std::bad_alloc&)
+  {
+    //TODO: maybe call std::terminate instead?
     *error = new sweep_error{"Could not allocate enough memory"};
-  } catch (...) {
+  }
+  catch (const std::exception& e)
+  {
+    *error = new sweep_error{e.what()};
+  }
+  catch (...)
+  {
     *error = new sweep_error{"Unknown exception"};
   }
 }
