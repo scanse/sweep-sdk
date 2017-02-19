@@ -178,10 +178,9 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
 
   sweep::protocol::response_scan_packet_s responses[SWEEP_MAX_SAMPLES];
 
-  int32_t first = 0;
-  int32_t last = SWEEP_MAX_SAMPLES;
+  int32_t received = 0;
 
-  for (int32_t received = 0; received < SWEEP_MAX_SAMPLES; ++received) {
+  while (received < SWEEP_MAX_SAMPLES) {
     sweep::protocol::read_response_scan(device->serial, &responses[received], &protocolerror);
 
     if (protocolerror) {
@@ -193,38 +192,25 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
     const bool is_sync = responses[received].sync_error & sweep::protocol::response_scan_packet_sync::sync;
     const bool has_error = (responses[received].sync_error >> 1) != 0; // shift out sync bit, others are errors
 
-    // Discard, try again. At the moment there is only a communication error bit. This may change.
-    if (has_error)
-      continue;
+    if (!has_error) {
+      received++;
+    }
 
-    // Only gather a full scan. We could improve this logic to improve on throughput
-    // with complicating the code much more (think spsc queue of all responses).
-    // On the other hand, we could also discard the sync bit and check repeating angles.
     if (is_sync) {
-      if (first != 0 && last == SWEEP_MAX_SAMPLES) {
-        last = received;
-        break;
-      }
-
-      if (first == 0 && last == SWEEP_MAX_SAMPLES) {
-        first = received;
-      }
+      break;
     }
   }
 
   auto out = new sweep_scan;
 
-  SWEEP_ASSERT(last - first >= 0);
-  SWEEP_ASSERT(last - first < SWEEP_MAX_SAMPLES);
+  out->count = received;
 
-  out->count = last - first;
-
-  for (int32_t it = 0; it < last - first; ++it) {
+  for (int32_t it = 0; it < received; ++it) {
     // Convert angle from compact serial format to float (in degrees).
     // In addition convert from degrees to milli-degrees.
-    out->angle[it] = sweep::protocol::u16_to_f32(responses[first + it].angle) * 1000.f;
-    out->distance[it] = responses[first + it].distance;
-    out->signal_strength[it] = responses[first + it].signal_strength;
+    out->angle[it]           = sweep::protocol::u16_to_f32(responses[it].angle) * 1000.f;
+    out->distance[it]        = responses[it].distance;
+    out->signal_strength[it] = responses[it].signal_strength;
   }
 
   return out;
