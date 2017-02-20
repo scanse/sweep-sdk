@@ -55,7 +55,7 @@ Response with no parameter echoed
 Command Symbol (2 bytes) | Status (2 bytes) | Sum of Status | Line Feed(LF)  
 | --- | --- | ---| --- |  
 
-Command with parameter echoed
+Response with parameter echoed
 
 Command Symbol (2 bytes) | Parameter (2 bytes) | Line Feed(LF) | Status (2 bytes) | Sum of Status | Line Feed(LF)  
 | --- | --- | ---| --- | --- | --- |    
