@@ -1,3 +1,4 @@
+import itertools
 import sys
 from . import Sweep
 
@@ -18,12 +19,7 @@ def main():
         sweep.start_scanning()
 
         # get_scans is coroutine-based generator lazily returning scans ad infinitum
-        for n, scan in enumerate(sweep.get_scans()):
-            print('{}\n'.format(scan))
+        for scan in itertools.islice(sweep.get_scans(), 3):
+            print(scan)
 
-            if n == 3:
-                break
-
-
-if __name__ == '__main__':
-    main()
+main()
