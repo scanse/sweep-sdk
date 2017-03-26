@@ -69,7 +69,7 @@ def _error_to_exception(error):
     assert error
     what = libsweep.sweep_error_message(error)
     libsweep.sweep_error_destruct(error)
-    return RuntimeError(what)
+    return RuntimeError(what.decode('ascii'))
 
 
 class Scan(collections.namedtuple('Scan', 'samples')):
@@ -99,11 +99,11 @@ class Sweep:
         assert simple or config, 'No arguments for bitrate, required'
 
         if simple:
-            port = ctypes.string_at(_.args[0])
+            port = ctypes.string_at(_.args[0].encode('ascii'))
             device = libsweep.sweep_device_construct_simple(port, ctypes.byref(error))
 
         if config:
-            port = ctypes.string_at(_.args[0])
+            port = ctypes.string_at(_.args[0].encode('ascii'))
             bitrate = ctypes.c_int32(_.args[1])
             device = libsweep.sweep_device_construct(port, bitrate, ctypes.byref(error))
 
