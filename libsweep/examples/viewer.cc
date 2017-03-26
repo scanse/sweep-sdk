@@ -18,6 +18,7 @@
 const constexpr auto kMaxLaserDistance = 5 * 100.;
 
 // Use cream for the background and denim for points
+static const sf::Color kColorCenter{255, 0, 0};
 static const sf::Color kColorCream{250, 240, 230};
 static const sf::Color kColorDenim{80, 102, 127};
 
@@ -120,6 +121,12 @@ int main(int argc, char* argv[]) try {
 
       localPointCloud.push_back(std::move(point));
     }
+
+    // display LiDAR position
+    sf::CircleShape point{3.0f, 8};
+    point.setPosition(windowMinSize / 2, windowMinSize / 2);
+    point.setFillColor(kColorCenter);
+    localPointCloud.push_back(std::move(point));
 
     {
       // Now swap in the new point cloud
