@@ -73,8 +73,8 @@ script:
   - popd
   # Test SweepPy bindings against the dummy library
   - pushd sweeppy
-  - python2 tests/test.py /dev/ttyUSB0
-  - python3 tests/test.py /dev/ttyUSB0
+  - python2 -m sweeppy /dev/ttyUSB0
+  - python3 -m sweeppy /dev/ttyUSB0
   - popd
   # Test SweepJs bindings against the dummy library
   - pushd sweepjs

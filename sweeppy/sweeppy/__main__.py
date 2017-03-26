@@ -1,10 +1,10 @@
 import sys
-from sweeppy import Sweep
+from . import Sweep
 
 
 def main():
     if len(sys.argv) < 2:
-        sys.exit('python test.py /dev/ttyUSB0')
+        sys.exit('python -m sweeppy /dev/ttyUSB0')
 
     dev = sys.argv[1]
 
