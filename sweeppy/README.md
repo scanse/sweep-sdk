@@ -12,13 +12,12 @@ Install `sweeppy` module for Python3 locally:
 python3 setup.py install --user
 ```
 
-### Test
+### Example for testing
 
-In the following: replace `/dev/ttyUSB0` with your device's port name.
+In the following, replace `/dev/ttyUSB0` with your device's port name. This executes [`__main__.py`](sweeppy/__main__.py) (also works without the installation step).
 
 ```bash
-cd tests
-python.exe test.py /dev/ttyUSB0
+python -m sweeppy /dev/ttyUSB0
 ```
 
 ### Windows:
@@ -32,8 +31,7 @@ python.exe setup.py install --user
 In the following: replace `COM5` with your device's port name (check "Device Manager -> COM Ports").
 
 ```bash
-cd tests
-python.exe test.py COM5
+python.exe -m sweeppy COM5
 ```
 
 ### Quick Start
@@ -50,7 +48,7 @@ with Sweep('/dev/ttyUSB0') as sweep:
 
 Note: `Sweep` objects need to be scoped using the `with` statement for resource management.
 
-See [sweeppy.py](sweeppy/__init__.py) for interface and [test.py](tests/test.py) for example usage.
+See [sweeppy.py](sweeppy/__init__.py) for interface and [example](sweeppy/__main__.py) for example usage.
 
 
 
