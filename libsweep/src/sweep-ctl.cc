@@ -11,7 +11,9 @@ static const auto kMotorSpeedCmd = "motor_speed";
 static const auto kSampleRateCmd = "sample_rate";
 
 static void usage() {
-  std::fprintf(stderr, "sweep-ctl dev get|set key [value]\n");
+  std::fprintf(stderr, "Usage:\n");
+  std::fprintf(stderr, "  sweep-ctl dev get (motor_speed|sample_rate)\n");
+  std::fprintf(stderr, "  sweep-ctl dev set (motor_speed|sample_rate) <value>\n");
   std::exit(EXIT_FAILURE);
 }
 
