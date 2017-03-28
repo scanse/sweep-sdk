@@ -1,0 +1,118 @@
+version: 1.0.{build}
+environment:
+  fast_finish: true
+install:
+- ps: >-
+    # Make sure building libsweep works
+
+    pushd libsweep
+
+    mkdir build
+
+    cd build
+
+    cmake .. -G "Visual Studio 14 2015"
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+    cmake --build . --config Release
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+
+    # Then build and install dummy library to test bindings against without device attached
+
+    cmake ..  -DDUMMY=On -G "Visual Studio 14 2015"
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+    cmake --build . --config Release
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+    cmake --build . --target install --config Release
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+    popd
+
+
+    # Add the installation dir to the environment variable PATH
+
+    $env:path += ";C:\Program Files (x86)\sweep\lib;C:\Program Files (x86)\sweep\include;C:\Program Files (x86)\sweep\include\sweep"
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+
+    # Install node bindings
+
+    pushd sweepjs
+
+    npm install
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+    popd
+
+
+
+    # Install python bindings
+
+    pushd sweeppy
+
+    python setup.py install
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+    popd
+build_script:
+- ps: >-
+    # Test libsweep examples against the dummy library
+
+    pushd libsweep/examples
+
+    mkdir build
+
+    cd build
+
+    cmake .. -G "Visual Studio 14 2015"
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+    cmake --build . --config Release
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+    cd Release
+
+    ./example-c PLACEHOLDER
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+    ./example-c++ PLACEHOLDER
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+    popd
+
+
+    # Test SweepPy bindings against the dummy library
+
+    pushd sweeppy
+
+    python tests/test.py COM0
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+    popd
+
+
+    # Test SweepJs bindings against the dummy library
+
+    pushd sweepjs
+
+    node index.js COM0
+
+    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
+
+    popd
