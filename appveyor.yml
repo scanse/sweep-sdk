@@ -100,7 +100,7 @@ build_script:
 
     pushd sweeppy
 
-    python tests/test.py COM0
+    python -m sweeppy COM0
 
     if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
 
