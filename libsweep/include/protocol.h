@@ -14,11 +14,6 @@
 namespace sweep {
 namespace protocol {
 
-typedef struct error* error_s;
-
-const char* error_message(error_s error);
-void error_destruct(error_s error);
-
 // Command Symbols
 
 extern const uint8_t DATA_ACQUISITION_START[2];
@@ -156,20 +151,19 @@ static_assert(sizeof(response_info_sample_rate_s) == 5, "response info sample ra
 
 // Read and write specific packets
 
-void write_command(sweep::serial::device_s serial, const uint8_t cmd[2], error_s* error);
+void write_command(sweep::serial::device_s serial, const uint8_t cmd[2]);
 
-void write_command_with_arguments(sweep::serial::device_s serial, const uint8_t cmd[2], const uint8_t arg[2], error_s* error);
+void write_command_with_arguments(sweep::serial::device_s serial, const uint8_t cmd[2], const uint8_t arg[2]);
 
-void read_response_header(sweep::serial::device_s serial, const uint8_t cmd[2], response_header_s* header, error_s* error);
+void read_response_header(sweep::serial::device_s serial, const uint8_t cmd[2], response_header_s* header);
 
-void read_response_param(sweep::serial::device_s serial, const uint8_t cmd[2], response_param_s* param, error_s* error);
+void read_response_param(sweep::serial::device_s serial, const uint8_t cmd[2], response_param_s* param);
 
-void read_response_scan(sweep::serial::device_s serial, response_scan_packet_s* scan, error_s* error);
+void read_response_scan(sweep::serial::device_s serial, response_scan_packet_s* scan);
 
-void read_response_info_motor(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_s* info, error_s* error);
+void read_response_info_motor(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_s* info);
 
-void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_sample_rate_s* info,
-                                    error_s* error);
+void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_sample_rate_s* info);
 
 // Some protocol conversion utilities
 inline float u16_to_f32(uint16_t v) { return ((float)(v >> 4u)) + (v & 15u) / 16.0f; }
