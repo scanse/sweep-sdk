@@ -16,6 +16,7 @@ def main():
         print('Motor Speed: {} Hz'.format(speed))
         print('Sample Rate: {} Hz'.format(rate))
 
+        # Starts scanning as soon as the motor is ready
         sweep.start_scanning()
 
         # get_scans is coroutine-based generator lazily returning scans ad infinitum

@@ -31,6 +31,9 @@ libsweep.sweep_device_start_scanning.argtypes = [ctypes.c_void_p, ctypes.c_void_
 libsweep.sweep_device_stop_scanning.restype = None
 libsweep.sweep_device_stop_scanning.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 
+libsweep.sweep_device_wait_until_motor_ready.restype = None
+libsweep.sweep_device_wait_until_motor_ready.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+
 libsweep.sweep_device_get_scan.restype = ctypes.c_void_p
 libsweep.sweep_device_get_scan.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 
@@ -48,6 +51,9 @@ libsweep.sweep_scan_get_distance.argtypes = [ctypes.c_void_p, ctypes.c_int32]
 
 libsweep.sweep_scan_get_signal_strength.restype = ctypes.c_int32
 libsweep.sweep_scan_get_signal_strength.argtypes = [ctypes.c_void_p, ctypes.c_int32]
+
+libsweep.sweep_device_get_motor_ready.restype = ctypes.c_bool
+libsweep.sweep_device_get_motor_ready.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 
 libsweep.sweep_device_get_motor_speed.restype = ctypes.c_int32
 libsweep.sweep_device_get_motor_speed.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
@@ -91,7 +97,7 @@ class Sweep:
 
         assert libsweep.sweep_is_abi_compatible(), 'Your installed libsweep is not ABI compatible with these bindings'
 
-        error = ctypes.c_void_p();
+        error = ctypes.c_void_p()
 
         simple = not _.args[1]
         config = all(_.args)
@@ -133,13 +139,33 @@ class Sweep:
             raise _error_to_exception(error)
 
     def stop_scanning(_):
-        _._assert_scoped();
+        _._assert_scoped()
 
-        error = ctypes.c_void_p();
+        error = ctypes.c_void_p()
         libsweep.sweep_device_stop_scanning(_.device, ctypes.byref(error))
 
         if error:
             raise _error_to_exception(error)
+
+    def wait_until_motor_ready(_):
+        _._assert_scoped()
+
+        error = ctypes.c_void_p()
+        libsweep.sweep_device_wait_until_motor_ready(_.device, ctypes.byref(error))
+
+        if error:
+            raise _error_to_exception(error)
+
+    def get_motor_ready(_):
+        _._assert_scoped()
+
+        error = ctypes.c_void_p()
+        is_ready = libsweep.sweep_device_get_motor_ready(_.device, ctypes.byref(error))
+
+        if error:
+            raise _error_to_exception(error)
+
+        return is_ready
 
     def get_motor_speed(_):
         _._assert_scoped()
@@ -205,9 +231,9 @@ class Sweep:
 
 
     def reset(_):
-        _._assert_scoped();
+        _._assert_scoped()
 
-        error = ctypes.c_void_p();
+        error = ctypes.c_void_p()
         libsweep.sweep_device_reset(_.device, ctypes.byref(error))
 
         if error:

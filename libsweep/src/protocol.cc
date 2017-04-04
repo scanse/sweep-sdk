@@ -1,5 +1,7 @@
+#include <chrono>
 #include <stdio.h>
 #include <stdlib.h>
+#include <thread>
 
 #include "protocol.h"
 
@@ -9,6 +11,7 @@ namespace protocol {
 const uint8_t DATA_ACQUISITION_START[2] = {'D', 'S'};
 const uint8_t DATA_ACQUISITION_STOP[2] = {'D', 'X'};
 const uint8_t MOTOR_SPEED_ADJUST[2] = {'M', 'S'};
+const uint8_t MOTOR_READY[2] = {'M', 'Z'};
 const uint8_t MOTOR_INFORMATION[2] = {'M', 'I'};
 const uint8_t SAMPLE_RATE_ADJUST[2] = {'L', 'R'};
 const uint8_t SAMPLE_RATE_INFORMATION[2] = {'L', 'I'};
@@ -75,8 +78,10 @@ void write_command(serial::device_s serial, const uint8_t cmd[2], error_s* error
   packet.cmdByte2 = cmd[1];
   packet.cmdParamTerm = '\n';
 
-  serial::error_s serialerror = nullptr;
+  // pause for 2ms, so the device is never bombarded with back to back commands
+  std::this_thread::sleep_for(std::chrono::milliseconds(2));
 
+  serial::error_s serialerror = nullptr;
   serial::device_write(serial, &packet, sizeof(cmd_packet_s), &serialerror);
 
   if (serialerror) {
@@ -195,7 +200,8 @@ void read_response_scan(serial::device_s serial, response_scan_packet_s* scan, e
   }
 }
 
-void read_response_info_motor(serial::device_s serial, const uint8_t cmd[2], response_info_motor_s* info, error_s* error) {
+void read_response_info_motor_ready(serial::device_s serial, const uint8_t cmd[2], response_info_motor_ready_s* info,
+                                    error_s* error) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
   SWEEP_ASSERT(info);
@@ -203,7 +209,32 @@ void read_response_info_motor(serial::device_s serial, const uint8_t cmd[2], res
 
   serial::error_s serialerror = nullptr;
 
-  serial::device_read(serial, info, sizeof(response_info_motor_s), &serialerror);
+  serial::device_read(serial, info, sizeof(response_info_motor_ready_s), &serialerror);
+
+  if (serialerror) {
+    *error = error_construct("unable to read response motor ready");
+    serial::error_destruct(serialerror);
+    return;
+  }
+
+  bool ok = info->cmdByte1 == cmd[0] && info->cmdByte2 == cmd[1];
+
+  if (!ok) {
+    *error = error_construct("invalid motor ready response commands");
+    return;
+  }
+}
+
+void read_response_info_motor_speed(serial::device_s serial, const uint8_t cmd[2], response_info_motor_speed_s* info,
+                                    error_s* error) {
+  SWEEP_ASSERT(serial);
+  SWEEP_ASSERT(cmd);
+  SWEEP_ASSERT(info);
+  SWEEP_ASSERT(error);
+
+  serial::error_s serialerror = nullptr;
+
+  serial::device_read(serial, info, sizeof(response_info_motor_speed_s), &serialerror);
 
   if (serialerror) {
     *error = error_construct("unable to read response motor info");

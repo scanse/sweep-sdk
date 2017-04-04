@@ -53,6 +53,7 @@ void publisher(const std::string& dev) try {
   pub.bind("tcp://127.0.0.1:5555");
 
   sweep::sweep device{dev.c_str()};
+  // Begins data acquisition as soon as motor speed stabilizes
   device.start_scanning();
 
   std::cout << "Publishing. Each dot is a full 360 degree scan." << std::endl;
