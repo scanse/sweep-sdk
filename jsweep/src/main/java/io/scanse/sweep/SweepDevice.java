@@ -3,9 +3,8 @@ package io.scanse.sweep;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
-
-import com.google.common.collect.AbstractIterator;
 
 import io.scanse.sweep.jna.DeviceJNAPointer;
 import io.scanse.sweep.jna.ErrorHandler;
@@ -33,7 +32,8 @@ public class SweepDevice implements AutoCloseable {
     public void startScanning() {
         checkHandle();
         if (!Sweep.ABI_COMPATIBLE) {
-            throw new AssertionError("Your installed libsweep is not ABI compatible with these bindings");
+            throw new AssertionError(
+                    "Your installed libsweep is not ABI compatible with these bindings");
         }
         ErrorHandler.call(SweepJNA::sweep_device_start_scanning, this.handle);
     }
@@ -63,12 +63,29 @@ public class SweepDevice implements AutoCloseable {
     }
 
     private Iterator<List<SweepSample>> iterator() {
-        return new AbstractIterator<List<SweepSample>>() {
+        return new Iterator<List<SweepSample>>() {
+
+            private boolean hasErrored = false;
 
             @Override
-            protected List<SweepSample> computeNext() {
-                return nextScan();
+            public List<SweepSample> next() {
+                if (hasErrored) {
+                    throw new NoSuchElementException(
+                            "An error previously occurred.");
+                }
+                try {
+                    return nextScan();
+                } catch (RuntimeException e) {
+                    hasErrored = true;
+                    throw e;
+                }
             }
+
+            @Override
+            public boolean hasNext() {
+                return !hasErrored;
+            }
+
         };
     }
 

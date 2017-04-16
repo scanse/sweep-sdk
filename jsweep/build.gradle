@@ -7,7 +7,6 @@ repositories {
 }
 
 dependencies {
-	compile group: 'com.google.guava', name: 'guava', version: '21.0'
     compileOnly group: 'net.java.dev.jna', name: 'jna-platform', version: '4.4.0'
     testCompile 'junit:junit:4.12'
 }
