@@ -353,6 +353,7 @@ void device_destruct(device_s serial) {
 
   error_s ignore = nullptr;
   device_flush(serial, &ignore);
+  close(serial->fd);
   (void)ignore; // nothing we can do here
 
   delete serial;
