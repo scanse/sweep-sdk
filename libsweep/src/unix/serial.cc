@@ -353,7 +353,11 @@ void device_destruct(device_s serial) {
 
   error_s ignore = nullptr;
   device_flush(serial, &ignore);
-  close(serial->fd);
+
+  if (close(serial->fd) == -1) {
+      SWEEP_ASSERT(false && "closing file descriptor during destruct failed");
+  }
+
   (void)ignore; // nothing we can do here
 
   delete serial;
