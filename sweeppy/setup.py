@@ -8,7 +8,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.md')) as f:
     readme_content = f.read()
 
 setup(name='sweeppy',
-      version='0.1',
+      version='1.1',
       description='Python bindings for libsweep',
       long_description=readme_content,
       author='Scanse',
