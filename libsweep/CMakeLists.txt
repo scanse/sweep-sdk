@@ -4,7 +4,7 @@ project(sweep C CXX)
 
 # Major for breaking ABI changes. Minor for features. Patch for bugfixes.
 
-set(SWEEP_VERSION_MAJOR 0)
+set(SWEEP_VERSION_MAJOR 1)
 set(SWEEP_VERSION_MINOR 1)
 set(SWEEP_VERSION_PATCH 0)
 

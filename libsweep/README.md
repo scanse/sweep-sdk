@@ -2,6 +2,8 @@
 
 Low-level Scanse Sweep LiDAR library. Comes as C99 library `sweep.h` with optional C++11 header `sweep.hpp` on top of it.
 
+
+
 ### Quick Start
 
 ```bash
@@ -87,6 +89,12 @@ Table of Contents:
 
 
 #### Version And ABI Management
+Compatibility:
+
+| libsweep | sweep firmware |
+| -------- | :------------: |
+| v1.x.x   | v1.1           |
+| v0.x.x   | v1.0           |
 
 ```c++
 SWEEP_VERSION_MAJOR
