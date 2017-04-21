@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
   // All functions which can potentially fail write into an error object
   sweep_error_s error = NULL;
 
-  // Create a Sweep device from default USB serial port; there is a second constructor for advanced usage
+  // Create a Sweep device from the specified USB serial port; there is a second constructor for advanced usage
   sweep_device_s sweep = sweep_device_construct_simple(port, &error);
   check(error);
 
@@ -45,15 +45,16 @@ int main(int argc, char* argv[]) {
   int32_t speed = sweep_device_get_motor_speed(sweep, &error);
   check(error);
 
-  fprintf(stdout, "Motor Speed: %" PRId32 " Hz\n", speed);
+  fprintf(stdout, "Motor Speed Setting: %" PRId32 " Hz\n", speed);
 
   // The Sweep's sample rate in Hz
   int32_t rate = sweep_device_get_sample_rate(sweep, &error);
   check(error);
 
-  fprintf(stdout, "Sample Rate: %" PRId32 " Hz\n", rate);
+  fprintf(stdout, "Sample Rate Setting: %" PRId32 " Hz\n", rate);
 
   // Capture scans
+  fprintf(stdout, "Beginning data acquisition as soon as motor speed stabilizes...\n");
   sweep_device_start_scanning(sweep, &error);
   check(error);
 

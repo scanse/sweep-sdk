@@ -73,6 +73,7 @@ int main(int argc, char* argv[]) try {
 
   // Now start scanning in the second thread, swapping in new points for every scan
   sweep::sweep device{argv[1]};
+  // Begins data acquisition as soon as motor is ready
   device.start_scanning();
 
   sweep::scan scan;

@@ -24,6 +24,7 @@ void error_destruct(error_s error);
 extern const uint8_t DATA_ACQUISITION_START[2];
 extern const uint8_t DATA_ACQUISITION_STOP[2];
 extern const uint8_t MOTOR_SPEED_ADJUST[2];
+extern const uint8_t MOTOR_READY[2];
 extern const uint8_t MOTOR_INFORMATION[2];
 extern const uint8_t SAMPLE_RATE_ADJUST[2];
 extern const uint8_t SAMPLE_RATE_INFORMATION[2];
@@ -136,11 +137,20 @@ static_assert(sizeof(response_info_version_s) == 21, "response info version size
 typedef struct {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
+  uint8_t motor_ready[2];
+  uint8_t term;
+} response_info_motor_ready_s;
+
+static_assert(sizeof(response_info_motor_ready_s) == 5, "response info motor ready size mismatch");
+
+typedef struct {
+  uint8_t cmdByte1;
+  uint8_t cmdByte2;
   uint8_t motor_speed[2];
   uint8_t term;
-} response_info_motor_s;
+} response_info_motor_speed_s;
 
-static_assert(sizeof(response_info_motor_s) == 5, "response info motor size mismatch");
+static_assert(sizeof(response_info_motor_speed_s) == 5, "response info motor speed size mismatch");
 
 typedef struct {
   uint8_t cmdByte1;
@@ -149,7 +159,7 @@ typedef struct {
   uint8_t term;
 } response_info_sample_rate_s;
 
-static_assert(sizeof(response_info_sample_rate_s) == 5, "response info sample rate siye mismatch");
+static_assert(sizeof(response_info_sample_rate_s) == 5, "response info sample rate size mismatch");
 
 // Done with in-memory representations for packets we send over the wire.
 #pragma pack(pop)
@@ -166,7 +176,11 @@ void read_response_param(sweep::serial::device_s serial, const uint8_t cmd[2], r
 
 void read_response_scan(sweep::serial::device_s serial, response_scan_packet_s* scan, error_s* error);
 
-void read_response_info_motor(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_s* info, error_s* error);
+void read_response_info_motor_ready(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_ready_s* info,
+                                    error_s* error);
+
+void read_response_info_motor_speed(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_speed_s* info,
+                                    error_s* error);
 
 void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_sample_rate_s* info,
                                     error_s* error);

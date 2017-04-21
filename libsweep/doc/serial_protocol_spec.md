@@ -75,6 +75,7 @@ Command Symbol (2 bytes) | Parameter (2 bytes) | Line Feed(LF) | Status (2 bytes
 **LR** - Adjust LiDAR Sample Rate  
 **LI** - LiDAR Info  
 **MI** - Motor Information  
+**MZ** - Motor Ready
 **IV** - Version Info  
 **ID** - Device Info  
 **RR** - Reset Device  
@@ -97,6 +98,14 @@ Header response
 D  |  S  |  Status  |  SUM  |  LF
 | --- | --- | ---| --- | --- |
 
+DS command is not guaranteed to succeed. There are a few conditions where it will fail. In the event of a failure, the two status bytes are used to communicate the failure.
+
+Status Code (2 byte ASCII code):
+- `'00'`: Successfully processed command. Data acquisition effectively initiated.
+- `'12'`: Failed to process command. Motor speed has not yet stabilized. Data acquisition NOT initiated. Wait until motor speed has stabilized before trying again.
+- `'13'`: Failed to process command. Motor is currently stationary (0Hz). Data acquisition NOT initiated. Adjust motor speed before trying again.
+
+### (SENSOR -> HOST)
 Data Block (7 bytes) - repeat indefinitely
 
 sync/error (1byte)  |  Azimuth - degrees(float) (2bytes)  |  Distance - cm(int) (2bytes)  |  Signal Strength (1byte)  | Checksum (1byte)
@@ -136,22 +145,39 @@ D  |  X  |  Status  |  SUM  |  LF
 
 ---
 #### MS - Adjust Motor Speed
-* Adjusts motor speed to integer value between 0Hz and 10Hz (Default Speed - 5Hz)  
+Adjusts motor speed setting to the specified code indicating a motor speed between 0Hz and 10Hz. This sets the target speed setting, but the motor will take time (~6 seconds) to adjust and stabilize to the new setting. The blue LED on the device will flash while the speed is stabilizing.
 
 #### (HOST -> SENSOR)
 
-M |  S |  Speed Parameter (2 bytes)  |  LF
+M |  S |  Speed Code (2 bytes)  |  LF
 | --- | --- | ---| --- |
-
-Speed Parameter:
-00 - 10 :  10 different speed levels according to Hz, increments of 1. ie: 01,02,..  
-00 = Motor stopped  
-(Note: ASCII encoded, ie: '05' = 0x3035)  
 
 #### (SENSOR -> HOST)
 
-M |  S |  Speed(Hz) (2 bytes)  |  LF  |  Status  |  Sum  |  LF
+M |  S |  Speed Code (2 bytes)  |  LF  |  Status  |  Sum  |  LF
 | --- | --- | ---| --- | --- | ---| --- |
+
+Speed Code (2 byte ASCII code):  
+- `'00'` = 0Hz
+- `'01'` = 1Hz
+- `'02'` = 2Hz
+- `'03'` = 3Hz
+- `'04'` = 4Hz
+- `'05'` = 5Hz
+- `'06'` = 6Hz
+- `'07'` = 7Hz
+- `'08'` = 8Hz
+- `'09'` = 9Hz
+ - `'10'`= 10Hz 
+
+(Note: codes are ASCII encoded, ie: in '05' = 0x3035)
+
+MS command is not guaranteed to succeed. There are a few conditions where it will fail. In the event of a failure, the two status bytes are used to communicate the failure.
+
+Status Code (2 byte ASCII code):
+- `'00'`: Successfully processed command. Motor speed setting effectively changed to new value.
+- `'11'`: Failed to process command. The command was sent with an invalid parameter. Use a valid parameter when trying again.
+- `'12'`: Failed to process command. Motor speed has not yet stabilized to the previous setting. Motor speed setting NOT changed to new value. Wait until motor speed has stabilized before trying to adjust it again.
 
 ---
 #### LR - Adjust LiDAR Sample Rate
@@ -159,27 +185,33 @@ Default Sample Rate - 500-600Hz
 
 #### (HOST -> SENSOR)
 
-L |  R |  Speed Parameter (2 bytes)  |  LF
+L |  R |  Sample Rate Code (2 bytes)  |  LF
 | --- | --- | ---| --- |
 
-Sample Rate Parameter Code: 
-01 = 500-600Hz  
-02 = 750-800Hz  
-03 = 1000-1050Hz  
-(Note: codes are ASCII encoded, ie: '02' = 0x3032)
 
 #### (SENSOR -> HOST)
 
 L |  R |  Sample Rate Code (2 bytes)  |  LF  |  Status  |  Sum  |  LF
 | --- | --- | ---| --- | ---| --- | --- | 
 
+Sample Rate Code (2 byte ASCII code):  
+- `'01'` = 500-600Hz  
+- `'02'` = 750-800Hz  
+- `'03'` = 1000-1050Hz  
+
+(Note: codes are ASCII encoded, ie: '02' = 0x3032)
+
+LR command is not guaranteed to succeed. There are a few conditions where it will fail. In the event of a failure, the two status bytes are used to communicate the failure.
+
+Status Code (2 byte ASCII code):
+- `'00'`: Successfully processed command. Sample Rate setting effectively changed to new value.
+- `'11'`: Failed to process command. The command was sent with an invalid parameter. Use a valid parameter when trying again.
+
+(Note: codes are ASCII encoded, ie: '11' = 0x3131)
+
 ---
 #### LI - LiDAR Information
-Returns current LiDAR Sample Rate Code:  
-01 = 500-600Hz  
-02 = 750-800Hz  
-03 = 1000-1050Hz  
-(Note: codes are ASCII encoded, ie: '02' = 0x3032)
+Returns the current LiDAR Sample Rate Code. 
 
 #### (HOST -> SENSOR)
 
@@ -191,10 +223,16 @@ L  |  I  |  LF
 L  |  I   |  Sample Rate Code (2 bytes)  |  LF  |
 | --- | --- | --- | --- |  
 
+Sample Rate Code (2 byte ASCII code):  
+- `'01'` = 500-600Hz  
+- `'02'` = 750-800Hz  
+- `'03'` = 1000-1050Hz  
+
+(Note: codes are ASCII encoded, ie: '02' = 0x3032)
+
 ---
 #### MI - Motor Information
-* Returns current motor speed code 00 - 10. (ie: rotation frequency in Hz)  
-(Note: motor speed code is ASCII encoded, ie: in '05' = 0x3035)
+Returns current motor speed code representing the rotation frequency (in Hz) of the current target motor speed setting. This does not mean that the motor speed is stabilized yet.
 
 #### (HOST -> SENSOR)
 
@@ -203,11 +241,50 @@ M  |  I  |  LF
 
 #### (SENSOR -> HOST)
 
-M  |  I   |  Speed(Hz) (2 bytes)  |  LF  |
+M  |  I   |  Speed Code (Hz) (2 bytes)  |  LF  |
 | --- | --- | ---| --- |
+
+Speed Code (2 byte ASCII code):  
+- `'00'` = 0Hz
+- `'01'` = 1Hz
+- `'02'` = 2Hz
+- `'03'` = 3Hz
+- `'04'` = 4Hz
+- `'05'` = 5Hz
+- `'06'` = 6Hz
+- `'07'` = 7Hz
+- `'08'` = 8Hz
+- `'09'` = 9Hz
+ - `'10'`= 10Hz 
+
+(Note: codes are ASCII encoded, ie: in '05' = 0x3035)
+
+---
+#### MZ - Motor Ready/Stabilized
+Returns a ready code representing whether or not the motor speed has stabilized.
+
+#### (HOST -> SENSOR)
+
+M  |  Z  |  LF
+| --- | --- | ---|
+
+#### (SENSOR -> HOST)
+
+M  |  Z   |  Ready Code (2 bytes)  |  LF  |
+| --- | --- | --- | --- |
+
+Ready Code (2 byte ASCII code):  
+
+- `'00'` = motor speed has stabilized.
+- `'01'` = motor speed has not yet stabilized.
+
+(Note: codes are ASCII encoded, ie: '01' = 0x3031)
+
+While adjusting motor speed, the sensor will NOT be able to accomplish certain actions such as `DS` or `MS`. After powering on the device or adjusting motor speed, the device will allow ~6 seconds for the motor speed to stabilize. The `MZ` command allows the user to repeatedly query the motor speed state until the return code indicates the motor speed has stabilized. After the motor speed is noted as stable, the user can safely send commands like `DS` or `MS`.
 
 ---
 #### IV - Version Details
+Returns details about the device's version information.
 * Model
 * Protocol Version 
 * Firmware Version
@@ -231,6 +308,7 @@ Example:
 ---
 
 #### ID - Device Info
+Returns details about the device's current state/settings.
 * Bit Rate
 * Laser State
 * Mode
@@ -254,7 +332,7 @@ Example:
 ---
     
 #### RR - Reset Device
-* Reset Scanner
+Resets the device. Green LED indicates the device is resetting and cannot receive commands. When the LED turns blue, the device has successfully reset.
 
 #### (HOST -> SENSOR)
 
