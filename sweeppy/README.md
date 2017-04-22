@@ -62,7 +62,6 @@ class Sweep:
     def start_scanning(self) -> None
     def stop_scanning(self) -> None
 
-    def wait_until_motor_ready(self) -> None
     def get_motor_ready(self) -> bool
     def get_motor_speed(self) -> int (Hz)
     def set_motor_speed(self, speed) -> None

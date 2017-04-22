@@ -31,9 +31,6 @@ libsweep.sweep_device_start_scanning.argtypes = [ctypes.c_void_p, ctypes.c_void_
 libsweep.sweep_device_stop_scanning.restype = None
 libsweep.sweep_device_stop_scanning.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 
-libsweep.sweep_device_wait_until_motor_ready.restype = None
-libsweep.sweep_device_wait_until_motor_ready.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-
 libsweep.sweep_device_get_scan.restype = ctypes.c_void_p
 libsweep.sweep_device_get_scan.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 
@@ -143,15 +140,6 @@ class Sweep:
 
         error = ctypes.c_void_p()
         libsweep.sweep_device_stop_scanning(_.device, ctypes.byref(error))
-
-        if error:
-            raise _error_to_exception(error)
-
-    def wait_until_motor_ready(_):
-        _._assert_scoped()
-
-        error = ctypes.c_void_p()
-        libsweep.sweep_device_wait_until_motor_ready(_.device, ctypes.byref(error))
 
         if error:
             raise _error_to_exception(error)

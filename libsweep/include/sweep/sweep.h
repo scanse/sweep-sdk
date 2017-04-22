@@ -58,7 +58,7 @@ SWEEP_API void sweep_device_start_scanning(sweep_device_s device, sweep_error_s*
 SWEEP_API void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error);
 
 // Blocks until the device is ready (calibration complete and motor speed stabilized)
-SWEEP_API void sweep_device_wait_until_motor_ready(sweep_device_s device, sweep_error_s* error);
+void sweep_device_wait_until_motor_ready(sweep_device_s device, sweep_error_s* error);
 
 // Retrieves a scan from the queue (will block until scan is available)
 SWEEP_API sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error);

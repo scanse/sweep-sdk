@@ -16,7 +16,6 @@ private:
 
   static NAN_METHOD(startScanning);
   static NAN_METHOD(stopScanning);
-  static NAN_METHOD(waitUntilMotorReady);
 
   static NAN_METHOD(scan);
 

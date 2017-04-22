@@ -194,7 +194,7 @@ void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error)
 
 Signals the `sweep_device_s` to start scanning.
 If the motor is stationary (0Hz), will automatically set motor speed to default 5Hz.
-Will block until the the motor speed is stable (uses `sweep_device_wait_until_motor_ready` internally).
+Will block until the device is ready (calibration routine complete + motor speed is stable).
 Starts internal background thread to accumulate and queue up scans. Scans can then be retrieved using `sweep_device_get_scan`.
 In case of error a `sweep_error_s` will be written into `error`.
 
@@ -208,19 +208,10 @@ Blocks for ~35ms to allow time for the trailing data stream to collect and flush
 In case of error a `sweep_error_s` will be written into `error`.
 
 ```c++
-void sweep_device_wait_until_motor_ready(sweep_device_s device, sweep_error_s* error)
-```
-
-Blocks until the `sweep_device_s` is ready, or the method times out (after 8 seconds). A device is ready when the motor speed has stabilized to the current setting, and the calibration routine is complete. The worst case wait time is around 6 seconds, which includes both motor stabilization and calibration. For visual reference, the blue LED on the device will blink unil the device is ready. This method is useful when the device is powered on, or when adjusting motor speed. If the device is NOT ready, it will respond to certain commands (`DS` or `MS`) with a status code indicating a failure to execute the command. Therefore, it is best practice to avoid this entirely by calling `sweep_device_wait_until_motor_ready` before calling a command that requires a ready device.
-In case of error a `sweep_error_s` will be written into `error`.
-
-```c++
 bool sweep_device_get_motor_ready(sweep_device_s device, sweep_error_s* error)
 ```
 
-Returns `true` if the device is ready. A device is ready if the motor speed has stabilized to the current setting, and the calibration routine is complete. 
-This method can be used to create a non-blocking alternative to `sweep_device_wait_until_motor_ready` in user programs.
-For visual reference, the blue LED on the device will blink during calibration/speed stabilization, and stop blinking when the device is ready.
+Returns `true` if the device is ready. A device is ready when the motor speed has stabilized to the current setting, and the calibration routine is complete. For visual reference, the blue LED on the device will blink unil the device is ready. This method is useful when the device is powered on, or when adjusting motor speed. If the device is NOT ready, it will respond to certain commands (`DS` or `MS`) with a status code indicating a failure to execute the command.
 In case of error a `sweep_error_s` will be written into `error`.
 
 ```c++

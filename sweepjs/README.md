@@ -42,9 +42,7 @@ sweep = new Sweep('/dev/ttyUSB0');
 sweep.startScanning();
 sweep.stopScanning();
 
-// waits until device is ready (calibration routine complete and motor speed stabilized)
-sweep.waitUntilMotorReady();
-// ready === true if device is ready, false otherwise
+// true if device is ready (calibration routine complete + motor speed stabilized)
 ready = sweep.getMotorReady();
 // integer value between 0:10 (in HZ)
 speed = sweep.getMotorSpeed();

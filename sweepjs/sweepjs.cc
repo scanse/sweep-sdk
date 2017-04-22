@@ -61,7 +61,6 @@ NAN_MODULE_INIT(Sweep::Init) {
 
   SetPrototypeMethod(fnTp, "startScanning", startScanning);
   SetPrototypeMethod(fnTp, "stopScanning", stopScanning);
-  SetPrototypeMethod(fnTp, "waitUntilMotorReady", waitUntilMotorReady);
   SetPrototypeMethod(fnTp, "scan", scan);
   SetPrototypeMethod(fnTp, "getMotorReady", getMotorReady);
   SetPrototypeMethod(fnTp, "getMotorSpeed", getMotorSpeed);
@@ -133,16 +132,6 @@ NAN_METHOD(Sweep::stopScanning) {
   }
 
   ::sweep_device_stop_scanning(self->device.get(), ErrorToNanException{});
-}
-
-NAN_METHOD(Sweep::waitUntilMotorReady) {
-  auto* const self = Nan::ObjectWrap::Unwrap<Sweep>(info.Holder());
-
-  if (info.Length() != 0) {
-    return Nan::ThrowTypeError("No arguments expected");
-  }
-
-  ::sweep_device_wait_until_motor_ready(self->device.get(), ErrorToNanException{});
 }
 
 class AsyncScanWorker final : public Nan::AsyncWorker {
