@@ -19,17 +19,23 @@ if (require.main === module) {
 
   console.log('Starting data acquisition as soon as motor is ready...');
   sweep.startScanning();
-
+  
+  console.log('Retrieving 1 scan...');
   sweep.scan(function (err, samples) {
     if (err) {
-      return console.log(err);
+      console.log(err);
+      return;
     }
 
+    console.log("Printing samples from first (partial) scan...");
     samples.forEach(function (sample) {
       var fmt = util.format('angle: %d distance %d signal strength: %d',
         sample.angle, sample.distance, sample.signal);
       console.log(fmt);
     });
+  
+    console.log('Stopping data acquisition...');
+    sweep.stopScanning();
   });
 }
 
