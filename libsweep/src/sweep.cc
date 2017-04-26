@@ -261,8 +261,13 @@ void sweep_device_wait_until_motor_ready(sweep_device_s device, sweep_error_s* e
 
   sweep_error_s readyerror = nullptr;
   bool motor_ready;
-  // Only check for 8 seconds (16 iterations with 500ms pause)
-  for (auto i = 0; i < 16; ++i) {
+  // Motor adjustments can take 7-9 seconds, so timeout after 10 seconds to be safe
+  // (20 iterations with 500ms pause)
+  for (auto i = 0; i < 20; ++i) {
+    if (i > 0) {
+      // only check every 500ms, to avoid unecessary processing if this is executing in a dedicated thread
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
     motor_ready = sweep_device_get_motor_ready(device, &readyerror);
     if (readyerror) {
       *error = readyerror;
@@ -271,8 +276,6 @@ void sweep_device_wait_until_motor_ready(sweep_device_s device, sweep_error_s* e
     if (motor_ready) {
       return;
     }
-    // only check every 500ms, to avoid unecessary processing if this is executing in a dedicated thread
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
   *error = sweep_error_construct("timed out waiting for motor to stabilize");
 }
