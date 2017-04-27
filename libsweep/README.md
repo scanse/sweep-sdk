@@ -82,19 +82,23 @@ Before jumping into details, here are the library's main design ideas:
 - Fixed-size and signed integers for portability and runtime checking (think sanitizers).
 
 Table of Contents:
+- [Firmware Compatibility](#firmware-compatibility)
 - [Version and ABI Management](#version-and-abi-management)
 - [Error Handling](#error-handling)
 - [Device Interaction](#device-interaction)
 - [Full 360 Degree Scan](#full-360-degree-scan)
 
-
-#### Version And ABI Management
-Compatibility:
-
+#### Firmware Compatibility
 | libsweep | sweep firmware |
 | -------- | :------------: |
-| v1.x.x   | v1.1           |
+| v1.1.1   | v1.2           |
+| v1.1.0   | v1.1           |
 | v0.x.x   | v1.0           |
+
+You can check the firmware version installed on your sweep device by using a serial terminal (see [manual](https://s3.amazonaws.com/scanse/Sweep_user_manual.pdf)) or more easily using the sweep visualizer (see [instructions](https://support.scanse.io/hc/en-us/articles/224557908-Upgrading-Firmware)).
+
+
+#### Version And ABI Management
 
 ```c++
 SWEEP_VERSION_MAJOR
