@@ -64,7 +64,7 @@ For example:
 
 In addition, we provide CMake integration. In your `CMakeLists.txt`:
 
-    FindPackage(Sweep REQUIRED)
+    find_package(Sweep REQUIRED)
     target_link_libraries(.. ${LIBSWEEP_LIBRARY})
     target_include_directories(.. ${LIBSWEEP_INCLUDE_DIR})
 
