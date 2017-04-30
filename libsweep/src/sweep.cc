@@ -1,59 +1,10 @@
 #include "sweep.h"
 #include "protocol.h"
+#include "queue.h"
 #include "serial.h"
 
-#include <atomic>
 #include <chrono>
-#include <condition_variable>
-#include <mutex>
-#include <queue>
 #include <thread>
-
-// A threadsafe-queue to store and retrieve scans
-class ScanQueue {
-public:
-  ScanQueue(int32_t max) : max_size(max), the_queue(), the_mutex(), the_cond_var() {}
-
-  // Empty the queue
-  void flush() {
-    std::unique_lock<std::mutex> lock(the_mutex);
-    while (!the_queue.empty()) {
-      the_queue.pop();
-    }
-  }
-
-  // Add an element to the queue.
-  void enqueue(sweep_scan_s scan) {
-    std::lock_guard<std::mutex> lock(the_mutex);
-
-    // if necessary, remove the oldest scan to make room for new
-    if (static_cast<int32_t>(the_queue.size()) >= max_size)
-      the_queue.pop();
-
-    the_queue.push(scan);
-    the_cond_var.notify_one();
-  }
-
-  // If the queue is empty, wait till an element is avaiable.
-  sweep_scan_s dequeue() {
-    std::unique_lock<std::mutex> lock(the_mutex);
-    // wait until queue is not empty
-    while (the_queue.empty()) {
-      // the_cond_var could wake up the thread spontaneously, even if the queue is still empty...
-      // so put this wakeup inside a while loop, such that the empty check is performed whenever it wakes up
-      the_cond_var.wait(lock); // release lock as long as the wait and reaquire it afterwards.
-    }
-    sweep_scan_s scan = the_queue.front();
-    the_queue.pop();
-    return scan;
-  }
-
-private:
-  int32_t max_size;
-  std::queue<sweep_scan_s> the_queue;
-  mutable std::mutex the_mutex;
-  std::condition_variable the_cond_var;
-};
 
 int32_t sweep_get_version(void) { return SWEEP_VERSION; }
 bool sweep_is_abi_compatible(void) { return sweep_get_version() >> 16u == SWEEP_VERSION_MAJOR; }
@@ -65,7 +16,7 @@ typedef struct sweep_error {
 typedef struct sweep_device {
   sweep::serial::device_s serial; // serial port communication
   bool is_scanning;
-  std::unique_ptr<ScanQueue> scan_queue;
+  sweep::queue::queue<sweep_scan_s> scan_queue;
   std::atomic<bool> stop_thread;
 } sweep_device;
 
@@ -119,8 +70,7 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
   }
 
   // initialize assuming the device is scanning
-  auto out =
-      new sweep_device{serial, /*is_scanning=*/true, std::unique_ptr<ScanQueue>(new ScanQueue(20)), /*stop_thread=*/{false}};
+  auto out = new sweep_device{serial, /*is_scanning=*/true, /*scan_queue=*/{20}, /*stop_thread=*/{false}};
 
   // send a stop scanning command in case the scanner was powered on and scanning
   sweep_error_s stoperror = nullptr;
@@ -192,7 +142,7 @@ void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
   }
 
   // Start SCAN WORKER
-  device->scan_queue->flush();
+  device->scan_queue.clear();
   device->is_scanning = true;
   // START background worker thread
   device->stop_thread = false;
@@ -287,7 +237,7 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
   SWEEP_ASSERT(device->is_scanning);
   (void)error;
 
-  auto out = device->scan_queue->dequeue();
+  auto out = device->scan_queue.dequeue();
   return out;
 }
 
@@ -329,7 +279,7 @@ void sweep_device_accumulate_scans(sweep_device_s device) {
       }
 
       // place the scan in the queue
-      device->scan_queue->enqueue(out);
+      device->scan_queue.enqueue(out);
 
       // place the sync reading at the start for the next scan
       responses[0] = responses[received - 1];
