@@ -12,9 +12,9 @@
 // A threadsafe-queue to store and retrieve scans
 class ScanQueue {
 public:
-  ScanQueue(int32_t max) : the_queue(), the_mutex(), the_cond_var() { max_size = max; }
+  ScanQueue(int32_t max) : max_size(max), the_queue(), the_mutex(), the_cond_var() {}
 
-  // empty the queue
+  // Empty the queue
   void flush() {
     std::unique_lock<std::mutex> lock(the_mutex);
     while (!the_queue.empty()) {
@@ -27,7 +27,7 @@ public:
     std::lock_guard<std::mutex> lock(the_mutex);
 
     // if necessary, remove the oldest scan to make room for new
-    if (the_queue.size() >= max_size)
+    if (static_cast<int32_t>(the_queue.size()) >= max_size)
       the_queue.pop();
 
     the_queue.push(scan);
@@ -285,6 +285,7 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
   SWEEP_ASSERT(device->is_scanning);
+  (void)error;
 
   auto out = device->scan_queue->dequeue();
   return out;
