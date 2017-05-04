@@ -1,17 +1,18 @@
+#include "error.hpp"
+#include "protocol.hpp"
+#include "queue.hpp"
+#include "serial.hpp"
+
 #include "sweep.h"
-#include "protocol.h"
-#include "queue.h"
-#include "serial.h"
 
 #include <chrono>
+#include <string>
 #include <thread>
 
 int32_t sweep_get_version(void) { return SWEEP_VERSION; }
 bool sweep_is_abi_compatible(void) { return sweep_get_version() >> 16u == SWEEP_VERSION_MAJOR; }
 
-typedef struct sweep_error {
-  const char* what; // always literal, do not deallocate
-} sweep_error;
+typedef struct sweep_error { std::string what; } sweep_error;
 
 typedef struct sweep_device {
   sweep::serial::device_s serial; // serial port communication
@@ -40,7 +41,7 @@ static sweep_error_s sweep_error_construct(const char* what) {
 const char* sweep_error_message(sweep_error_s error) {
   SWEEP_ASSERT(error);
 
-  return error->what;
+  return error->what.c_str();
 }
 
 void sweep_error_destruct(sweep_error_s error) {
@@ -49,54 +50,49 @@ void sweep_error_destruct(sweep_error_s error) {
   delete error;
 }
 
-sweep_device_s sweep_device_construct_simple(const char* port, sweep_error_s* error) {
+sweep_device_s sweep_device_construct_simple(const char* port, sweep_error_s* error) try {
   SWEEP_ASSERT(error);
-
   return sweep_device_construct(port, 115200, error);
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
+  return nullptr;
 }
 
-sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_error_s* error) {
+sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_error_s* error) try {
   SWEEP_ASSERT(port);
   SWEEP_ASSERT(bitrate > 0);
   SWEEP_ASSERT(error);
 
-  sweep::serial::error_s serialerror = nullptr;
-  sweep::serial::device_s serial = sweep::serial::device_construct(port, bitrate, &serialerror);
-
-  if (serialerror) {
-    *error = sweep_error_construct(sweep::serial::error_message(serialerror));
-    sweep::serial::error_destruct(serialerror);
-    return nullptr;
-  }
+  sweep::serial::device_s serial = sweep::serial::device_construct(port, bitrate);
 
   // initialize assuming the device is scanning
   auto out = new sweep_device{serial, /*is_scanning=*/true, /*scan_queue=*/{20}, /*stop_thread=*/{false}};
 
   // send a stop scanning command in case the scanner was powered on and scanning
-  sweep_error_s stoperror = nullptr;
-  sweep_device_stop_scanning(out, &stoperror);
-  if (stoperror) {
-    sweep_error_destruct(stoperror);
-    *error = sweep_error_construct("Failed to create sweep device.");
-    return nullptr;
-  }
+  sweep_device_stop_scanning(out, error);
 
   return out;
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
+  return nullptr;
 }
 
 void sweep_device_destruct(sweep_device_s device) {
   SWEEP_ASSERT(device);
 
-  sweep_error_s ignore = nullptr;
-  sweep_device_stop_scanning(device, &ignore);
-  (void)ignore; // nothing we can do here
+  try {
+    sweep_error_s ignore = nullptr;
+    sweep_device_stop_scanning(device, &ignore);
+  } catch (...) {
+    // nothing we can do here
+  }
 
   sweep::serial::device_destruct(device->serial);
 
   delete device;
 }
 
-void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
+void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
   SWEEP_ASSERT(!device->is_scanning);
@@ -105,41 +101,19 @@ void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
     return;
 
   // Get the current motor speed setting
-  sweep_error_s speederror = nullptr;
-  int32_t speed = sweep_device_get_motor_speed(device, &speederror);
-  if (speederror) {
-    *error = sweep_error_construct("unable to start scanning. could not verify motor speed.");
-    sweep_error_destruct(speederror);
-    return;
-  }
+  int32_t speed = sweep_device_get_motor_speed(device, error);
+
   // Check that the motor is not stationary
   if (speed == 0 /*Hz*/) {
     // If the motor is stationary, adjust it to default 5Hz
-    sweep_device_set_motor_speed(device, 5 /*Hz*/, &speederror);
-    if (speederror) {
-      *error = sweep_error_construct("unable to start scanning. failed to start motor.");
-      sweep_error_destruct(speederror);
-      return;
-    }
+    sweep_device_set_motor_speed(device, 5 /*Hz*/, error);
   }
 
   // Make sure the motor is stabilized so the DS command doesn't fail
-  sweep_error_s stabilityerror = nullptr;
-  sweep_device_wait_until_motor_ready(device, &stabilityerror);
-  if (stabilityerror) {
-    *error = sweep_error_construct("unable to start scanning. motor stability could not be verified.");
-    sweep_error_destruct(stabilityerror);
-    return;
-  }
+  sweep_device_wait_until_motor_ready(device, error);
 
   // Attempt to start scanning
-  sweep_error_s starterror = nullptr;
-  sweep_device_attempt_start_scanning(device, &starterror);
-  if (starterror) {
-    *error = sweep_error_construct("unable to start scanning.");
-    sweep_error_destruct(starterror);
-    return;
-  }
+  sweep_device_attempt_start_scanning(device, error);
 
   // Start SCAN WORKER
   device->scan_queue.clear();
@@ -150,88 +124,62 @@ void sweep_device_start_scanning(sweep_device_s device, sweep_error_s* error) {
   std::thread th = std::thread(sweep_device_accumulate_scans, device);
   // detach the thread so that it runs in the background and cleans itself up
   th.detach();
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
 }
 
-void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
+void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
 
   // STOP the background thread from accumulating scans
   device->stop_thread = true;
 
-  sweep::protocol::error_s protocolerror = nullptr;
-  sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_STOP, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to send stop scanning command");
-    sweep::protocol::error_destruct(protocolerror);
-    return;
-  }
+  sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_STOP);
 
   // Wait some time, for the device to register the stop cmd and stop sending data blocks
   std::this_thread::sleep_for(std::chrono::milliseconds(35));
 
   // Flush the left over data blocks, received after sending the stop cmd
   // This will also flush the response to the stop cmd
-  sweep::serial::error_s serialerror = nullptr;
-  sweep::serial::device_flush(device->serial, &serialerror);
-
-  if (serialerror) {
-    *error = sweep_error_construct("unable to flush serial device for stopping scanning command");
-    sweep::serial::error_destruct(serialerror);
-    return;
-  }
+  sweep::serial::device_flush(device->serial);
 
   // Write another stop cmd so we can read a response
-  sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_STOP, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to send stop scanning command");
-    sweep::protocol::error_destruct(protocolerror);
-    return;
-  }
+  sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_STOP);
 
   // read the response
   sweep::protocol::response_header_s response;
-  sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_STOP, &response, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to receive stop scanning command response");
-    sweep::protocol::error_destruct(protocolerror);
-    return;
-  }
+  sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_STOP, &response);
 
   device->is_scanning = false;
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
 }
 
-void sweep_device_wait_until_motor_ready(sweep_device_s device, sweep_error_s* error) {
+void sweep_device_wait_until_motor_ready(sweep_device_s device, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
   SWEEP_ASSERT(!device->is_scanning);
 
-  sweep_error_s readyerror = nullptr;
-  bool motor_ready;
   // Motor adjustments can take 7-9 seconds, so timeout after 10 seconds to be safe
   // (20 iterations with 500ms pause)
-  for (auto i = 0; i < 20; ++i) {
+  for (int32_t i = 0; i < 20; ++i) {
     if (i > 0) {
       // only check every 500ms, to avoid unecessary processing if this is executing in a dedicated thread
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-    motor_ready = sweep_device_get_motor_ready(device, &readyerror);
-    if (readyerror) {
-      *error = readyerror;
+
+    if (sweep_device_get_motor_ready(device, error))
       return;
-    }
-    if (motor_ready) {
-      return;
-    }
   }
+
   *error = sweep_error_construct("timed out waiting for motor to stabilize");
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
 }
 
 // Retrieves a scan from the queue (will block until scan is available)
-sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) {
+sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
   SWEEP_ASSERT(device->is_scanning);
@@ -239,23 +187,21 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
 
   auto out = device->scan_queue.dequeue();
   return out;
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
+  return nullptr;
 }
 
 // Accumulates scans in the queue  (method to be used by background thread)
-void sweep_device_accumulate_scans(sweep_device_s device) {
+void sweep_device_accumulate_scans(sweep_device_s device) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(device->is_scanning);
 
-  sweep::protocol::error_s protocolerror = nullptr;
   sweep::protocol::response_scan_packet_s responses[SWEEP_MAX_SAMPLES];
   int32_t received = 0;
 
   while (!device->stop_thread && received < SWEEP_MAX_SAMPLES) {
-    sweep::protocol::read_response_scan(device->serial, &responses[received], &protocolerror);
-    if (protocolerror) {
-      sweep::protocol::error_destruct(protocolerror);
-      break;
-    }
+    sweep::protocol::read_response_scan(device->serial, &responses[received]);
 
     const bool is_sync = responses[received].sync_error & sweep::protocol::response_scan_packet_sync::sync;
     const bool has_error = (responses[received].sync_error >> 1) != 0; // shift out sync bit, others are errors
@@ -288,111 +234,72 @@ void sweep_device_accumulate_scans(sweep_device_s device) {
       received = 1;
     }
   }
+} catch (const std::exception& e) {
+  // worker thread is dead at this point
 }
 
-bool sweep_device_get_motor_ready(sweep_device_s device, sweep_error_s* error) {
+bool sweep_device_get_motor_ready(sweep_device_s device, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
   SWEEP_ASSERT(!device->is_scanning);
 
-  sweep::protocol::error_s protocolerror = nullptr;
-
-  sweep::protocol::write_command(device->serial, sweep::protocol::MOTOR_READY, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to send motor ready command");
-    sweep::protocol::error_destruct(protocolerror);
-    return false;
-  }
+  sweep::protocol::write_command(device->serial, sweep::protocol::MOTOR_READY);
 
   sweep::protocol::response_info_motor_ready_s response;
-  sweep::protocol::read_response_info_motor_ready(device->serial, sweep::protocol::MOTOR_READY, &response, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to receive motor ready command response");
-    sweep::protocol::error_destruct(protocolerror);
-    return false;
-  }
+  sweep::protocol::read_response_info_motor_ready(device->serial, sweep::protocol::MOTOR_READY, &response);
 
   int32_t ready_code = sweep::protocol::ascii_bytes_to_integral(response.motor_ready);
   SWEEP_ASSERT(ready_code >= 0);
 
   return ready_code == 0;
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
+  return false;
 }
 
-int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error) {
+int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
   SWEEP_ASSERT(!device->is_scanning);
 
-  sweep::protocol::error_s protocolerror = nullptr;
-
-  sweep::protocol::write_command(device->serial, sweep::protocol::MOTOR_INFORMATION, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to send motor speed command");
-    sweep::protocol::error_destruct(protocolerror);
-    return 0;
-  }
+  sweep::protocol::write_command(device->serial, sweep::protocol::MOTOR_INFORMATION);
 
   sweep::protocol::response_info_motor_speed_s response;
-  sweep::protocol::read_response_info_motor_speed(device->serial, sweep::protocol::MOTOR_INFORMATION, &response, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to receive motor speed command response");
-    sweep::protocol::error_destruct(protocolerror);
-    return 0;
-  }
+  sweep::protocol::read_response_info_motor_speed(device->serial, sweep::protocol::MOTOR_INFORMATION, &response);
 
   int32_t speed = sweep::protocol::ascii_bytes_to_integral(response.motor_speed);
   SWEEP_ASSERT(speed >= 0);
 
   return speed;
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
+  return -1;
 }
 
-void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error) {
+void sweep_device_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(hz >= 0 && hz <= 10);
   SWEEP_ASSERT(error);
   SWEEP_ASSERT(!device->is_scanning);
 
   // Make sure the motor is stabilized so the MS command doesn't fail
-  sweep_error_s stabilityerror = nullptr;
-  sweep_device_wait_until_motor_ready(device, &stabilityerror);
-  if (stabilityerror) {
-    *error = sweep_error_construct("unable to set motor speed. prior motor stability could not be verified.");
-    sweep_error_destruct(stabilityerror);
-    return;
-  }
+  sweep_device_wait_until_motor_ready(device, error);
 
   // Attempt to set motor speed
   sweep_device_attempt_set_motor_speed(device, hz, error);
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
 }
 
-int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error) {
+int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
   SWEEP_ASSERT(!device->is_scanning);
 
-  sweep::protocol::error_s protocolerror = nullptr;
-
-  sweep::protocol::write_command(device->serial, sweep::protocol::SAMPLE_RATE_INFORMATION, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to send sample rate command");
-    sweep::protocol::error_destruct(protocolerror);
-    return 0;
-  }
+  sweep::protocol::write_command(device->serial, sweep::protocol::SAMPLE_RATE_INFORMATION);
 
   sweep::protocol::response_info_sample_rate_s response;
-  sweep::protocol::read_response_info_sample_rate(device->serial, sweep::protocol::SAMPLE_RATE_INFORMATION, &response,
-                                                  &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to receive sample rate command response");
-    sweep::protocol::error_destruct(protocolerror);
-    return 0;
-  }
+  sweep::protocol::read_response_info_sample_rate(device->serial, sweep::protocol::SAMPLE_RATE_INFORMATION, &response);
 
   // 01: 500-600Hz, 02: 750-800Hz, 03: 1000-1050Hz
   int32_t code = sweep::protocol::ascii_bytes_to_integral(response.sample_rate);
@@ -413,9 +320,12 @@ int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error
   }
 
   return rate;
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
+  return -1;
 }
 
-void sweep_device_set_sample_rate(sweep_device_s device, int32_t hz, sweep_error_s* error) {
+void sweep_device_set_sample_rate(sweep_device_s device, int32_t hz, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(hz == 500 || hz == 750 || hz == 1000);
   SWEEP_ASSERT(error);
@@ -441,24 +351,10 @@ void sweep_device_set_sample_rate(sweep_device_s device, int32_t hz, sweep_error
   uint8_t args[2] = {0};
   sweep::protocol::integral_to_ascii_bytes(code, args);
 
-  sweep::protocol::error_s protocolerror = nullptr;
-
-  sweep::protocol::write_command_with_arguments(device->serial, sweep::protocol::SAMPLE_RATE_ADJUST, args, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to send sample rate command");
-    sweep::protocol::error_destruct(protocolerror);
-    return;
-  }
+  sweep::protocol::write_command_with_arguments(device->serial, sweep::protocol::SAMPLE_RATE_ADJUST, args);
 
   sweep::protocol::response_param_s response;
-  sweep::protocol::read_response_param(device->serial, sweep::protocol::SAMPLE_RATE_ADJUST, &response, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to receive sample rate command response");
-    sweep::protocol::error_destruct(protocolerror);
-    return;
-  }
+  sweep::protocol::read_response_param(device->serial, sweep::protocol::SAMPLE_RATE_ADJUST, &response);
 
   // Check the status bytes do not indicate failure
   const uint8_t status_bytes[2] = {response.cmdStatusByte1, response.cmdStatusByte2};
@@ -470,6 +366,8 @@ void sweep_device_set_sample_rate(sweep_device_s device, int32_t hz, sweep_error
   default:
     break;
   }
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
 }
 
 int32_t sweep_scan_get_number_of_samples(sweep_scan_s scan) {
@@ -506,25 +404,19 @@ void sweep_scan_destruct(sweep_scan_s scan) {
   delete scan;
 }
 
-void sweep_device_reset(sweep_device_s device, sweep_error_s* error) {
+void sweep_device_reset(sweep_device_s device, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
   SWEEP_ASSERT(!device->is_scanning);
 
-  sweep::protocol::error_s protocolerror = nullptr;
-
-  sweep::protocol::write_command(device->serial, sweep::protocol::RESET_DEVICE, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to send device reset command");
-    sweep::protocol::error_destruct(protocolerror);
-    return;
-  }
+  sweep::protocol::write_command(device->serial, sweep::protocol::RESET_DEVICE);
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
 }
 
 //------- Alternative methods for Low Level development (can error on failure) ------ //
 // Attempts to start scanning without waiting for motor ready, does NOT start background thread to accumulate scans
-void sweep_device_attempt_start_scanning(sweep_device_s device, sweep_error_s* error) {
+void sweep_device_attempt_start_scanning(sweep_device_s device, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
   SWEEP_ASSERT(!device->is_scanning);
@@ -532,23 +424,10 @@ void sweep_device_attempt_start_scanning(sweep_device_s device, sweep_error_s* e
   if (device->is_scanning)
     return;
 
-  sweep::protocol::error_s protocolerror = nullptr;
-  sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_START, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to send start scanning command");
-    sweep::protocol::error_destruct(protocolerror);
-    return;
-  }
+  sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_START);
 
   sweep::protocol::response_header_s response;
-  sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_START, &response, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to receive start scanning command response");
-    sweep::protocol::error_destruct(protocolerror);
-    return;
-  }
+  sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_START, &response);
 
   // Check the status bytes do not indicate failure
   const uint8_t status_bytes[2] = {response.cmdStatusByte1, response.cmdStatusByte2};
@@ -563,28 +442,22 @@ void sweep_device_attempt_start_scanning(sweep_device_s device, sweep_error_s* e
   default:
     break;
   }
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
 }
 
 // Read incoming scan directly (not retrieving from the queue)
-sweep_scan_s sweep_device_get_scan_direct(sweep_device_s device, sweep_error_s* error) {
+sweep_scan_s sweep_device_get_scan_direct(sweep_device_s device, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
   SWEEP_ASSERT(device->is_scanning);
-
-  sweep::protocol::error_s protocolerror = nullptr;
 
   sweep::protocol::response_scan_packet_s responses[SWEEP_MAX_SAMPLES];
 
   int32_t received = 0;
 
   while (received < SWEEP_MAX_SAMPLES) {
-    sweep::protocol::read_response_scan(device->serial, &responses[received], &protocolerror);
-
-    if (protocolerror) {
-      *error = sweep_error_construct("unable to receive sweep scan response");
-      sweep::protocol::error_destruct(protocolerror);
-      return nullptr;
-    }
+    sweep::protocol::read_response_scan(device->serial, &responses[received]);
 
     const bool is_sync = responses[received].sync_error & sweep::protocol::response_scan_packet_sync::sync;
     const bool has_error = (responses[received].sync_error >> 1) != 0; // shift out sync bit, others are errors
@@ -611,10 +484,13 @@ sweep_scan_s sweep_device_get_scan_direct(sweep_device_s device, sweep_error_s* 
   }
 
   return out;
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
+  return nullptr;
 }
 
 // Attempts to set motor speed without waiting for motor ready
-void sweep_device_attempt_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error) {
+void sweep_device_attempt_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(hz >= 0 && hz <= 10);
   SWEEP_ASSERT(error);
@@ -623,24 +499,10 @@ void sweep_device_attempt_set_motor_speed(sweep_device_s device, int32_t hz, swe
   uint8_t args[2] = {0};
   sweep::protocol::integral_to_ascii_bytes(hz, args);
 
-  sweep::protocol::error_s protocolerror = nullptr;
-
-  sweep::protocol::write_command_with_arguments(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST, args, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to send motor speed command");
-    sweep::protocol::error_destruct(protocolerror);
-    return;
-  }
+  sweep::protocol::write_command_with_arguments(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST, args);
 
   sweep::protocol::response_param_s response;
-  sweep::protocol::read_response_param(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST, &response, &protocolerror);
-
-  if (protocolerror) {
-    *error = sweep_error_construct("unable to receive motor speed command response");
-    sweep::protocol::error_destruct(protocolerror);
-    return;
-  }
+  sweep::protocol::read_response_param(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST, &response);
 
   // Check the status bytes do not indicate failure
   const uint8_t status_bytes[2] = {response.cmdStatusByte1, response.cmdStatusByte2};
@@ -655,4 +517,6 @@ void sweep_device_attempt_set_motor_speed(sweep_device_s device, int32_t hz, swe
   default:
     break;
   }
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
 }

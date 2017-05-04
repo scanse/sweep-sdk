@@ -1,23 +1,25 @@
-#ifndef SWEEP_PROTOCOL_2EADE195E243_H
-#define SWEEP_PROTOCOL_2EADE195E243_H
+#ifndef SWEEP_PROTOCOL_2EADE195E243_HPP
+#define SWEEP_PROTOCOL_2EADE195E243_HPP
 
 /*
  * Device communication protocol specifics.
  * Implementation detail; not exported.
  */
 
-#include <stdint.h>
+#include "error.hpp"
+#include "serial.hpp"
 
-#include "serial.h"
 #include "sweep.h"
+
+#include <stdint.h>
 
 namespace sweep {
 namespace protocol {
 
-typedef struct error* error_s;
-
-const char* error_message(error_s error);
-void error_destruct(error_s error);
+struct error : sweep::error::error {
+  using base = sweep::error::error;
+  using base::base;
+};
 
 // Command Symbols
 
@@ -166,24 +168,21 @@ static_assert(sizeof(response_info_sample_rate_s) == 5, "response info sample ra
 
 // Read and write specific packets
 
-void write_command(sweep::serial::device_s serial, const uint8_t cmd[2], error_s* error);
+void write_command(sweep::serial::device_s serial, const uint8_t cmd[2]);
 
-void write_command_with_arguments(sweep::serial::device_s serial, const uint8_t cmd[2], const uint8_t arg[2], error_s* error);
+void write_command_with_arguments(sweep::serial::device_s serial, const uint8_t cmd[2], const uint8_t arg[2]);
 
-void read_response_header(sweep::serial::device_s serial, const uint8_t cmd[2], response_header_s* header, error_s* error);
+void read_response_header(sweep::serial::device_s serial, const uint8_t cmd[2], response_header_s* header);
 
-void read_response_param(sweep::serial::device_s serial, const uint8_t cmd[2], response_param_s* param, error_s* error);
+void read_response_param(sweep::serial::device_s serial, const uint8_t cmd[2], response_param_s* param);
 
-void read_response_scan(sweep::serial::device_s serial, response_scan_packet_s* scan, error_s* error);
+void read_response_scan(sweep::serial::device_s serial, response_scan_packet_s* scan);
 
-void read_response_info_motor_ready(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_ready_s* info,
-                                    error_s* error);
+void read_response_info_motor_ready(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_ready_s* info);
 
-void read_response_info_motor_speed(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_speed_s* info,
-                                    error_s* error);
+void read_response_info_motor_speed(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_speed_s* info);
 
-void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_sample_rate_s* info,
-                                    error_s* error);
+void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_sample_rate_s* info);
 
 // Some protocol conversion utilities
 inline float u16_to_f32(uint16_t v) { return ((float)(v >> 4u)) + (v & 15u) / 16.0f; }
