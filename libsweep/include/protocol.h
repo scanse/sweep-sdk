@@ -194,7 +194,7 @@ inline void integral_to_ascii_bytes(const int32_t integral, uint8_t bytes[2]) {
   SWEEP_ASSERT(bytes);
 
   // Numbers begin at ASCII code point 48
-  const uint8_t ASCIINumberBlockOffset = 48;
+  const uint8_t ASCIINumberBlockOffset = '0';
 
   const uint8_t num1 = (integral / 10) + ASCIINumberBlockOffset;
   const uint8_t num2 = (integral % 10) + ASCIINumberBlockOffset;
@@ -206,8 +206,7 @@ inline void integral_to_ascii_bytes(const int32_t integral, uint8_t bytes[2]) {
 inline int32_t ascii_bytes_to_integral(const uint8_t bytes[2]) {
   SWEEP_ASSERT(bytes);
 
-  // Numbers begin at ASCII code point 48
-  const uint8_t ASCIINumberBlockOffset = 48;
+  const uint8_t ASCIINumberBlockOffset = '0';
 
   SWEEP_ASSERT(bytes[0] >= ASCIINumberBlockOffset);
   SWEEP_ASSERT(bytes[1] >= ASCIINumberBlockOffset);
