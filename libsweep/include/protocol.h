@@ -37,36 +37,36 @@ constexpr uint8_t RESET_DEVICE[2] = { 'R', 'R' };
 // Make in-memory representations correspond to bytes we send over the wire.
 #pragma pack(push, 1)
 
-typedef struct {
+struct cmd_packet_s {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
   uint8_t cmdParamTerm;
-} cmd_packet_s;
+};
 
 static_assert(sizeof(cmd_packet_s) == 3, "cmd packet size mismatch");
 
-typedef struct {
+struct cmd_param_packet_s {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
   uint8_t cmdParamByte1;
   uint8_t cmdParamByte2;
   uint8_t cmdParamTerm;
-} cmd_param_packet_s;
+};
 
 static_assert(sizeof(cmd_param_packet_s) == 5, "cmd param packet size mismatch");
 
-typedef struct {
+struct response_header_s {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
   uint8_t cmdStatusByte1;
   uint8_t cmdStatusByte2;
   uint8_t cmdSum;
   uint8_t term1;
-} response_header_s;
+};
 
 static_assert(sizeof(response_header_s) == 6, "response header size mismatch");
 
-typedef struct {
+struct response_param_s {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
   uint8_t cmdParamByte1;
@@ -76,17 +76,17 @@ typedef struct {
   uint8_t cmdStatusByte2;
   uint8_t cmdSum;
   uint8_t term2;
-} response_param_s;
+};
 
 static_assert(sizeof(response_param_s) == 9, "response param size mismatch");
 
-typedef struct {
+struct response_scan_packet_s{
   uint8_t sync_error; // see response_scan_packet_sync::bits below
   uint16_t angle;     // see u16_to_f32
   uint16_t distance;
   uint8_t signal_strength;
   uint8_t checksum;
-} response_scan_packet_s;
+};
 
 static_assert(sizeof(response_scan_packet_s) == 7, "response scan packet size mismatch");
 
@@ -105,7 +105,7 @@ enum bits : uint8_t {
 };
 }
 
-typedef struct {
+struct response_info_device_s {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
   uint8_t bit_rate[6];
@@ -115,11 +115,11 @@ typedef struct {
   uint8_t motor_speed[2];
   uint8_t sample_rate[4];
   uint8_t term;
-} response_info_device_s;
+};
 
 static_assert(sizeof(response_info_device_s) == 18, "response info device size mismatch");
 
-typedef struct {
+struct response_info_version_s {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
   uint8_t model[5];
@@ -130,34 +130,34 @@ typedef struct {
   uint8_t hardware_version;
   uint8_t serial_no[8];
   uint8_t term;
-} response_info_version_s;
+};
 
 static_assert(sizeof(response_info_version_s) == 21, "response info version size mismatch");
 
-typedef struct {
+struct response_info_motor_ready_s {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
   uint8_t motor_ready[2];
   uint8_t term;
-} response_info_motor_ready_s;
+};
 
 static_assert(sizeof(response_info_motor_ready_s) == 5, "response info motor ready size mismatch");
 
-typedef struct {
+struct response_info_motor_speed_s {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
   uint8_t motor_speed[2];
   uint8_t term;
-} response_info_motor_speed_s;
+};
 
 static_assert(sizeof(response_info_motor_speed_s) == 5, "response info motor speed size mismatch");
 
-typedef struct {
+struct response_info_sample_rate_s {
   uint8_t cmdByte1;
   uint8_t cmdByte2;
   uint8_t sample_rate[2];
   uint8_t term;
-} response_info_sample_rate_s;
+};
 
 static_assert(sizeof(response_info_sample_rate_s) == 5, "response info sample rate size mismatch");
 
