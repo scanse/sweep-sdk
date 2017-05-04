@@ -1,14 +1,13 @@
 #include "sweep.h"
 
 #include <chrono>
+#include <string>
 #include <thread>
 
 int32_t sweep_get_version(void) { return SWEEP_VERSION; }
 bool sweep_is_abi_compatible(void) { return sweep_get_version() >> 16u == SWEEP_VERSION_MAJOR; }
 
-typedef struct sweep_error {
-  const char* what; // always literal, do not deallocate
-} sweep_error;
+typedef struct sweep_error { std::string what; } sweep_error;
 
 typedef struct sweep_device {
   bool is_scanning;
@@ -25,7 +24,7 @@ typedef struct sweep_scan {
 const char* sweep_error_message(sweep_error_s error) {
   SWEEP_ASSERT(error);
 
-  return error->what;
+  return error->what.c_str();
 }
 
 void sweep_error_destruct(sweep_error_s error) {
