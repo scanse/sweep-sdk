@@ -21,16 +21,16 @@ void error_destruct(error_s error);
 
 // Command Symbols
 
-extern const uint8_t DATA_ACQUISITION_START[2];
-extern const uint8_t DATA_ACQUISITION_STOP[2];
-extern const uint8_t MOTOR_SPEED_ADJUST[2];
-extern const uint8_t MOTOR_READY[2];
-extern const uint8_t MOTOR_INFORMATION[2];
-extern const uint8_t SAMPLE_RATE_ADJUST[2];
-extern const uint8_t SAMPLE_RATE_INFORMATION[2];
-extern const uint8_t VERSION_INFORMATION[2];
-extern const uint8_t DEVICE_INFORMATION[2];
-extern const uint8_t RESET_DEVICE[2];
+constexpr uint8_t DATA_ACQUISITION_START[2] = { 'D', 'S' };
+constexpr uint8_t DATA_ACQUISITION_STOP[2] = { 'D', 'X' };
+constexpr uint8_t MOTOR_SPEED_ADJUST[2] = { 'M', 'S' };
+constexpr uint8_t MOTOR_READY[2] = { 'M', 'Z' };
+constexpr uint8_t MOTOR_INFORMATION[2] = { 'M', 'I' };
+constexpr uint8_t SAMPLE_RATE_ADJUST[2] = { 'L', 'R' };
+constexpr uint8_t SAMPLE_RATE_INFORMATION[2] = { 'L', 'I' };
+constexpr uint8_t VERSION_INFORMATION[2] = { 'I', 'V' };
+constexpr uint8_t DEVICE_INFORMATION[2] = { 'I', 'D' };
+constexpr uint8_t RESET_DEVICE[2] = { 'R', 'R' };
 
 // Packets for communication
 

@@ -8,17 +8,6 @@
 namespace sweep {
 namespace protocol {
 
-const uint8_t DATA_ACQUISITION_START[2] = {'D', 'S'};
-const uint8_t DATA_ACQUISITION_STOP[2] = {'D', 'X'};
-const uint8_t MOTOR_SPEED_ADJUST[2] = {'M', 'S'};
-const uint8_t MOTOR_READY[2] = {'M', 'Z'};
-const uint8_t MOTOR_INFORMATION[2] = {'M', 'I'};
-const uint8_t SAMPLE_RATE_ADJUST[2] = {'L', 'R'};
-const uint8_t SAMPLE_RATE_INFORMATION[2] = {'L', 'I'};
-const uint8_t VERSION_INFORMATION[2] = {'I', 'V'};
-const uint8_t DEVICE_INFORMATION[2] = {'I', 'D'};
-const uint8_t RESET_DEVICE[2] = {'R', 'R'};
-
 typedef struct error {
   const char* what; // always literal, do not deallocate
 } error;
