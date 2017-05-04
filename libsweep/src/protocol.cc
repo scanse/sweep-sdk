@@ -30,28 +30,22 @@ void error_destruct(error_s error) {
   delete error;
 }
 
-static uint8_t checksum_response_header(response_header_s* v) {
-  SWEEP_ASSERT(v);
-
-  return ((v->cmdStatusByte1 + v->cmdStatusByte2) & 0x3F) + 0x30;
+static uint8_t checksum_response_header(const response_header_s& v) {
+  return ((v.cmdStatusByte1 + v.cmdStatusByte2) & 0x3F) + 0x30;
 }
 
-static uint8_t checksum_response_param(response_param_s* v) {
-  SWEEP_ASSERT(v);
-
-  return ((v->cmdStatusByte1 + v->cmdStatusByte2) & 0x3F) + 0x30;
+static uint8_t checksum_response_param(const response_param_s& v) {
+  return ((v.cmdStatusByte1 + v.cmdStatusByte2) & 0x3F) + 0x30;
 }
 
-static uint8_t checksum_response_scan_packet(response_scan_packet_s* v) {
-  SWEEP_ASSERT(v);
-
+static uint8_t checksum_response_scan_packet(const response_scan_packet_s& v) {
   uint64_t checksum = 0;
-  checksum += v->sync_error;
-  checksum += v->angle & 0xff00;
-  checksum += v->angle & 0x00ff;
-  checksum += v->distance & 0xff00;
-  checksum += v->distance & 0x00ff;
-  checksum += v->signal_strength;
+  checksum += v.sync_error;
+  checksum += v.angle & 0xff00;
+  checksum += v.angle & 0x00ff;
+  checksum += v.distance & 0xff00;
+  checksum += v.distance & 0x00ff;
+  checksum += v.signal_strength;
   return checksum % 255;
 }
 
@@ -118,7 +112,7 @@ void read_response_header(serial::device_s serial, const uint8_t cmd[2], respons
     return;
   }
 
-  uint8_t checksum = checksum_response_header(header);
+  uint8_t checksum = checksum_response_header(*header);
 
   if (checksum != header->cmdSum) {
     *error = error_construct("invalid response header checksum");
@@ -149,7 +143,7 @@ void read_response_param(serial::device_s serial, const uint8_t cmd[2], response
     return;
   }
 
-  uint8_t checksum = checksum_response_param(param);
+  uint8_t checksum = checksum_response_param(*param);
 
   if (checksum != param->cmdSum) {
     *error = error_construct("invalid response param header checksum");
@@ -179,7 +173,7 @@ void read_response_scan(serial::device_s serial, response_scan_packet_s* scan, e
     return;
   }
 
-  uint8_t checksum = checksum_response_scan_packet(scan);
+  uint8_t checksum = checksum_response_scan_packet(*scan);
 
   if (checksum != scan->checksum) {
     *error = error_construct("invalid scan response commands");
