@@ -12,7 +12,7 @@ This text is a "template". Feel free to delete irrelevant sections.
 <!-- Does this issue concern libsweep or a specific language binding? -->
 
 #### operating system
-<!-- If relevant, list any operating system/s you've tested on -->
+<!-- If relevant, list any operating systems you've tested on -->
 
 #### Platform/Hardware Setup
 <!-- If relevant, list any details about your platform or hardware setup -->
