@@ -236,6 +236,7 @@ void sweep_device_accumulate_scans(sweep_device_s device) try {
   }
 } catch (const std::exception& e) {
   // worker thread is dead at this point
+  (void)e;
 }
 
 bool sweep_device_get_motor_ready(sweep_device_s device, sweep_error_s* error) try {
