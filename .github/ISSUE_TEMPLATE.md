@@ -1,35 +1,25 @@
 <!---
 This form is intended mainly for bug reports and feature requests. 
 This is NOT the place to ask for general project help. If you need help, please use the community forum available [here](http://community.scanse.io/).
+This text is a "template". Feel free to delete irrelevant sections.
 -->
 
 #### sweep firmware version
-What verison of the sweep firmware are you using?
-- [ ] latest
-- [ ] other (please specify)
-- [ ] Not Applicable
+<!-- What verison of the sweep firmware are you using? -->
 
-#### libsweep version
-- [ ] latest
-- [ ] other (please specify)
-
-#### relevant library
-- [ ] libsweep
-- [ ] sweeppy
-- [ ] sweepjs
+#### libsweep version + affected bindings
+<!-- What version of the libsweep library are you using? -->
+<!-- Does this issue concern libsweep or a specific language binding? -->
 
 #### operating system
-- [x] All of them
-- [ ] Windows
-- [ ] macOS
-- [ ] Linux
-- [ ] Other (please specify)
+<!-- If relevant, list any operating system/s you've tested on -->
 
 #### Platform/Hardware Setup
-Provide any relevant details you can share.
+<!-- If relevant, list any details about your platform or hardware setup -->
 
 #### Description:
+<!--
 Describe the bug or feature request in detail. 
 A code snippet, screenshot, and small-test help us understand.
 Explain what happened and what you expected to happen.
-
+-->
