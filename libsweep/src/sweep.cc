@@ -294,6 +294,7 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) try
   } catch (const std::exception& ignore) {
     // Catch and ignore the error in the case of the stop response containing garbage bytes
     // Occurs if the device was actively streaming data before the stop cmd
+    (void)ignore;
   }
 
   // Flush any bytes left over, in case device was actively streaming data before the stop cmd
