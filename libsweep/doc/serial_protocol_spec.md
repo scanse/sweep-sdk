@@ -122,10 +122,10 @@ The `Data Block` receipt is 7 bytes long and contains all the information about 
    - **Sync bit**: least significant bit (LSB) which carries the sync value. A value of `1` indicates that this Data Block is the first acquired sensor reading since the sensor passed the 0 degree mark. Value of `0` indicates all other measurement packets.
     - **Error bits**: 7 most significant bits (e0-6) are reserved for error encoding. The bit `e0` indicates a communication error with the LiDAR module with the value `1`. Bits `e1:6` are reserved for future use.
 
-- **Azimuth**: Angle that ranging was recorded at (in degrees). Azimuth is a float value, transmitted as a 16 bit int. This needs to be converted from 16bit int to float. Use instructions in the Appendix. Note: the lower order byte is received first, higher order byte is received second.
+- **Azimuth**: Angle that ranging was recorded at (in degrees). Azimuth is transmitted as a 16 bit fixed point value with a scaling factor of 16 (4bit after radix). Note: the lower order byte is received first, higher order byte is received second. Use instructions in the Appendix.
 - **Distance**: Distance of range measurement (in cm). Distance is a 16 bit integer value. Note: the lower order byte is received first, higher order byte is received second. Use instructions in the Appendix.
 - **Signal strength** : Signal strength of current ranging measurement. Larger is better. 8-bit unsigned int, range: 0-255
-- **Checksum**: Calculated by adding the 6 bytes of data then dividing by 255 and keeping the remainder. (Sum of bytes 0-5) % 255 ... Use the instructions in the Appendix.  
+- **Checksum**: Calculated by adding the 6 bytes of data then dividing by 255 and keeping the remainder. (Sum of bytes 0-5) % 255 ... Use the instructions in the Appendix.
 
 
 
@@ -368,21 +368,21 @@ ex: Consider the common case of `'00P'` ( decimal -> `[48, 48, 80]`, hex -> `[0x
 0x50 = 'P'         // translate to ASCII
 ```
 
-#### Parsing Data Block 16-bit integers and floats
-The `Data Block` receipt includes int-16 and float values (distance & azimuth). In the case of distance, the value is a 16-bit integer. In the case of the azimuth, the value is a float which is sent as a 16bit integer and must be converted back to a float. 
+#### Parsing Data Block 16-bit integers and fixed-point values
+The `Data Block` receipt includes int-16 and fixed-point values (distance & azimuth). In the case of distance, the value is a 16-bit integer. In the case of the azimuth, the value is a fixed-point with a scaling factor of 16. 
 
-In either case, the 16-bit int is sent as two individual bytes. The lower order byte is received first, and the higher order byte is received second. For example, parsing the distance:
+A 16-bit int is sent as two individual bytes. The lower order byte is received first, and the higher order byte is received second. For example, parsing the distance:
 ```javascript
 //assume dataBlock holds the DATA_BLOCK byte array
 //such that indices 3 & 4 correspond to the two distance bytes 
 let distance = (dataBlock[4] << 8) + (dataBlock[3]);
 ```
-For floats, start by using the same technique to acquire the 16-bit int. Once you have it, you can perform the conversion to float like so:
+For fixed-point values (azimuth), start by using the same technique to acquire a 16-bit int. Once you have it, you can perform the conversion to fixed-point value like so:
 ```javascript
 //assume dataBlock holds the DATA_BLOCK byte array, 
 //such that indices 1 & 2 correspond to the two azimuth bytes 
 let angle_int = (dataBlock[2] << 8) + (dataBlock[1]);
-let degree = 1.0 * ( (angle_int >> 4) + ( (angle_int & 15) / 16.0 ) );
+let degree = angle_int/16.0;
 ```
 
 #### Performing Data Block Checksum

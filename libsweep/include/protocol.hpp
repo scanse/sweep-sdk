@@ -23,16 +23,16 @@ struct error : sweep::error::error {
 
 // Command Symbols
 
-constexpr uint8_t DATA_ACQUISITION_START[2] = { 'D', 'S' };
-constexpr uint8_t DATA_ACQUISITION_STOP[2] = { 'D', 'X' };
-constexpr uint8_t MOTOR_SPEED_ADJUST[2] = { 'M', 'S' };
-constexpr uint8_t MOTOR_READY[2] = { 'M', 'Z' };
-constexpr uint8_t MOTOR_INFORMATION[2] = { 'M', 'I' };
-constexpr uint8_t SAMPLE_RATE_ADJUST[2] = { 'L', 'R' };
-constexpr uint8_t SAMPLE_RATE_INFORMATION[2] = { 'L', 'I' };
-constexpr uint8_t VERSION_INFORMATION[2] = { 'I', 'V' };
-constexpr uint8_t DEVICE_INFORMATION[2] = { 'I', 'D' };
-constexpr uint8_t RESET_DEVICE[2] = { 'R', 'R' };
+constexpr uint8_t DATA_ACQUISITION_START[2] = {'D', 'S'};
+constexpr uint8_t DATA_ACQUISITION_STOP[2] = {'D', 'X'};
+constexpr uint8_t MOTOR_SPEED_ADJUST[2] = {'M', 'S'};
+constexpr uint8_t MOTOR_READY[2] = {'M', 'Z'};
+constexpr uint8_t MOTOR_INFORMATION[2] = {'M', 'I'};
+constexpr uint8_t SAMPLE_RATE_ADJUST[2] = {'L', 'R'};
+constexpr uint8_t SAMPLE_RATE_INFORMATION[2] = {'L', 'I'};
+constexpr uint8_t VERSION_INFORMATION[2] = {'I', 'V'};
+constexpr uint8_t DEVICE_INFORMATION[2] = {'I', 'D'};
+constexpr uint8_t RESET_DEVICE[2] = {'R', 'R'};
 
 // Packets for communication
 
@@ -82,9 +82,9 @@ struct response_param_s {
 
 static_assert(sizeof(response_param_s) == 9, "response param size mismatch");
 
-struct response_scan_packet_s{
+struct response_scan_packet_s {
   uint8_t sync_error; // see response_scan_packet_sync::bits below
-  uint16_t angle;     // see u16_to_f32
+  uint16_t angle;
   uint16_t distance;
   uint8_t signal_strength;
   uint8_t checksum;
@@ -183,9 +183,6 @@ void read_response_info_motor_ready(sweep::serial::device_s serial, const uint8_
 void read_response_info_motor_speed(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_speed_s* info);
 
 void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_sample_rate_s* info);
-
-// Some protocol conversion utilities
-inline float u16_to_f32(uint16_t v) { return ((float)(v >> 4u)) + (v & 15u) / 16.0f; }
 
 inline void integral_to_ascii_bytes(const int32_t integral, uint8_t bytes[2]) {
   SWEEP_ASSERT(integral >= 0);
