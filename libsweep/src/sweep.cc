@@ -217,8 +217,8 @@ void sweep_device_accumulate_scans(sweep_device_s device) try {
       auto out = new sweep_scan;
       out->count = received - 1; // minus 1 to exclude sync reading
       for (int32_t it = 0; it < received - 1; ++it) {
-        // Convert angle from compact serial format to an integer representing milli-degrees.
-        out->angle[it] = static_cast<int32_t>(responses[it].angle / 16.f * 1000.f);
+        // Convert angle: compact serial format -> float (in degrees) -> int (in milli-degrees)
+        out->angle[it] = static_cast<int32_t>(sweep::protocol::u16_to_f32(responses[it].angle) * 1000.f);
         out->distance[it] = responses[it].distance;
         out->signal_strength[it] = responses[it].signal_strength;
       }
@@ -476,8 +476,8 @@ sweep_scan_s sweep_device_get_scan_direct(sweep_device_s device, sweep_error_s* 
   out->count = received;
 
   for (int32_t it = 0; it < received; ++it) {
-    // Convert angle from compact serial format to an integer representing milli-degrees.
-    out->angle[it] = static_cast<int32_t>(responses[it].angle / 16.f * 1000.f);
+    // Convert angle: compact serial format -> float (in degrees) -> int (in milli-degrees)
+    out->angle[it] = static_cast<int32_t>(sweep::protocol::u16_to_f32(responses[it].angle) * 1000.f);
     out->distance[it] = responses[it].distance;
     out->signal_strength[it] = responses[it].signal_strength;
   }

@@ -84,7 +84,7 @@ static_assert(sizeof(response_param_s) == 9, "response param size mismatch");
 
 struct response_scan_packet_s {
   uint8_t sync_error; // see response_scan_packet_sync::bits below
-  uint16_t angle;
+  uint16_t angle;     // see u16_to_f32
   uint16_t distance;
   uint8_t signal_strength;
   uint8_t checksum;
@@ -183,6 +183,9 @@ void read_response_info_motor_ready(sweep::serial::device_s serial, const uint8_
 void read_response_info_motor_speed(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_speed_s* info);
 
 void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_sample_rate_s* info);
+
+// Some protocol conversion utilities
+inline float u16_to_f32(uint16_t v) { return v / 16.0f; }
 
 inline void integral_to_ascii_bytes(const int32_t integral, uint8_t bytes[2]) {
   SWEEP_ASSERT(integral >= 0);
