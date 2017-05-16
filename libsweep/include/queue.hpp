@@ -37,7 +37,7 @@ public:
     if (static_cast<int32_t>(the_queue.size()) >= max_size)
       the_queue.pop();
 
-    the_queue.push(v);
+    the_queue.push(std::move(v));
     the_cond_var.notify_one();
   }
 
@@ -50,7 +50,7 @@ public:
       // so put this wakeup inside a while loop, such that the empty check is performed whenever it wakes up
       the_cond_var.wait(lock); // release lock as long as the wait and reaquire it afterwards.
     }
-    auto v = the_queue.front();
+    auto v = std::move(the_queue.front());
     the_queue.pop();
     return v;
   }

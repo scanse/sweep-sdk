@@ -6,20 +6,16 @@
 #include "sweep.h"
 
 #include <chrono>
+#include <exception>
 #include <string>
 #include <thread>
 
 int32_t sweep_get_version(void) { return SWEEP_VERSION; }
 bool sweep_is_abi_compatible(void) { return sweep_get_version() >> 16u == SWEEP_VERSION_MAJOR; }
 
-struct sweep_error { std::string what; };
-
-struct sweep_device {
-  sweep::serial::device_s serial; // serial port communication
-  bool is_scanning;
-  sweep::queue::queue<sweep_scan_s> scan_queue;
-  std::atomic<bool> stop_thread;
-} ;
+struct sweep_error {
+  std::string what;
+};
 
 #define SWEEP_MAX_SAMPLES 4096
 
@@ -28,6 +24,19 @@ struct sweep_scan {
   int32_t distance[SWEEP_MAX_SAMPLES];        // in cm
   int32_t signal_strength[SWEEP_MAX_SAMPLES]; // range 0:255
   int32_t count;
+};
+
+struct sweep_device {
+  sweep::serial::device_s serial; // serial port communication
+  bool is_scanning;
+  std::atomic<bool> stop_thread;
+
+  struct Element {
+    std::unique_ptr<sweep_scan> scan;
+    std::exception_ptr error;
+  };
+
+  sweep::queue::queue<Element> scan_queue;
 };
 
 // Constructor hidden from users
@@ -96,7 +105,7 @@ static void sweep_device_accumulate_scans(sweep_device_s device) try {
       if (received <= 1)
         continue;
       // package the previous scan without the sync reading from the subsequent scan
-      auto out = new sweep_scan;
+      auto out = std::unique_ptr<sweep_scan>(new sweep_scan);
       out->count = received - 1; // minus 1 to exclude sync reading
       for (int32_t it = 0; it < received - 1; ++it) {
         out->angle[it] = sweep::protocol::angle_raw_to_millideg(responses[it].angle);
@@ -105,7 +114,7 @@ static void sweep_device_accumulate_scans(sweep_device_s device) try {
       }
 
       // place the scan in the queue
-      device->scan_queue.enqueue(out);
+      device->scan_queue.enqueue({ std::move(out), nullptr });
 
       // place the sync reading at the start for the next scan
       responses[0] = responses[received - 1];
@@ -116,7 +125,7 @@ static void sweep_device_accumulate_scans(sweep_device_s device) try {
   }
 } catch (const std::exception& e) {
   // worker thread is dead at this point
-  (void)e;
+  device->scan_queue.enqueue({ nullptr, std::make_exception_ptr(e) });
 }
 
 // Attempts to start scanning without waiting for motor ready. Can error on failure.
@@ -199,7 +208,7 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
   sweep::serial::device_s serial = sweep::serial::device_construct(port, bitrate);
 
   // initialize assuming the device is scanning
-  auto out = new sweep_device{serial, /*is_scanning=*/true, /*scan_queue=*/{20}, /*stop_thread=*/{false}};
+  auto out = new sweep_device{serial, /*is_scanning=*/true, /*stop_thread=*/{false}, /*scan_queue=*/{ 20 }};
 
   // send a stop scanning command in case the scanner was powered on and scanning
   sweep_device_stop_scanning(out, error);
@@ -294,10 +303,15 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
   SWEEP_ASSERT(device->is_scanning);
-  (void)error;
 
   auto out = device->scan_queue.dequeue();
-  return out;
+
+  if (out.error != nullptr) {
+    std::rethrow_exception(out.error);
+  }
+
+  return out.scan.release();
+
 } catch (const std::exception& e) {
   *error = sweep_error_construct(e.what());
   return nullptr;
