@@ -11,12 +11,12 @@
 namespace sweep {
 namespace serial {
 
-typedef struct device {
+struct device {
   HANDLE h_comm;
   OVERLAPPED os_reader;
   bool waiting_on_read;      // Used to prevent creation of new read operation if one is outstanding
   DWORD read_timeout_millis; // timeout interval for entire read operation
-} device;
+};
 
 static int32_t detail_get_port_number(const char* port) {
   SWEEP_ASSERT(port);

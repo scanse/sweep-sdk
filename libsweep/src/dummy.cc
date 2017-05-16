@@ -7,19 +7,19 @@
 int32_t sweep_get_version(void) { return SWEEP_VERSION; }
 bool sweep_is_abi_compatible(void) { return sweep_get_version() >> 16u == SWEEP_VERSION_MAJOR; }
 
-typedef struct sweep_error { std::string what; } sweep_error;
+struct sweep_error { std::string what; };
 
-typedef struct sweep_device {
+struct sweep_device {
   bool is_scanning;
   int32_t motor_speed;
   int32_t sample_rate;
   int32_t nth_scan_request;
-} sweep_device;
+};
 
-typedef struct sweep_scan {
+struct sweep_scan {
   int32_t count;
   int32_t nth;
-} sweep_scan;
+};
 
 const char* sweep_error_message(sweep_error_s error) {
   SWEEP_ASSERT(error);

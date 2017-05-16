@@ -12,23 +12,23 @@
 int32_t sweep_get_version(void) { return SWEEP_VERSION; }
 bool sweep_is_abi_compatible(void) { return sweep_get_version() >> 16u == SWEEP_VERSION_MAJOR; }
 
-typedef struct sweep_error { std::string what; } sweep_error;
+struct sweep_error { std::string what; };
 
-typedef struct sweep_device {
+struct sweep_device {
   sweep::serial::device_s serial; // serial port communication
   bool is_scanning;
   sweep::queue::queue<sweep_scan_s> scan_queue;
   std::atomic<bool> stop_thread;
-} sweep_device;
+} ;
 
 #define SWEEP_MAX_SAMPLES 4096
 
-typedef struct sweep_scan {
+struct sweep_scan {
   int32_t angle[SWEEP_MAX_SAMPLES];           // in millidegrees
   int32_t distance[SWEEP_MAX_SAMPLES];        // in cm
   int32_t signal_strength[SWEEP_MAX_SAMPLES]; // range 0:255
   int32_t count;
-} sweep_scan;
+};
 
 // Constructor hidden from users
 static sweep_error_s sweep_error_construct(const char* what) {
