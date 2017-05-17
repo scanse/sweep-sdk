@@ -475,7 +475,6 @@ sweep_scan_s sweep_device_get_scan_direct(sweep_device_s device, sweep_error_s* 
   out->count = received;
 
   for (int32_t it = 0; it < received; ++it) {
-    // Convert angle: compact serial format -> float (in degrees) -> int (in milli-degrees)
     out->angle[it] = sweep::protocol::angle_raw_to_millideg(responses[it].angle);
     out->distance[it] = responses[it].distance;
     out->signal_strength[it] = responses[it].signal_strength;
