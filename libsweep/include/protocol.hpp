@@ -185,7 +185,10 @@ void read_response_info_motor_speed(sweep::serial::device_s serial, const uint8_
 void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_sample_rate_s* info);
 
 // Some protocol conversion utilities
-inline float u16_to_f32(uint16_t v) { return v / 16.0f; }
+inline int angle_raw_to_millideg(uint16_t v) {
+  // angle is transmitted as fixed point integer with scaling factor of 16
+  return static_cast<int>(v * 1000 / 16.0f);
+}
 
 inline void integral_to_ascii_bytes(const int32_t integral, uint8_t bytes[2]) {
   SWEEP_ASSERT(integral >= 0);
@@ -224,7 +227,7 @@ inline int32_t ascii_bytes_to_integral(const uint8_t bytes[2]) {
   return integral;
 }
 
-} // ns protocol
-} // ns sweep
+} // namespace protocol
+} // namespace sweep
 
 #endif
