@@ -16,7 +16,7 @@ typedef struct sweep_error { std::string what; } sweep_error;
 
 typedef struct sweep_device {
   sweep::serial::device_s serial; // serial port communication
-  bool is_scanning;
+  std::atomic<bool> is_scanning;
   sweep::queue::queue<sweep_scan_s> scan_queue;
   std::atomic<bool> stop_thread;
 } sweep_device;
@@ -66,7 +66,7 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
   sweep::serial::device_s serial = sweep::serial::device_construct(port, bitrate);
 
   // initialize assuming the device is scanning
-  auto out = new sweep_device{serial, /*is_scanning=*/true, /*scan_queue=*/{20}, /*stop_thread=*/{false}};
+  auto out = new sweep_device{serial, /*is_scanning=*/{true}, /*scan_queue=*/{20}, /*stop_thread=*/{false}};
 
   // send a stop scanning command in case the scanner was powered on and scanning
   sweep_device_stop_scanning(out, error);
@@ -183,9 +183,8 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(error);
   SWEEP_ASSERT(device->is_scanning);
-  (void)error;
 
-  auto out = device->scan_queue.dequeue();
+  auto out = device->scan_queue.pop();
   return out;
 } catch (const std::exception& e) {
   *error = sweep_error_construct(e.what());
@@ -223,7 +222,7 @@ void sweep_device_accumulate_scans(sweep_device_s device) try {
       }
 
       // place the scan in the queue
-      device->scan_queue.enqueue(out);
+      device->scan_queue.push(out);
 
       // place the sync reading at the start for the next scan
       responses[0] = responses[received - 1];
@@ -232,9 +231,9 @@ void sweep_device_accumulate_scans(sweep_device_s device) try {
       received = 1;
     }
   }
-} catch (const std::exception& e) {
-  // worker thread is dead at this point
-  (void)e;
+} catch (...) {
+  device->is_scanning = false;
+  device->scan_queue.push_error(std::current_exception());
 }
 
 bool sweep_device_get_motor_ready(sweep_device_s device, sweep_error_s* error) try {
