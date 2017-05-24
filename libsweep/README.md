@@ -341,6 +341,7 @@ Will only succeed if the device is ready. A device is only ready if the motor sp
 Proper use involves checking that the motor speed has stabilized (using `sweep_device_get_motor_ready`) before attempting to adjust the motor speed to a new value.
 In case of error a `sweep_error_s` will be written into `error`. This method will error on legitimate failures (ex: the motor speed has not yet stabilized).
 -->
+
 ### License
 
 Copyright © 2016 Daniel J. Hofmann

@@ -50,6 +50,180 @@ void sweep_error_destruct(sweep_error_s error) {
   delete error;
 }
 
+// Blocks until the device is ready (calibration complete and motor speed stabilized)
+static void sweep_device_wait_until_motor_ready(sweep_device_s device, sweep_error_s* error) try {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(error);
+  SWEEP_ASSERT(!device->is_scanning);
+
+  // Motor adjustments can take 7-9 seconds, so timeout after 10 seconds to be safe
+  // (20 iterations with 500ms pause)
+  for (int32_t i = 0; i < 20; ++i) {
+    if (i > 0) {
+      // only check every 500ms, to avoid unecessary processing if this is executing in a dedicated thread
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+
+    if (sweep_device_get_motor_ready(device, error))
+      return;
+  }
+
+  *error = sweep_error_construct("timed out waiting for motor to stabilize");
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
+}
+
+// Accumulates scans in the queue  (method to be used by background thread)
+static void sweep_device_accumulate_scans(sweep_device_s device) try {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(device->is_scanning);
+
+  sweep::protocol::response_scan_packet_s responses[SWEEP_MAX_SAMPLES];
+  int32_t received = 0;
+
+  while (!device->stop_thread && received < SWEEP_MAX_SAMPLES) {
+    sweep::protocol::read_response_scan(device->serial, &responses[received]);
+
+    const bool is_sync = responses[received].sync_error & sweep::protocol::response_scan_packet_sync::sync;
+    const bool has_error = (responses[received].sync_error >> 1) != 0; // shift out sync bit, others are errors
+
+    if (!has_error) {
+      received++;
+    }
+
+    if (is_sync) {
+      if (received <= 1)
+        continue;
+      // package the previous scan without the sync reading from the subsequent scan
+      auto out = new sweep_scan;
+      out->count = received - 1; // minus 1 to exclude sync reading
+      for (int32_t it = 0; it < received - 1; ++it) {
+        out->angle[it] = sweep::protocol::angle_raw_to_millideg(responses[it].angle);
+        out->distance[it] = responses[it].distance;
+        out->signal_strength[it] = responses[it].signal_strength;
+      }
+
+      // place the scan in the queue
+      device->scan_queue.enqueue(out);
+
+      // place the sync reading at the start for the next scan
+      responses[0] = responses[received - 1];
+
+      // reset received
+      received = 1;
+    }
+  }
+} catch (const std::exception& e) {
+  // worker thread is dead at this point
+  (void)e;
+}
+
+//  Alternative methods for Low Level development (can error on failure)
+
+// Attempts to start scanning without waiting for motor ready, does NOT start background thread to accumulate scans
+static void sweep_device_attempt_start_scanning(sweep_device_s device, sweep_error_s* error) try {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(error);
+  SWEEP_ASSERT(!device->is_scanning);
+
+  if (device->is_scanning)
+    return;
+
+  sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_START);
+
+  sweep::protocol::response_header_s response;
+  sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_START, &response);
+
+  // Check the status bytes do not indicate failure
+  const uint8_t status_bytes[2] = {response.cmdStatusByte1, response.cmdStatusByte2};
+  int32_t status_code = sweep::protocol::ascii_bytes_to_integral(status_bytes);
+  switch (status_code) {
+  case 12:
+    *error = sweep_error_construct("Failed to start scanning because motor speed has not stabilized.");
+    return;
+  case 13:
+    *error = sweep_error_construct("Failed to start scanning because motor is stationary.");
+    return;
+  default:
+    break;
+  }
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
+}
+
+// Read incoming scan directly (not retrieving from the queue)
+static sweep_scan_s sweep_device_get_scan_direct(sweep_device_s device, sweep_error_s* error) try {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(error);
+  SWEEP_ASSERT(device->is_scanning);
+
+  sweep::protocol::response_scan_packet_s responses[SWEEP_MAX_SAMPLES];
+
+  int32_t received = 0;
+
+  while (received < SWEEP_MAX_SAMPLES) {
+    sweep::protocol::read_response_scan(device->serial, &responses[received]);
+
+    const bool is_sync = responses[received].sync_error & sweep::protocol::response_scan_packet_sync::sync;
+    const bool has_error = (responses[received].sync_error >> 1) != 0; // shift out sync bit, others are errors
+
+    if (!has_error) {
+      received++;
+    }
+
+    if (is_sync) {
+      break;
+    }
+  }
+
+  auto out = new sweep_scan;
+
+  out->count = received;
+
+  for (int32_t it = 0; it < received; ++it) {
+    out->angle[it] = sweep::protocol::angle_raw_to_millideg(responses[it].angle);
+    out->distance[it] = responses[it].distance;
+    out->signal_strength[it] = responses[it].signal_strength;
+  }
+
+  return out;
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
+  return nullptr;
+}
+
+// Attempts to set motor speed without waiting for motor ready
+static void sweep_device_attempt_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error) try {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(hz >= 0 && hz <= 10);
+  SWEEP_ASSERT(error);
+  SWEEP_ASSERT(!device->is_scanning);
+
+  uint8_t args[2] = {0};
+  sweep::protocol::integral_to_ascii_bytes(hz, args);
+
+  sweep::protocol::write_command_with_arguments(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST, args);
+
+  sweep::protocol::response_param_s response;
+  sweep::protocol::read_response_param(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST, &response);
+
+  // Check the status bytes do not indicate failure
+  const uint8_t status_bytes[2] = {response.cmdStatusByte1, response.cmdStatusByte2};
+  int32_t status_code = sweep::protocol::ascii_bytes_to_integral(status_bytes);
+  switch (status_code) {
+  case 11:
+    *error = sweep_error_construct("Failed to set motor speed because provided parameter was invalid.");
+    return;
+  case 12:
+    *error = sweep_error_construct("Failed to set motor speed because prior speed has not yet stabilized.");
+    return;
+  default:
+    break;
+  }
+} catch (const std::exception& e) {
+  *error = sweep_error_construct(e.what());
+}
+
 sweep_device_s sweep_device_construct_simple(const char* port, sweep_error_s* error) try {
   SWEEP_ASSERT(error);
   return sweep_device_construct(port, 115200, error);
@@ -156,28 +330,6 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) try
   *error = sweep_error_construct(e.what());
 }
 
-void sweep_device_wait_until_motor_ready(sweep_device_s device, sweep_error_s* error) try {
-  SWEEP_ASSERT(device);
-  SWEEP_ASSERT(error);
-  SWEEP_ASSERT(!device->is_scanning);
-
-  // Motor adjustments can take 7-9 seconds, so timeout after 10 seconds to be safe
-  // (20 iterations with 500ms pause)
-  for (int32_t i = 0; i < 20; ++i) {
-    if (i > 0) {
-      // only check every 500ms, to avoid unecessary processing if this is executing in a dedicated thread
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    }
-
-    if (sweep_device_get_motor_ready(device, error))
-      return;
-  }
-
-  *error = sweep_error_construct("timed out waiting for motor to stabilize");
-} catch (const std::exception& e) {
-  *error = sweep_error_construct(e.what());
-}
-
 // Retrieves a scan from the queue (will block until scan is available)
 sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) try {
   SWEEP_ASSERT(device);
@@ -190,51 +342,6 @@ sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) 
 } catch (const std::exception& e) {
   *error = sweep_error_construct(e.what());
   return nullptr;
-}
-
-// Accumulates scans in the queue  (method to be used by background thread)
-void sweep_device_accumulate_scans(sweep_device_s device) try {
-  SWEEP_ASSERT(device);
-  SWEEP_ASSERT(device->is_scanning);
-
-  sweep::protocol::response_scan_packet_s responses[SWEEP_MAX_SAMPLES];
-  int32_t received = 0;
-
-  while (!device->stop_thread && received < SWEEP_MAX_SAMPLES) {
-    sweep::protocol::read_response_scan(device->serial, &responses[received]);
-
-    const bool is_sync = responses[received].sync_error & sweep::protocol::response_scan_packet_sync::sync;
-    const bool has_error = (responses[received].sync_error >> 1) != 0; // shift out sync bit, others are errors
-
-    if (!has_error) {
-      received++;
-    }
-
-    if (is_sync) {
-      if (received <= 1)
-        continue;
-      // package the previous scan without the sync reading from the subsequent scan
-      auto out = new sweep_scan;
-      out->count = received - 1; // minus 1 to exclude sync reading
-      for (int32_t it = 0; it < received - 1; ++it) {
-        out->angle[it] = sweep::protocol::angle_raw_to_millideg(responses[it].angle);
-        out->distance[it] = responses[it].distance;
-        out->signal_strength[it] = responses[it].signal_strength;
-      }
-
-      // place the scan in the queue
-      device->scan_queue.enqueue(out);
-
-      // place the sync reading at the start for the next scan
-      responses[0] = responses[received - 1];
-
-      // reset received
-      received = 1;
-    }
-  }
-} catch (const std::exception& e) {
-  // worker thread is dead at this point
-  (void)e;
 }
 
 bool sweep_device_get_motor_ready(sweep_device_s device, sweep_error_s* error) try {
@@ -409,111 +516,6 @@ void sweep_device_reset(sweep_device_s device, sweep_error_s* error) try {
   SWEEP_ASSERT(!device->is_scanning);
 
   sweep::protocol::write_command(device->serial, sweep::protocol::RESET_DEVICE);
-} catch (const std::exception& e) {
-  *error = sweep_error_construct(e.what());
-}
-
-//------- Alternative methods for Low Level development (can error on failure) ------ //
-// Attempts to start scanning without waiting for motor ready, does NOT start background thread to accumulate scans
-void sweep_device_attempt_start_scanning(sweep_device_s device, sweep_error_s* error) try {
-  SWEEP_ASSERT(device);
-  SWEEP_ASSERT(error);
-  SWEEP_ASSERT(!device->is_scanning);
-
-  if (device->is_scanning)
-    return;
-
-  sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_START);
-
-  sweep::protocol::response_header_s response;
-  sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_START, &response);
-
-  // Check the status bytes do not indicate failure
-  const uint8_t status_bytes[2] = {response.cmdStatusByte1, response.cmdStatusByte2};
-  int32_t status_code = sweep::protocol::ascii_bytes_to_integral(status_bytes);
-  switch (status_code) {
-  case 12:
-    *error = sweep_error_construct("Failed to start scanning because motor speed has not stabilized.");
-    return;
-  case 13:
-    *error = sweep_error_construct("Failed to start scanning because motor is stationary.");
-    return;
-  default:
-    break;
-  }
-} catch (const std::exception& e) {
-  *error = sweep_error_construct(e.what());
-}
-
-// Read incoming scan directly (not retrieving from the queue)
-sweep_scan_s sweep_device_get_scan_direct(sweep_device_s device, sweep_error_s* error) try {
-  SWEEP_ASSERT(device);
-  SWEEP_ASSERT(error);
-  SWEEP_ASSERT(device->is_scanning);
-
-  sweep::protocol::response_scan_packet_s responses[SWEEP_MAX_SAMPLES];
-
-  int32_t received = 0;
-
-  while (received < SWEEP_MAX_SAMPLES) {
-    sweep::protocol::read_response_scan(device->serial, &responses[received]);
-
-    const bool is_sync = responses[received].sync_error & sweep::protocol::response_scan_packet_sync::sync;
-    const bool has_error = (responses[received].sync_error >> 1) != 0; // shift out sync bit, others are errors
-
-    if (!has_error) {
-      received++;
-    }
-
-    if (is_sync) {
-      break;
-    }
-  }
-
-  auto out = new sweep_scan;
-
-  out->count = received;
-
-  for (int32_t it = 0; it < received; ++it) {
-    out->angle[it] = sweep::protocol::angle_raw_to_millideg(responses[it].angle);
-    out->distance[it] = responses[it].distance;
-    out->signal_strength[it] = responses[it].signal_strength;
-  }
-
-  return out;
-} catch (const std::exception& e) {
-  *error = sweep_error_construct(e.what());
-  return nullptr;
-}
-
-// Attempts to set motor speed without waiting for motor ready
-void sweep_device_attempt_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error) try {
-  SWEEP_ASSERT(device);
-  SWEEP_ASSERT(hz >= 0 && hz <= 10);
-  SWEEP_ASSERT(error);
-  SWEEP_ASSERT(!device->is_scanning);
-
-  uint8_t args[2] = {0};
-  sweep::protocol::integral_to_ascii_bytes(hz, args);
-
-  sweep::protocol::write_command_with_arguments(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST, args);
-
-  sweep::protocol::response_param_s response;
-  sweep::protocol::read_response_param(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST, &response);
-
-  // Check the status bytes do not indicate failure
-  const uint8_t status_bytes[2] = {response.cmdStatusByte1, response.cmdStatusByte2};
-  int32_t status_code = sweep::protocol::ascii_bytes_to_integral(status_bytes);
-  switch (status_code) {
-  case 11:
-    *error = sweep_error_construct("Failed to set motor speed because provided parameter was invalid.");
-    return;
-  case 12:
-    *error = sweep_error_construct("Failed to set motor speed because prior speed has not yet stabilized.");
-    return;
-  default:
-    break;
-  }
 } catch (const std::exception& e) {
   *error = sweep_error_construct(e.what());
 }
