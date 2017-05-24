@@ -33,6 +33,37 @@ void sweep_error_destruct(sweep_error_s error) {
   delete error;
 }
 
+static void sweep_device_wait_until_motor_ready(sweep_device_s device, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(error);
+  SWEEP_ASSERT(!device->is_scanning);
+
+  (void)device;
+  (void)error;
+}
+
+static void sweep_device_attempt_start_scanning(sweep_device_s device, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(error);
+  SWEEP_ASSERT(!device->is_scanning);
+  (void)error;
+
+  if (device->is_scanning)
+    return;
+
+  device->is_scanning = true;
+}
+
+static void sweep_device_attempt_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error) {
+  SWEEP_ASSERT(device);
+  SWEEP_ASSERT(hz >= 0 && hz <= 10);
+  SWEEP_ASSERT(error);
+  SWEEP_ASSERT(!device->is_scanning);
+  (void)error;
+
+  device->motor_speed = hz;
+}
+
 sweep_device_s sweep_device_construct_simple(const char* port, sweep_error_s* error) {
   SWEEP_ASSERT(error);
 
@@ -75,15 +106,6 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) {
   (void)error;
 
   device->is_scanning = false;
-}
-
-void sweep_device_wait_until_motor_ready(sweep_device_s device, sweep_error_s* error) {
-  SWEEP_ASSERT(device);
-  SWEEP_ASSERT(error);
-  SWEEP_ASSERT(!device->is_scanning);
-
-  (void)device;
-  (void)error;
 }
 
 sweep_scan_s sweep_device_get_scan(sweep_device_s device, sweep_error_s* error) {
@@ -212,42 +234,4 @@ void sweep_device_reset(sweep_device_s device, sweep_error_s* error) {
   SWEEP_ASSERT(!device->is_scanning);
   (void)device;
   (void)error;
-}
-
-void sweep_device_attempt_start_scanning(sweep_device_s device, sweep_error_s* error) {
-  SWEEP_ASSERT(device);
-  SWEEP_ASSERT(error);
-  SWEEP_ASSERT(!device->is_scanning);
-  (void)error;
-
-  if (device->is_scanning)
-    return;
-
-  device->is_scanning = true;
-}
-
-sweep_scan_s sweep_device_get_scan_direct(sweep_device_s device, sweep_error_s* error) {
-  SWEEP_ASSERT(device);
-  SWEEP_ASSERT(error);
-  SWEEP_ASSERT(device->is_scanning);
-  (void)error;
-
-  auto out = new sweep_scan{/*count=*/device->is_scanning ? 16 : 0, /*nth=*/device->nth_scan_request};
-
-  device->nth_scan_request += 1;
-
-  // Artificially introduce slowdown, to simulate device rotation
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-  return out;
-}
-
-void sweep_device_attempt_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error) {
-  SWEEP_ASSERT(device);
-  SWEEP_ASSERT(hz >= 0 && hz <= 10);
-  SWEEP_ASSERT(error);
-  SWEEP_ASSERT(!device->is_scanning);
-  (void)error;
-
-  device->motor_speed = hz;
 }

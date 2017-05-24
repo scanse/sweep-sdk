@@ -307,41 +307,6 @@ int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample)
 
 Returns the signal strength (0 low -- 255 high) for the `sample`th sample in the `sweep_scan_s`.
 
-<!--
-#### Alternative direct functions
-Many of the SDK methods block for various reasons, such as waiting for a data stream to terminate, waiting for the device to finish calibrating, or waiting for the motor speed to stabilize. This can be an issue for low-level applications where blocking isn't ideal. The following methods (mostly non-blocking) are provided as a workaround. Care must be taken when using these methods as they can error on valid failures if the state of the device is not checked before hand.
-
-```c++
-void sweep_device_attempt_start_scanning(sweep_device_s device, sweep_error_s* error)
-```
-
-Non-blocking alternative to `sweep_device_start_scanning`. 
-Signals the `sweep_device_s` to start scanning. 
-Will only succeed if the motor speed is \>0Hz and stable.
-User is responsible for checking these conditions before calling. User can check that motor speed has stabilized using `sweep_device_get_motor_ready` and that motor speed is \> 0Hz using `sweep_device_get_speed`.
-Will NOT start an internal background thread. User is responsible for keeping up with incoming scans by calling `sweep_device_get_scan_direct`.
-In case of error a `sweep_error_s` will be written into `error`. This method will error on legitimate failures (ex: the motor speed is stationary or has not yet stabilized).
-
-
-```c++
-sweep_scan_s sweep_device_get_scan_direct(sweep_device_s device, sweep_error_s* error)
-```
-
-Returns the ordered readings from the 2nd reading of the current scan through the 1st reading of the subsequent scan.
-Blocks waiting for the `sweep_device_s` to accumulate a full 360 degree scan into `sweep_scan_s`. To be used after calling `sweep_device_attempt_start_scanning`, NOT after `sweep_device_start_scanning`.
-In case of error a `sweep_error_s` will be written into `error`.
-
-```c++
-void sweep_device_attempt_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error)
-```
-
-Non-blocking alternative to `sweep_device_set_motor_speed`.
-Sets the `sweep_device_s`'s motor speed in Hz.
-Will only succeed if the device is ready. A device is only ready if the motor speed has stabilized to the current setting and the calibration routine is complete.
-Proper use involves checking that the motor speed has stabilized (using `sweep_device_get_motor_ready`) before attempting to adjust the motor speed to a new value.
-In case of error a `sweep_error_s` will be written into `error`. This method will error on legitimate failures (ex: the motor speed has not yet stabilized).
--->
-
 ### License
 
 Copyright © 2016 Daniel J. Hofmann
