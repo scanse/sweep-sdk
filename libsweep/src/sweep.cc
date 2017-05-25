@@ -279,14 +279,28 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) try
 
   sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_STOP);
 
-  // Wait some time, for the device to register the stop cmd and stop sending data blocks
+  // Wait some time for a few reasons:
+  // 1. allow time for the device to register the stop cmd and stop sending data blocks
+  // 2. allow time for slower performing devices (RaspberryPi) to buffer the stop response
+  // 3. allow a grace period for the device to perform its logging routine before sending a second stop command
   std::this_thread::sleep_for(std::chrono::milliseconds(35));
 
-  // Flush the left over data blocks, received after sending the stop cmd
-  // This will also flush the response to the stop cmd
+  // Read the response from the first stop command
+  // It is possible this will contain garbage bytes (leftover from data stream), and will error
+  // But we are guaranteed to read at least as many bytes as the length of a stop response
+  sweep::protocol::response_header_s garbage_response;
+  try {
+    sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_STOP, &garbage_response);
+  } catch (const std::exception& ignore) {
+    // Catch and ignore the error in the case of the stop response containing garbage bytes
+    // Occurs if the device was actively streaming data before the stop cmd
+    (void)ignore;
+  }
+
+  // Flush any bytes left over, in case device was actively streaming data before the stop cmd
   sweep::serial::device_flush(device->serial);
 
-  // Write another stop cmd so we can read a response
+  // Write another stop cmd so we can read a valid response
   sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_STOP);
 
   // read the response
