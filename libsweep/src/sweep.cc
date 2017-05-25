@@ -114,7 +114,7 @@ static void sweep_device_accumulate_scans(sweep_device_s device) try {
       }
 
       // place the scan in the queue
-      device->scan_queue.enqueue({ std::move(out), nullptr });
+      device->scan_queue.enqueue({std::move(out), nullptr});
 
       // place the sync reading at the start for the next scan
       responses[0] = responses[received - 1];
@@ -125,7 +125,7 @@ static void sweep_device_accumulate_scans(sweep_device_s device) try {
   }
 } catch (const std::exception& e) {
   // worker thread is dead at this point
-  device->scan_queue.enqueue({ nullptr, std::make_exception_ptr(e) });
+  device->scan_queue.enqueue({nullptr, std::make_exception_ptr(e)});
 }
 
 // Attempts to start scanning without waiting for motor ready. Can error on failure.
@@ -208,7 +208,7 @@ sweep_device_s sweep_device_construct(const char* port, int32_t bitrate, sweep_e
   sweep::serial::device_s serial = sweep::serial::device_construct(port, bitrate);
 
   // initialize assuming the device is scanning
-  auto out = new sweep_device{serial, /*is_scanning=*/true, /*stop_thread=*/{false}, /*scan_queue=*/{ 20 }};
+  auto out = new sweep_device{serial, /*is_scanning=*/true, /*stop_thread=*/{false}, /*scan_queue=*/{20}};
 
   // send a stop scanning command in case the scanner was powered on and scanning
   sweep_device_stop_scanning(out, error);

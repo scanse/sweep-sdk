@@ -7,7 +7,9 @@
 int32_t sweep_get_version(void) { return SWEEP_VERSION; }
 bool sweep_is_abi_compatible(void) { return sweep_get_version() >> 16u == SWEEP_VERSION_MAJOR; }
 
-struct sweep_error { std::string what; };
+struct sweep_error {
+  std::string what;
+};
 
 struct sweep_device {
   bool is_scanning;

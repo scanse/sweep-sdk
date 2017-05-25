@@ -16,7 +16,9 @@
 namespace sweep {
 namespace serial {
 
-struct device { int32_t fd; };
+struct device {
+  int32_t fd;
+};
 
 static speed_t get_baud(int32_t bitrate) {
   SWEEP_ASSERT(bitrate > 0);
