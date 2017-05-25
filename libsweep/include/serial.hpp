@@ -20,7 +20,7 @@ struct error : sweep::error::error {
   using base::base;
 };
 
-typedef struct device* device_s;
+using device_s = struct device*;
 
 device_s device_construct(const char* port, int32_t bitrate);
 void device_destruct(device_s serial);
