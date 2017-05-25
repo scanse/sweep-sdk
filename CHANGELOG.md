@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.2
+
+This release is compatible with device firmware v1.4.
+
+Changes:
+- libsweep: 
+  - Adapts device construction to be compatible with RaspberryPi (see #73)
+  - Removes implementation methods from API
 
 ## v1.1.1
 
