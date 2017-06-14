@@ -254,17 +254,21 @@ device_s device_construct(const char* port, int32_t bitrate) {
 
   int32_t fd = open(port, O_RDWR | O_NOCTTY | O_NONBLOCK);
 
+  printf("device_construct - 1\n");
   if (fd == -1)
     throw error{"opening serial port failed"};
 
+  printf("device_construct - 2\n");
   if (!isatty(fd))
     throw error{"serial port is not a TTY"};
 
   struct termios options;
 
+  printf("device_construct - 3\n");
   if (tcgetattr(fd, &options) == -1)
     throw error{"querying terminal options failed"};
 
+  printf("device_construct - 4\n");
   // Input Flags
   options.c_iflag &= ~(INLCR | IGNCR | ICRNL | IGNBRK);
 
@@ -289,10 +293,12 @@ device_s device_construct(const char* port, int32_t bitrate) {
   cfsetispeed(&options, baud);
   cfsetospeed(&options, baud);
 
+  printf("device_construct - 5\n");
   // flush the port
   if (tcflush(fd, TCIFLUSH) == -1)
     throw error{"flushing the serial port failed"};
 
+printf("device_construct - 6\n");
   // set port attributes
   if (tcsetattr(fd, TCSANOW, &options) == -1) {
     if (close(fd) == -1)
@@ -301,6 +307,7 @@ device_s device_construct(const char* port, int32_t bitrate) {
     throw error{"setting terminal options failed"};
   }
 
+printf("device_construct - 7\n");
   auto out = new device{fd};
   return out;
 }
@@ -338,6 +345,9 @@ void device_read(device_s serial, void* to, int32_t len) {
         } else {
           throw error{"reading from serial device failed"};
         }
+      } else if(ret == 0){
+        perror("encountered EOF on serial device");
+        throw error{"encountered EOF on serial device"};
       } else {
         bytes_read += ret;
       }
@@ -359,7 +369,7 @@ void device_write(device_s serial, const void* from, int32_t len) {
     int32_t ret = write(serial->fd, (const char*)from + bytes_written, len - bytes_written);
 
     if (ret == -1) {
-      if (errno == EAGAIN || errno == EINTR) {
+      if (/*errno == EAGAIN || */errno == EINTR) {
         continue;
       } else {
         throw error{"writing to serial device failed"};
