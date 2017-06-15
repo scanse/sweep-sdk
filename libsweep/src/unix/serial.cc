@@ -338,6 +338,8 @@ void device_read(device_s serial, void* to, int32_t len) {
         } else {
           throw error{"reading from serial device failed"};
         }
+      } else if(ret == 0){
+        throw error{"encountered EOF on serial device"};
       } else {
         bytes_read += ret;
       }
