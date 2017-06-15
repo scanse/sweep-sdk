@@ -123,9 +123,9 @@ static void sweep_device_accumulate_scans(sweep_device_s device) try {
       received = 1;
     }
   }
-} catch (const std::exception& e) {
+} catch (...) {
   // worker thread is dead at this point
-  device->scan_queue.enqueue({nullptr, std::make_exception_ptr(e)});
+  device->scan_queue.enqueue({nullptr, std::current_exception()});
 }
 
 // Attempts to start scanning without waiting for motor ready. Can error on failure.
