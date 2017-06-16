@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.2.0
+This release is compatible with device firmware v1.4.
+
+Changes:
+- libsweep:
+  - Mac OS support
+  - Propagate dynamic type of exception from background thread
+- sweeppy
+  - Added patch version (ie: MAJOR.MINOR.PATCH)
+
 ## v1.1.2
 
 This release is compatible with device firmware v1.4.
