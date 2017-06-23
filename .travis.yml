@@ -67,6 +67,10 @@ install:
   - sudo python2 setup.py install
   - sudo python3 setup.py install
   - popd
+  # Build Java Bindings
+  - pushd jsweep
+  - ./gradlew assemble
+  - popd
 
 script:
   # Test libsweep examples against the dummy library
@@ -86,4 +90,8 @@ script:
   # Test SweepJs bindings against the dummy library
   - pushd sweepjs
   - npm install
+  - popd
+  # Test JSweep bindings against the dummy library
+  - pushd jsweep
+  - ./gradlew check
   - popd
