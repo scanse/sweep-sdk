@@ -10,28 +10,28 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-6', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
+          packages: ['g++-6', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev', 'openjdk-7-jdk']
       env: CCOMPILER='gcc-6' CXXCOMPILER='g++-6'
 
     - os: linux
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-5', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
+          packages: ['g++-5', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev', 'openjdk-7-jdk']
       env: CCOMPILER='gcc-5' CXXCOMPILER='g++-5'
 
     - os: linux
       addons:
         apt:
           sources: ['llvm-toolchain-trusty-3.9']
-          packages: ['clang-3.9', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
+          packages: ['clang-3.9', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev', 'openjdk-7-jdk']
       env: CCOMPILER='clang-3.9' CXXCOMPILER='clang++-3.9'
 
     - os: linux
       addons:
         apt:
           sources: ['llvm-toolchain-trusty-4.0']
-          packages: ['clang-4.0', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
+          packages: ['clang-4.0', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev', 'openjdk-7-jdk']
       env: CCOMPILER='clang-4.0' CXXCOMPILER='clang++-4.0'
 
     - os: osx
@@ -47,7 +47,7 @@ matrix:
 before_install:
   - export CC=${CCOMPILER} CXX=${CXXCOMPILER}
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then sudo update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10; fi
-  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew update && brew install python3; fi
+  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew update && brew install python3 && brew cask install java; fi
 
 install:
   # Make sure building libsweep works
