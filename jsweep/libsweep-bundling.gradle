@@ -1,0 +1,37 @@
+task buildLibSweep(group: 'build') {
+    description = 'Runs CMake and builds the libsweep.so file.'
+    inputs.dir('../libsweep/src')
+    inputs.dir('../libsweep/cmake')
+    inputs.dir('../libsweep/include')
+    inputs.file('../libsweep/CMakeLists.txt')
+    inputs.property('dummy', (project.findProperty('libsweepDummy') ?: 'false').toBoolean())
+    outputs.file('../libsweep/build/libsweep.so')
+    doLast {
+        project.delete '../libsweep/build'
+        println '>>> mkdir -p build'
+        def buildDir = project.mkdir '../libsweep/build'
+        println '>>> cd ' + buildDir
+
+        def dummy = inputs.properties.dummy ? 'On': 'Off'
+        println '>>> cmake .. -DCMAKE_BUILD_TYPE=Release'
+        (project.exec {
+            workingDir buildDir
+            commandLine 'cmake', file('../libsweep').absolutePath, '-DCMAKE_BUILD_TYPE=Release', "-DDUMMY=${dummy}"
+        }).assertNormalExitValue().rethrowFailure()
+
+        println '>>> cmake --build .'
+        (project.exec {
+            workingDir buildDir
+            commandLine 'cmake', '--build', '.'
+        }).assertNormalExitValue().rethrowFailure()
+    }
+}
+task libSweepJar(type: Jar, dependsOn: [buildLibSweep], group: 'build') {
+    description = 'Assembles a jar archive containing the libsweep.so file.'
+    from buildLibSweep.outputs
+    into 'linux-x86-64'
+    classifier = 'natives'
+}
+artifacts {
+    archives project.libSweepJar
+}

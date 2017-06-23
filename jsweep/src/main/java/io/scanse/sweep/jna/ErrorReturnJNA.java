@@ -8,9 +8,9 @@ import com.sun.jna.Structure;
 
 public class ErrorReturnJNA extends Structure {
 
-    private static class EJNAPtrPtr extends ErrorJNAPointer
+    public static class EJNAPtrPtr extends ErrorJNAPointer
             implements Structure.ByReference {
-        private EJNAPtrPtr(Pointer p) {
+        public EJNAPtrPtr(Pointer p) {
             super(p);
         }
     }
