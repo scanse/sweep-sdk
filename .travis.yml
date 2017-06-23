@@ -2,6 +2,9 @@ language: generic
 sudo: required
 dist: trusty
 
+services:
+    - docker
+
 matrix:
   fast_finish: true
 
@@ -12,7 +15,7 @@ matrix:
           sources:
               - ubuntu-toolchain-r-test
               - sourceline: 'ppa:webupd8team/java'
-          packages: ['g++-6', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev', 'oracle-java8-installer']
+          packages: ['g++-6', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
       env: CCOMPILER='gcc-6' CXXCOMPILER='g++-6'
 
     - os: linux
@@ -21,7 +24,7 @@ matrix:
           sources:
               - ubuntu-toolchain-r-test
               - sourceline: 'ppa:webupd8team/java'
-          packages: ['g++-5', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev', 'oracle-java8-installer']
+          packages: ['g++-5', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
       env: CCOMPILER='gcc-5' CXXCOMPILER='g++-5'
 
     - os: linux
@@ -30,7 +33,7 @@ matrix:
           sources:
               - llvm-toolchain-trusty-3.9
               - sourceline: 'ppa:webupd8team/java'
-          packages: ['clang-3.9', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev', 'oracle-java8-installer']
+          packages: ['clang-3.9', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
       env: CCOMPILER='clang-3.9' CXXCOMPILER='clang++-3.9'
 
     - os: linux
@@ -39,7 +42,7 @@ matrix:
           sources:
               - llvm-toolchain-trusty-4.0
               - sourceline: 'ppa:webupd8team/java'
-          packages: ['clang-4.0', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev', 'oracle-java8-installer']
+          packages: ['clang-4.0', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev']
       env: CCOMPILER='clang-4.0' CXXCOMPILER='clang++-4.0'
 
     - os: osx
@@ -77,7 +80,7 @@ install:
   - popd
   # Build Java Bindings
   - pushd jsweep
-  - ./gradlew assemble
+  - ./travis/java-run-task.sh assemble
   - popd
 
 script:
@@ -101,5 +104,5 @@ script:
   - popd
   # Test JSweep bindings against the dummy library
   - pushd jsweep
-  - ./gradlew check
+  - ./travis/java-run-task.sh check
   - popd
