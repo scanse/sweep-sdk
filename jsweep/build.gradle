@@ -1,7 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'eclipse'
 
-targetCompatibility = sourceCompatibility = '1.8'
+targetCompatibility = sourceCompatibility = '1.7'
 
 repositories {
     jcenter()

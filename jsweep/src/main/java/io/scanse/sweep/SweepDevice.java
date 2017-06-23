@@ -7,22 +7,45 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import io.scanse.sweep.jna.DeviceJNAPointer;
-import io.scanse.sweep.jna.ErrorHandler;
+import io.scanse.sweep.jna.ErrorJNAPointer;
+import io.scanse.sweep.jna.ErrorReturnJNA;
 import io.scanse.sweep.jna.ScanJNAPointer;
 import io.scanse.sweep.jna.SweepJNA;
 
 public class SweepDevice implements AutoCloseable {
 
+    private static final ThreadLocal<ErrorReturnJNA> ERROR = new ThreadLocal<ErrorReturnJNA>() {
+
+        @Override
+        protected ErrorReturnJNA initialValue() {
+            return new ErrorReturnJNA();
+        }
+    };
+
+    private static <T> T maybeThrow(T result) {
+        ErrorJNAPointer error = ERROR.get().returnedError;
+        if (error == null) {
+            return result;
+        }
+        try {
+            String msg = SweepJNA.sweep_error_message(error);
+            if (msg != null) {
+                throw new RuntimeException(msg);
+            }
+        } finally {
+            SweepJNA.sweep_error_destruct(error);
+        }
+        return result;
+    }
+
     private DeviceJNAPointer handle;
 
     public SweepDevice(String port) {
-        this.handle = ErrorHandler.call(SweepJNA::sweep_device_construct_simple,
-                port);
+        this.handle = maybeThrow(SweepJNA.sweep_device_construct_simple(port, ERROR.get()));
     }
 
     public SweepDevice(String port, int bitrate) {
-        this.handle = ErrorHandler.call(SweepJNA::sweep_device_construct,
-                port, bitrate);
+        this.handle = maybeThrow(SweepJNA.sweep_device_construct(port, bitrate, ERROR.get()));
     }
 
     private void checkHandle() {
@@ -35,18 +58,24 @@ public class SweepDevice implements AutoCloseable {
             throw new AssertionError(
                     "Your installed libsweep is not ABI compatible with these bindings");
         }
-        ErrorHandler.call(SweepJNA::sweep_device_start_scanning, this.handle);
+        SweepJNA.sweep_device_start_scanning(this.handle, ERROR.get());
+        maybeThrow(null);
     }
 
     public void stopScanning() {
         checkHandle();
-        ErrorHandler.call(SweepJNA::sweep_device_stop_scanning, this.handle);
+        SweepJNA.sweep_device_stop_scanning(this.handle, ERROR.get());
+        maybeThrow(null);
+    }
+
+    public boolean isMotorReady() {
+        checkHandle();
+        return maybeThrow(SweepJNA.sweep_device_get_motor_ready(this.handle, ERROR.get()));
     }
 
     public List<SweepSample> nextScan() {
         checkHandle();
-        ScanJNAPointer scan =
-                ErrorHandler.call(SweepJNA::sweep_device_get_scan, this.handle);
+        ScanJNAPointer scan = maybeThrow(SweepJNA.sweep_device_get_scan(this.handle, ERROR.get()));
         int count = SweepJNA.sweep_scan_get_number_of_samples(scan);
         List<SweepSample> samples = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
@@ -58,64 +87,72 @@ public class SweepDevice implements AutoCloseable {
         return samples;
     }
 
+    private final Iterable<List<SweepSample>> iterable = new Iterable<List<SweepSample>>() {
+
+        @Override
+        public Iterator<List<SweepSample>> iterator() {
+            return new Iterator<List<SweepSample>>() {
+
+                private boolean hasErrored = false;
+
+                @Override
+                public List<SweepSample> next() {
+                    if (hasErrored) {
+                        throw new NoSuchElementException(
+                                "An error previously occurred.");
+                    }
+                    try {
+                        return nextScan();
+                    } catch (RuntimeException e) {
+                        hasErrored = true;
+                        throw e;
+                    }
+                }
+
+                @Override
+                public boolean hasNext() {
+                    return !hasErrored;
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+
+            };
+        }
+    };
+
     public Iterable<List<SweepSample>> scans() {
-        return this::iterator;
-    }
-
-    private Iterator<List<SweepSample>> iterator() {
-        return new Iterator<List<SweepSample>>() {
-
-            private boolean hasErrored = false;
-
-            @Override
-            public List<SweepSample> next() {
-                if (hasErrored) {
-                    throw new NoSuchElementException(
-                            "An error previously occurred.");
-                }
-                try {
-                    return nextScan();
-                } catch (RuntimeException e) {
-                    hasErrored = true;
-                    throw e;
-                }
-            }
-
-            @Override
-            public boolean hasNext() {
-                return !hasErrored;
-            }
-
-        };
+        return iterable;
     }
 
     public int getMotorSpeed() {
         checkHandle();
-        return ErrorHandler.call(SweepJNA::sweep_device_get_motor_speed,
-                this.handle);
+        return maybeThrow(SweepJNA.sweep_device_get_motor_speed(this.handle, ERROR.get()));
     }
 
     public void setMotorSpeed(int hz) {
         checkHandle();
-        ErrorHandler.call(SweepJNA::sweep_device_set_motor_speed, this.handle,
-                hz);
+        SweepJNA.sweep_device_set_motor_speed(this.handle, hz, ERROR.get());
+        maybeThrow(null);
     }
 
     public int getSampleRate() {
         checkHandle();
-        return ErrorHandler.call(SweepJNA::sweep_device_get_sample_rate,
-                this.handle);
+        return maybeThrow(SweepJNA.sweep_device_get_sample_rate(this.handle, ERROR.get()));
     }
 
     public void setSampleRate(int hz) {
         checkHandle();
-        ErrorHandler.call(SweepJNA::sweep_device_set_sample_rate, this.handle,
-                hz);
+        SweepJNA.sweep_device_set_sample_rate(this.handle, hz, ERROR.get());
+        maybeThrow(null);
     }
 
     public void reset() {
         checkHandle();
-        ErrorHandler.call(SweepJNA::sweep_device_reset, this.handle);
+        SweepJNA.sweep_device_reset(this.handle, ERROR.get());
+        maybeThrow(null);
     }
 
     @Override
