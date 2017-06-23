@@ -8,8 +8,11 @@ repositories {
     jcenter()
 }
 
+apply from: 'libsweep-bundling.gradle'
+
 dependencies {
     compile group: 'net.java.dev.jna', name: 'jna-platform', version: '4.4.0'
+    compile files(libSweepJar.outputs)
     testCompile 'junit:junit:4.12'
 }
 
