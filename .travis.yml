@@ -9,28 +9,36 @@ matrix:
     - os: linux
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test', 'webupd8team-java']
+          sources:
+              - ubuntu-toolchain-r-test
+              - sourceline: 'ppa:webupd8team/java'
           packages: ['g++-6', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev', 'oracle-java8-installer']
       env: CCOMPILER='gcc-6' CXXCOMPILER='g++-6'
 
     - os: linux
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test', 'webupd8team-java']
+          sources:
+              - ubuntu-toolchain-r-test
+              - sourceline: 'ppa:webupd8team/java'
           packages: ['g++-5', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev', 'oracle-java8-installer']
       env: CCOMPILER='gcc-5' CXXCOMPILER='g++-5'
 
     - os: linux
       addons:
         apt:
-          sources: ['llvm-toolchain-trusty-3.9', 'webupd8team-java']
+          sources:
+              - llvm-toolchain-trusty-3.9
+              - sourceline: 'ppa:webupd8team/java'
           packages: ['clang-3.9', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev', 'oracle-java8-installer']
       env: CCOMPILER='clang-3.9' CXXCOMPILER='clang++-3.9'
 
     - os: linux
       addons:
         apt:
-          sources: ['llvm-toolchain-trusty-4.0', 'webupd8team-java']
+          sources:
+              - llvm-toolchain-trusty-4.0
+              - sourceline: 'ppa:webupd8team/java'
           packages: ['clang-4.0', 'cmake', 'python3', 'python3-pip', 'python3-setuptools', 'nodejs', 'npm', 'libsfml-dev', 'libprotobuf-dev', 'protobuf-compiler', 'libzmq-dev', 'oracle-java8-installer']
       env: CCOMPILER='clang-4.0' CXXCOMPILER='clang++-4.0'
 
