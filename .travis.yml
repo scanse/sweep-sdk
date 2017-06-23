@@ -79,9 +79,7 @@ install:
   - sudo python3 setup.py install
   - popd
   # Build Java Bindings
-  - pushd jsweep
   - ./travis/java-run-task.sh assemble
-  - popd
 
 script:
   # Test libsweep examples against the dummy library
@@ -103,6 +101,4 @@ script:
   - npm install
   - popd
   # Test JSweep bindings against the dummy library
-  - pushd jsweep
   - ./travis/java-run-task.sh check
-  - popd
