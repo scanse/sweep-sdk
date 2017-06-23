@@ -32,6 +32,10 @@ public class SweepJNA {
             DeviceJNAPointer device,
             ErrorReturnJNA error);
 
+    public static native boolean sweep_device_get_motor_ready(
+            DeviceJNAPointer device,
+            ErrorReturnJNA error);
+
     public static native ScanJNAPointer sweep_device_get_scan(DeviceJNAPointer device,
             ErrorReturnJNA error);
 
