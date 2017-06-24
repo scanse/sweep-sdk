@@ -103,19 +103,15 @@ inline void sweep::set_sample_rate(std::int32_t rate) {
 inline scan sweep::get_scan() {
   using scan_owner = std::unique_ptr<::sweep_scan, decltype(&::sweep_scan_destruct)>;
 
-  scan_owner releasing_scan{::sweep_device_get_scan(device.get(), detail::error_to_exception{}), &::sweep_scan_destruct};
+  const scan_owner releasing_scan{::sweep_device_get_scan(device.get(), detail::error_to_exception{}), &::sweep_scan_destruct};
 
-  auto num_samples = ::sweep_scan_get_number_of_samples(releasing_scan.get());
+  const auto num_samples = ::sweep_scan_get_number_of_samples(releasing_scan.get());
 
-  scan result;
-  result.samples.reserve(num_samples);
-
+  scan result{std::vector<sample>(num_samples)};
   for (std::int32_t n = 0; n < num_samples; ++n) {
-    auto angle = ::sweep_scan_get_angle(releasing_scan.get(), n);
-    auto distance = ::sweep_scan_get_distance(releasing_scan.get(), n);
-    auto signal = ::sweep_scan_get_signal_strength(releasing_scan.get(), n);
-
-    result.samples.push_back(sample{angle, distance, signal});
+    result.samples[n].angle           = ::sweep_scan_get_angle          (releasing_scan.get(), n);
+    result.samples[n].distance        = ::sweep_scan_get_distance       (releasing_scan.get(), n);
+    result.samples[n].signal_strength = ::sweep_scan_get_signal_strength(releasing_scan.get(), n);
   }
 
   return result;
