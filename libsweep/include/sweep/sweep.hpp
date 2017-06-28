@@ -31,9 +31,9 @@ struct device_error final : std::runtime_error {
 // Interface
 
 struct sample {
-  const std::int32_t angle;
-  const std::int32_t distance;
-  const std::int32_t signal_strength;
+  std::int32_t angle;
+  std::int32_t distance;
+  std::int32_t signal_strength;
 };
 
 struct scan {
@@ -74,55 +74,57 @@ struct error_to_exception {
 
   ::sweep_error_s error = nullptr;
 };
-}
+} // namespace detail
 
-sweep::sweep(const char* port)
+inline sweep::sweep(const char* port)
     : device{::sweep_device_construct_simple(port, detail::error_to_exception{}), &::sweep_device_destruct} {}
 
-sweep::sweep(const char* port, std::int32_t bitrate)
+inline sweep::sweep(const char* port, std::int32_t bitrate)
     : device{::sweep_device_construct(port, bitrate, detail::error_to_exception{}), &::sweep_device_destruct} {}
 
-void sweep::start_scanning() { ::sweep_device_start_scanning(device.get(), detail::error_to_exception{}); }
+inline void sweep::start_scanning() { ::sweep_device_start_scanning(device.get(), detail::error_to_exception{}); }
 
-void sweep::stop_scanning() { ::sweep_device_stop_scanning(device.get(), detail::error_to_exception{}); }
+inline void sweep::stop_scanning() { ::sweep_device_stop_scanning(device.get(), detail::error_to_exception{}); }
 
-bool sweep::get_motor_ready() { return ::sweep_device_get_motor_ready(device.get(), detail::error_to_exception{}); }
+inline bool sweep::get_motor_ready() { return ::sweep_device_get_motor_ready(device.get(), detail::error_to_exception{}); }
 
-std::int32_t sweep::get_motor_speed() { return ::sweep_device_get_motor_speed(device.get(), detail::error_to_exception{}); }
+inline std::int32_t sweep::get_motor_speed() {
+  return ::sweep_device_get_motor_speed(device.get(), detail::error_to_exception{});
+}
 
-void sweep::set_motor_speed(std::int32_t speed) {
+inline void sweep::set_motor_speed(std::int32_t speed) {
   ::sweep_device_set_motor_speed(device.get(), speed, detail::error_to_exception{});
 }
 
-std::int32_t sweep::get_sample_rate() { return ::sweep_device_get_sample_rate(device.get(), detail::error_to_exception{}); }
+inline std::int32_t sweep::get_sample_rate() {
+  return ::sweep_device_get_sample_rate(device.get(), detail::error_to_exception{});
+}
 
-void sweep::set_sample_rate(std::int32_t rate) {
+inline void sweep::set_sample_rate(std::int32_t rate) {
   ::sweep_device_set_sample_rate(device.get(), rate, detail::error_to_exception{});
 }
 
-scan sweep::get_scan() {
+inline scan sweep::get_scan() {
   using scan_owner = std::unique_ptr<::sweep_scan, decltype(&::sweep_scan_destruct)>;
 
-  scan_owner releasing_scan{::sweep_device_get_scan(device.get(), detail::error_to_exception{}), &::sweep_scan_destruct};
+  const scan_owner releasing_scan{::sweep_device_get_scan(device.get(), detail::error_to_exception{}), &::sweep_scan_destruct};
 
-  auto num_samples = ::sweep_scan_get_number_of_samples(releasing_scan.get());
+  const auto num_samples = ::sweep_scan_get_number_of_samples(releasing_scan.get());
 
-  scan result;
-  result.samples.reserve(num_samples);
-
+  scan result{std::vector<sample>(num_samples)};
   for (std::int32_t n = 0; n < num_samples; ++n) {
-    auto angle = ::sweep_scan_get_angle(releasing_scan.get(), n);
-    auto distance = ::sweep_scan_get_distance(releasing_scan.get(), n);
-    auto signal = ::sweep_scan_get_signal_strength(releasing_scan.get(), n);
-
-    result.samples.push_back(sample{angle, distance, signal});
+    // clang-format off
+    result.samples[n].angle           = ::sweep_scan_get_angle          (releasing_scan.get(), n);
+    result.samples[n].distance        = ::sweep_scan_get_distance       (releasing_scan.get(), n);
+    result.samples[n].signal_strength = ::sweep_scan_get_signal_strength(releasing_scan.get(), n);
+    // clang-format on
   }
 
   return result;
 }
 
-void sweep::reset() { ::sweep_device_reset(device.get(), detail::error_to_exception{}); }
+inline void sweep::reset() { ::sweep_device_reset(device.get(), detail::error_to_exception{}); }
 
-} // ns
+} // namespace sweep
 
 #endif
