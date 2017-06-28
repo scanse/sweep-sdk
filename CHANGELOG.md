@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.2.1
+This release is compatible with device firmware v1.4.
+
+Changes:
+- libsweep:
+  - Fixed c++ interface, to resolve linker errors when header is included in multiple translation units.
+
 ## v1.2.0
 This release is compatible with device firmware v1.4.
 
