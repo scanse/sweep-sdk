@@ -88,24 +88,31 @@ struct response_scan_packet_s {
   uint16_t distance;
   uint8_t signal_strength;
   uint8_t checksum;
+
+  struct sync_error_bits {
+    enum bits : uint8_t {
+      sync = 1 << 0,                // beginning of new full scan
+      communication_error = 1 << 1, // communication error
+
+      // Reserved for future error bits
+      reserved2 = 1 << 2,
+      reserved3 = 1 << 3,
+      reserved4 = 1 << 4,
+      reserved5 = 1 << 5,
+      reserved6 = 1 << 6,
+      reserved7 = 1 << 7,
+    };
+  };
+
+  bool is_sync() const { return sync_error & sync_error_bits::sync; }
+  bool has_error() const { return sync_error >> 1 != 0; } // shift out sync bit, others are errors
+  int get_angle_millideg() const {
+    // angle is transmitted as fixed point integer with scaling factor of 16
+    return static_cast<int>(angle * 1000 / 16.0f);
+  }
 };
 
 static_assert(sizeof(response_scan_packet_s) == 7, "response scan packet size mismatch");
-
-namespace response_scan_packet_sync {
-enum bits : uint8_t {
-  sync = 1 << 0,                // beginning of new full scan
-  communication_error = 1 << 1, // communication error
-
-  // Reserved for future error bits
-  reserved2 = 1 << 2,
-  reserved3 = 1 << 3,
-  reserved4 = 1 << 4,
-  reserved5 = 1 << 5,
-  reserved6 = 1 << 6,
-  reserved7 = 1 << 7,
-};
-}
 
 struct response_info_device_s {
   uint8_t cmdByte1;
@@ -183,12 +190,6 @@ void read_response_info_motor_ready(sweep::serial::device_s serial, const uint8_
 void read_response_info_motor_speed(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_speed_s* info);
 
 void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_sample_rate_s* info);
-
-// Some protocol conversion utilities
-inline int angle_raw_to_millideg(uint16_t v) {
-  // angle is transmitted as fixed point integer with scaling factor of 16
-  return static_cast<int>(v * 1000 / 16.0f);
-}
 
 inline void integral_to_ascii_bytes(const int32_t integral, uint8_t bytes[2]) {
   SWEEP_ASSERT(integral >= 0);

@@ -92,23 +92,20 @@ static void sweep_device_accumulate_scans(sweep_device_s device) try {
   int32_t received = 0;
 
   while (!device->stop_thread && received < SWEEP_MAX_SAMPLES) {
+
     sweep::protocol::read_response_scan(device->serial, &responses[received]);
 
-    const bool is_sync = responses[received].sync_error & sweep::protocol::response_scan_packet_sync::sync;
-    const bool has_error = (responses[received].sync_error >> 1) != 0; // shift out sync bit, others are errors
-
-    if (!has_error) {
+    if (!responses[received].has_error()) {
       received++;
     }
 
-    if (is_sync) {
-      if (received <= 1)
-        continue;
+    if (responses[received].is_sync() && received > 1) {
+
       // package the previous scan without the sync reading from the subsequent scan
       auto out = std::unique_ptr<sweep_scan>(new sweep_scan);
       out->count = received - 1; // minus 1 to exclude sync reading
       for (int32_t it = 0; it < received - 1; ++it) {
-        out->angle[it] = sweep::protocol::angle_raw_to_millideg(responses[it].angle);
+        out->angle[it] = responses[it].get_angle_millideg();
         out->distance[it] = responses[it].distance;
         out->signal_strength[it] = responses[it].signal_strength;
       }
