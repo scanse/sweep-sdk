@@ -179,17 +179,17 @@ void write_command(sweep::serial::device_s serial, const uint8_t cmd[2]);
 
 void write_command_with_arguments(sweep::serial::device_s serial, const uint8_t cmd[2], const uint8_t arg[2]);
 
-void read_response_header(sweep::serial::device_s serial, const uint8_t cmd[2], response_header_s* header);
+response_header_s read_response_header(sweep::serial::device_s serial, const uint8_t cmd[2]);
 
-void read_response_param(sweep::serial::device_s serial, const uint8_t cmd[2], response_param_s* param);
+response_param_s read_response_param(sweep::serial::device_s serial, const uint8_t cmd[2]);
 
-void read_response_scan(sweep::serial::device_s serial, response_scan_packet_s* scan);
+response_scan_packet_s read_response_scan(sweep::serial::device_s serial);
 
-void read_response_info_motor_ready(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_ready_s* info);
+response_info_motor_ready_s read_response_info_motor_ready(sweep::serial::device_s serial, const uint8_t cmd[2]);
 
-void read_response_info_motor_speed(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_motor_speed_s* info);
+response_info_motor_speed_s read_response_info_motor_speed(sweep::serial::device_s serial, const uint8_t cmd[2]);
 
-void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_sample_rate_s* info);
+response_info_sample_rate_s read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2]);
 
 inline void integral_to_ascii_bytes(const int32_t integral, uint8_t bytes[2]) {
   SWEEP_ASSERT(integral >= 0);

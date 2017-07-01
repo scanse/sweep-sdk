@@ -106,8 +106,7 @@ static void sweep_device_accumulate_scans(sweep_device_s device) try {
 
   while (!device->stop_thread && received < SWEEP_MAX_SAMPLES) {
 
-    sweep::protocol::response_scan_packet_s response;
-    sweep::protocol::read_response_scan(device->serial, &response);
+    const auto response = sweep::protocol::read_response_scan(device->serial);
 
     if (!response.has_error()) {
       buffer[received] = parse_payload(response);
@@ -149,8 +148,7 @@ static void sweep_device_attempt_start_scanning(sweep_device_s device, sweep_err
 
   sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_START);
 
-  sweep::protocol::response_header_s response;
-  sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_START, &response);
+  auto response = sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_START);
 
   // Check the status bytes do not indicate failure
   const uint8_t status_bytes[2] = {response.cmdStatusByte1, response.cmdStatusByte2};
@@ -181,8 +179,7 @@ static void sweep_device_attempt_set_motor_speed(sweep_device_s device, int32_t 
 
   sweep::protocol::write_command_with_arguments(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST, args);
 
-  sweep::protocol::response_param_s response;
-  sweep::protocol::read_response_param(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST, &response);
+  const auto response = sweep::protocol::read_response_param(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST);
 
   // Check the status bytes do not indicate failure
   const uint8_t status_bytes[2] = {response.cmdStatusByte1, response.cmdStatusByte2};
@@ -297,9 +294,8 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) try
   // Read the response from the first stop command
   // It is possible this will contain garbage bytes (leftover from data stream), and will error
   // But we are guaranteed to read at least as many bytes as the length of a stop response
-  sweep::protocol::response_header_s garbage_response;
   try {
-    sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_STOP, &garbage_response);
+    sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_STOP);
   } catch (const std::exception& ignore) {
     // Catch and ignore the error in the case of the stop response containing garbage bytes
     // Occurs if the device was actively streaming data before the stop cmd
@@ -313,8 +309,7 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) try
   sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_STOP);
 
   // read the response
-  sweep::protocol::response_header_s response;
-  sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_STOP, &response);
+  sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_STOP);
 
   device->is_scanning = false;
 } catch (const std::exception& e) {
@@ -347,8 +342,7 @@ bool sweep_device_get_motor_ready(sweep_device_s device, sweep_error_s* error) t
 
   sweep::protocol::write_command(device->serial, sweep::protocol::MOTOR_READY);
 
-  sweep::protocol::response_info_motor_ready_s response;
-  sweep::protocol::read_response_info_motor_ready(device->serial, sweep::protocol::MOTOR_READY, &response);
+  const auto response = sweep::protocol::read_response_info_motor_ready(device->serial, sweep::protocol::MOTOR_READY);
 
   int32_t ready_code = sweep::protocol::ascii_bytes_to_integral(response.motor_ready);
   SWEEP_ASSERT(ready_code >= 0);
@@ -366,8 +360,7 @@ int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error
 
   sweep::protocol::write_command(device->serial, sweep::protocol::MOTOR_INFORMATION);
 
-  sweep::protocol::response_info_motor_speed_s response;
-  sweep::protocol::read_response_info_motor_speed(device->serial, sweep::protocol::MOTOR_INFORMATION, &response);
+  const auto response = sweep::protocol::read_response_info_motor_speed(device->serial, sweep::protocol::MOTOR_INFORMATION);
 
   int32_t speed = sweep::protocol::ascii_bytes_to_integral(response.motor_speed);
   SWEEP_ASSERT(speed >= 0);
@@ -400,8 +393,7 @@ int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error
 
   sweep::protocol::write_command(device->serial, sweep::protocol::SAMPLE_RATE_INFORMATION);
 
-  sweep::protocol::response_info_sample_rate_s response;
-  sweep::protocol::read_response_info_sample_rate(device->serial, sweep::protocol::SAMPLE_RATE_INFORMATION, &response);
+  const auto response = sweep::protocol::read_response_info_sample_rate(device->serial, sweep::protocol::SAMPLE_RATE_INFORMATION);
 
   // 01: 500-600Hz, 02: 750-800Hz, 03: 1000-1050Hz
   int32_t code = sweep::protocol::ascii_bytes_to_integral(response.sample_rate);
@@ -455,8 +447,7 @@ void sweep_device_set_sample_rate(sweep_device_s device, int32_t hz, sweep_error
 
   sweep::protocol::write_command_with_arguments(device->serial, sweep::protocol::SAMPLE_RATE_ADJUST, args);
 
-  sweep::protocol::response_param_s response;
-  sweep::protocol::read_response_param(device->serial, sweep::protocol::SAMPLE_RATE_ADJUST, &response);
+  const auto response = sweep::protocol::read_response_param(device->serial, sweep::protocol::SAMPLE_RATE_ADJUST);
 
   // Check the status bytes do not indicate failure
   const uint8_t status_bytes[2] = {response.cmdStatusByte1, response.cmdStatusByte2};

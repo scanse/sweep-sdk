@@ -55,91 +55,103 @@ void write_command_with_arguments(serial::device_s serial, const uint8_t cmd[2],
   serial::device_write(serial, &packet, sizeof(cmd_param_packet_s));
 }
 
-void read_response_header(serial::device_s serial, const uint8_t cmd[2], response_header_s* header) {
+response_header_s read_response_header(serial::device_s serial, const uint8_t cmd[2]) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
-  SWEEP_ASSERT(header);
 
-  serial::device_read(serial, header, sizeof(response_header_s));
+  response_header_s header;
+  serial::device_read(serial, &header, sizeof(header));
 
-  uint8_t checksum = checksum_response_header(*header);
+  uint8_t checksum = checksum_response_header(header);
 
-  if (checksum != header->cmdSum)
+  if (checksum != header.cmdSum)
     throw error{"invalid response header checksum"};
 
-  bool ok = header->cmdByte1 == cmd[0] && header->cmdByte2 == cmd[1];
+  bool ok = header.cmdByte1 == cmd[0] && header.cmdByte2 == cmd[1];
 
   if (!ok)
     throw error{"invalid header response commands"};
+
+  return header;
 }
 
-void read_response_param(serial::device_s serial, const uint8_t cmd[2], response_param_s* param) {
+response_param_s read_response_param(serial::device_s serial, const uint8_t cmd[2]) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
-  SWEEP_ASSERT(param);
 
-  serial::device_read(serial, param, sizeof(response_param_s));
+  response_param_s param;
+  serial::device_read(serial, &param, sizeof(param));
 
-  uint8_t checksum = checksum_response_param(*param);
+  uint8_t checksum = checksum_response_param(param);
 
-  if (checksum != param->cmdSum)
+  if (checksum != param.cmdSum)
     throw error{"invalid response param header checksum"};
 
-  bool ok = param->cmdByte1 == cmd[0] && param->cmdByte2 == cmd[1];
+  bool ok = param.cmdByte1 == cmd[0] && param.cmdByte2 == cmd[1];
 
   if (!ok)
     throw error{"invalid param response commands"};
+
+  return param;
 }
 
-void read_response_scan(serial::device_s serial, response_scan_packet_s* scan) {
+response_scan_packet_s read_response_scan(serial::device_s serial) {
   SWEEP_ASSERT(serial);
-  SWEEP_ASSERT(scan);
 
-  serial::device_read(serial, scan, sizeof(response_scan_packet_s));
+  response_scan_packet_s scan;
+  serial::device_read(serial, &scan, sizeof(scan));
 
-  uint8_t checksum = checksum_response_scan_packet(*scan);
+  uint8_t checksum = checksum_response_scan_packet(scan);
 
-  if (checksum != scan->checksum)
+  if (checksum != scan.checksum)
     throw error{"invalid scan response commands"};
+
+  return scan;
 }
 
-void read_response_info_motor_ready(serial::device_s serial, const uint8_t cmd[2], response_info_motor_ready_s* info) {
+response_info_motor_ready_s read_response_info_motor_ready(serial::device_s serial, const uint8_t cmd[2]) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
-  SWEEP_ASSERT(info);
 
-  serial::device_read(serial, info, sizeof(response_info_motor_ready_s));
+  response_info_motor_ready_s info;
+  serial::device_read(serial, &info, sizeof(info));
 
-  bool ok = info->cmdByte1 == cmd[0] && info->cmdByte2 == cmd[1];
+  bool ok = info.cmdByte1 == cmd[0] && info.cmdByte2 == cmd[1];
 
   if (!ok)
     throw error{"invalid motor ready response commands"};
+
+  return info;
 }
 
-void read_response_info_motor_speed(serial::device_s serial, const uint8_t cmd[2], response_info_motor_speed_s* info) {
+response_info_motor_speed_s read_response_info_motor_speed(serial::device_s serial, const uint8_t cmd[2]) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
-  SWEEP_ASSERT(info);
 
-  serial::device_read(serial, info, sizeof(response_info_motor_speed_s));
+  response_info_motor_speed_s info;
+  serial::device_read(serial, &info, sizeof(info));
 
-  bool ok = info->cmdByte1 == cmd[0] && info->cmdByte2 == cmd[1];
+  bool ok = info.cmdByte1 == cmd[0] && info.cmdByte2 == cmd[1];
 
   if (!ok)
     throw error{"invalid motor info response commands"};
+
+  return info;
 }
 
-void read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2], response_info_sample_rate_s* info) {
+response_info_sample_rate_s read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2]) {
   SWEEP_ASSERT(serial);
   SWEEP_ASSERT(cmd);
-  SWEEP_ASSERT(info);
 
-  serial::device_read(serial, info, sizeof(response_info_sample_rate_s));
+  response_info_sample_rate_s info;
+  serial::device_read(serial, &info, sizeof(info));
 
-  bool ok = info->cmdByte1 == cmd[0] && info->cmdByte2 == cmd[1];
+  bool ok = info.cmdByte1 == cmd[0] && info.cmdByte2 == cmd[1];
 
   if (!ok)
     throw error{"invalid sample rate info response commands"};
+
+  return info;
 }
 
 } // ns protocol
