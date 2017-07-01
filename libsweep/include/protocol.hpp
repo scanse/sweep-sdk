@@ -185,11 +185,11 @@ response_param_s read_response_param(sweep::serial::device_s serial, const uint8
 
 response_scan_packet_s read_response_scan(sweep::serial::device_s serial);
 
-response_info_motor_ready_s read_response_info_motor_ready(sweep::serial::device_s serial, const uint8_t cmd[2]);
+response_info_motor_ready_s read_response_info_motor_ready(sweep::serial::device_s serial);
 
-response_info_motor_speed_s read_response_info_motor_speed(sweep::serial::device_s serial, const uint8_t cmd[2]);
+response_info_motor_speed_s read_response_info_motor_speed(sweep::serial::device_s serial);
 
-response_info_sample_rate_s read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2]);
+response_info_sample_rate_s read_response_info_sample_rate(sweep::serial::device_s serial);
 
 inline void integral_to_ascii_bytes(const int32_t integral, uint8_t bytes[2]) {
   SWEEP_ASSERT(integral >= 0);

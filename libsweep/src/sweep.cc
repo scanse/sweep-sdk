@@ -342,7 +342,7 @@ bool sweep_device_get_motor_ready(sweep_device_s device, sweep_error_s* error) t
 
   sweep::protocol::write_command(device->serial, sweep::protocol::MOTOR_READY);
 
-  const auto response = sweep::protocol::read_response_info_motor_ready(device->serial, sweep::protocol::MOTOR_READY);
+  const auto response = sweep::protocol::read_response_info_motor_ready(device->serial);
 
   int32_t ready_code = sweep::protocol::ascii_bytes_to_integral(response.motor_ready);
   SWEEP_ASSERT(ready_code >= 0);
@@ -360,7 +360,7 @@ int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error
 
   sweep::protocol::write_command(device->serial, sweep::protocol::MOTOR_INFORMATION);
 
-  const auto response = sweep::protocol::read_response_info_motor_speed(device->serial, sweep::protocol::MOTOR_INFORMATION);
+  const auto response = sweep::protocol::read_response_info_motor_speed(device->serial);
 
   int32_t speed = sweep::protocol::ascii_bytes_to_integral(response.motor_speed);
   SWEEP_ASSERT(speed >= 0);
@@ -393,7 +393,7 @@ int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error
 
   sweep::protocol::write_command(device->serial, sweep::protocol::SAMPLE_RATE_INFORMATION);
 
-  const auto response = sweep::protocol::read_response_info_sample_rate(device->serial, sweep::protocol::SAMPLE_RATE_INFORMATION);
+  const auto response = sweep::protocol::read_response_info_sample_rate(device->serial);
 
   // 01: 500-600Hz, 02: 750-800Hz, 03: 1000-1050Hz
   int32_t code = sweep::protocol::ascii_bytes_to_integral(response.sample_rate);

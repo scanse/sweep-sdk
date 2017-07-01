@@ -109,14 +109,13 @@ response_scan_packet_s read_response_scan(serial::device_s serial) {
   return scan;
 }
 
-response_info_motor_ready_s read_response_info_motor_ready(serial::device_s serial, const uint8_t cmd[2]) {
+response_info_motor_ready_s read_response_info_motor_ready(serial::device_s serial) {
   SWEEP_ASSERT(serial);
-  SWEEP_ASSERT(cmd);
 
   response_info_motor_ready_s info;
   serial::device_read(serial, &info, sizeof(info));
 
-  bool ok = info.cmdByte1 == cmd[0] && info.cmdByte2 == cmd[1];
+  bool ok = info.cmdByte1 == MOTOR_READY[0] && info.cmdByte2 == MOTOR_READY[1];
 
   if (!ok)
     throw error{"invalid motor ready response commands"};
@@ -124,14 +123,13 @@ response_info_motor_ready_s read_response_info_motor_ready(serial::device_s seri
   return info;
 }
 
-response_info_motor_speed_s read_response_info_motor_speed(serial::device_s serial, const uint8_t cmd[2]) {
+response_info_motor_speed_s read_response_info_motor_speed(serial::device_s serial) {
   SWEEP_ASSERT(serial);
-  SWEEP_ASSERT(cmd);
 
   response_info_motor_speed_s info;
   serial::device_read(serial, &info, sizeof(info));
 
-  bool ok = info.cmdByte1 == cmd[0] && info.cmdByte2 == cmd[1];
+  bool ok = info.cmdByte1 == MOTOR_INFORMATION[0] && info.cmdByte2 == MOTOR_INFORMATION[1];
 
   if (!ok)
     throw error{"invalid motor info response commands"};
@@ -139,14 +137,13 @@ response_info_motor_speed_s read_response_info_motor_speed(serial::device_s seri
   return info;
 }
 
-response_info_sample_rate_s read_response_info_sample_rate(sweep::serial::device_s serial, const uint8_t cmd[2]) {
+response_info_sample_rate_s read_response_info_sample_rate(sweep::serial::device_s serial) {
   SWEEP_ASSERT(serial);
-  SWEEP_ASSERT(cmd);
 
   response_info_sample_rate_s info;
   serial::device_read(serial, &info, sizeof(info));
 
-  bool ok = info.cmdByte1 == cmd[0] && info.cmdByte2 == cmd[1];
+  bool ok = info.cmdByte1 == SAMPLE_RATE_INFORMATION[0] && info.cmdByte2 == SAMPLE_RATE_INFORMATION[1];
 
   if (!ok)
     throw error{"invalid sample rate info response commands"};
