@@ -5,6 +5,7 @@
 
 #include "sweep.h"
 
+#include <algorithm>
 #include <chrono>
 #include <exception>
 #include <string>
@@ -19,12 +20,24 @@ struct sweep_error {
 
 #define SWEEP_MAX_SAMPLES 4096
 
+struct sample {
+  int32_t angle;           // in millidegrees
+  int32_t distance;        // in cm
+  int32_t signal_strength; // range 0:255
+};
+
 struct sweep_scan {
-  int32_t angle[SWEEP_MAX_SAMPLES];           // in millidegrees
-  int32_t distance[SWEEP_MAX_SAMPLES];        // in cm
-  int32_t signal_strength[SWEEP_MAX_SAMPLES]; // range 0:255
+  sample samples[SWEEP_MAX_SAMPLES];
   int32_t count;
 };
+
+static sample parse_payload(const sweep::protocol::response_scan_packet_s& msg) {
+  sample ret;
+  ret.angle = msg.get_angle_millideg();
+  ret.distance = msg.distance;
+  ret.signal_strength = msg.signal_strength;
+  return ret;
+}
 
 struct sweep_device {
   sweep::serial::device_s serial; // serial port communication
@@ -88,33 +101,32 @@ static void sweep_device_accumulate_scans(sweep_device_s device) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(device->is_scanning);
 
-  sweep::protocol::response_scan_packet_s responses[SWEEP_MAX_SAMPLES];
+  sample buffer[SWEEP_MAX_SAMPLES];
   int32_t received = 0;
 
   while (!device->stop_thread && received < SWEEP_MAX_SAMPLES) {
 
-    sweep::protocol::read_response_scan(device->serial, &responses[received]);
+    sweep::protocol::response_scan_packet_s response;
+    sweep::protocol::read_response_scan(device->serial, &response);
 
-    if (!responses[received].has_error()) {
+    if (!response.has_error()) {
+      buffer[received] = parse_payload(response);
       received++;
     }
 
-    if (responses[received].is_sync() && received > 1) {
+    if (response.is_sync() && received > 1) {
 
       // package the previous scan without the sync reading from the subsequent scan
       auto out = std::unique_ptr<sweep_scan>(new sweep_scan);
       out->count = received - 1; // minus 1 to exclude sync reading
-      for (int32_t it = 0; it < received - 1; ++it) {
-        out->angle[it] = responses[it].get_angle_millideg();
-        out->distance[it] = responses[it].distance;
-        out->signal_strength[it] = responses[it].signal_strength;
-      }
+
+      std::copy_n(std::begin(buffer), received - 1, std::begin(out->samples));
 
       // place the scan in the queue
       device->scan_queue.enqueue({std::move(out), nullptr});
 
       // place the sync reading at the start for the next scan
-      responses[0] = responses[received - 1];
+      buffer[0] = buffer[received - 1];
 
       // reset received
       received = 1;
@@ -471,21 +483,21 @@ int32_t sweep_scan_get_angle(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
-  return scan->angle[sample];
+  return scan->samples[sample].angle;
 }
 
 int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
-  return scan->distance[sample];
+  return scan->samples[sample].distance;
 }
 
 int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
-  return scan->signal_strength[sample];
+  return scan->samples[sample].signal_strength;
 }
 
 void sweep_scan_destruct(sweep_scan_s scan) {
