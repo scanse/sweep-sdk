@@ -5,6 +5,7 @@
 
 #include "sweep.h"
 
+#include <algorithm>
 #include <chrono>
 #include <exception>
 #include <string>
@@ -19,12 +20,24 @@ struct sweep_error {
 
 #define SWEEP_MAX_SAMPLES 4096
 
+struct sample {
+  int32_t angle;           // in millidegrees
+  int32_t distance;        // in cm
+  int32_t signal_strength; // range 0:255
+};
+
 struct sweep_scan {
-  int32_t angle[SWEEP_MAX_SAMPLES];           // in millidegrees
-  int32_t distance[SWEEP_MAX_SAMPLES];        // in cm
-  int32_t signal_strength[SWEEP_MAX_SAMPLES]; // range 0:255
+  sample samples[SWEEP_MAX_SAMPLES];
   int32_t count;
 };
+
+static sample parse_payload(const sweep::protocol::response_scan_packet_s& msg) {
+  sample ret;
+  ret.angle = msg.get_angle_millideg();
+  ret.distance = msg.distance;
+  ret.signal_strength = msg.signal_strength;
+  return ret;
+}
 
 struct sweep_device {
   sweep::serial::device_s serial; // serial port communication
@@ -88,36 +101,31 @@ static void sweep_device_accumulate_scans(sweep_device_s device) try {
   SWEEP_ASSERT(device);
   SWEEP_ASSERT(device->is_scanning);
 
-  sweep::protocol::response_scan_packet_s responses[SWEEP_MAX_SAMPLES];
+  sample buffer[SWEEP_MAX_SAMPLES];
   int32_t received = 0;
 
   while (!device->stop_thread && received < SWEEP_MAX_SAMPLES) {
-    sweep::protocol::read_response_scan(device->serial, &responses[received]);
 
-    const bool is_sync = responses[received].sync_error & sweep::protocol::response_scan_packet_sync::sync;
-    const bool has_error = (responses[received].sync_error >> 1) != 0; // shift out sync bit, others are errors
+    const auto response = sweep::protocol::read_response_scan(device->serial);
 
-    if (!has_error) {
+    if (!response.has_error()) {
+      buffer[received] = parse_payload(response);
       received++;
     }
 
-    if (is_sync) {
-      if (received <= 1)
-        continue;
+    if (response.is_sync() && received > 1) {
+
       // package the previous scan without the sync reading from the subsequent scan
       auto out = std::unique_ptr<sweep_scan>(new sweep_scan);
       out->count = received - 1; // minus 1 to exclude sync reading
-      for (int32_t it = 0; it < received - 1; ++it) {
-        out->angle[it] = sweep::protocol::angle_raw_to_millideg(responses[it].angle);
-        out->distance[it] = responses[it].distance;
-        out->signal_strength[it] = responses[it].signal_strength;
-      }
+
+      std::copy_n(std::begin(buffer), received - 1, std::begin(out->samples));
 
       // place the scan in the queue
       device->scan_queue.enqueue({std::move(out), nullptr});
 
       // place the sync reading at the start for the next scan
-      responses[0] = responses[received - 1];
+      buffer[0] = buffer[received - 1];
 
       // reset received
       received = 1;
@@ -140,8 +148,7 @@ static void sweep_device_attempt_start_scanning(sweep_device_s device, sweep_err
 
   sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_START);
 
-  sweep::protocol::response_header_s response;
-  sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_START, &response);
+  auto response = sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_START);
 
   // Check the status bytes do not indicate failure
   const uint8_t status_bytes[2] = {response.cmdStatusByte1, response.cmdStatusByte2};
@@ -172,8 +179,7 @@ static void sweep_device_attempt_set_motor_speed(sweep_device_s device, int32_t 
 
   sweep::protocol::write_command_with_arguments(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST, args);
 
-  sweep::protocol::response_param_s response;
-  sweep::protocol::read_response_param(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST, &response);
+  const auto response = sweep::protocol::read_response_param(device->serial, sweep::protocol::MOTOR_SPEED_ADJUST);
 
   // Check the status bytes do not indicate failure
   const uint8_t status_bytes[2] = {response.cmdStatusByte1, response.cmdStatusByte2};
@@ -288,9 +294,8 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) try
   // Read the response from the first stop command
   // It is possible this will contain garbage bytes (leftover from data stream), and will error
   // But we are guaranteed to read at least as many bytes as the length of a stop response
-  sweep::protocol::response_header_s garbage_response;
   try {
-    sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_STOP, &garbage_response);
+    sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_STOP);
   } catch (const std::exception& ignore) {
     // Catch and ignore the error in the case of the stop response containing garbage bytes
     // Occurs if the device was actively streaming data before the stop cmd
@@ -304,8 +309,7 @@ void sweep_device_stop_scanning(sweep_device_s device, sweep_error_s* error) try
   sweep::protocol::write_command(device->serial, sweep::protocol::DATA_ACQUISITION_STOP);
 
   // read the response
-  sweep::protocol::response_header_s response;
-  sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_STOP, &response);
+  sweep::protocol::read_response_header(device->serial, sweep::protocol::DATA_ACQUISITION_STOP);
 
   device->is_scanning = false;
 } catch (const std::exception& e) {
@@ -338,8 +342,7 @@ bool sweep_device_get_motor_ready(sweep_device_s device, sweep_error_s* error) t
 
   sweep::protocol::write_command(device->serial, sweep::protocol::MOTOR_READY);
 
-  sweep::protocol::response_info_motor_ready_s response;
-  sweep::protocol::read_response_info_motor_ready(device->serial, sweep::protocol::MOTOR_READY, &response);
+  const auto response = sweep::protocol::read_response_info_motor_ready(device->serial);
 
   int32_t ready_code = sweep::protocol::ascii_bytes_to_integral(response.motor_ready);
   SWEEP_ASSERT(ready_code >= 0);
@@ -357,8 +360,7 @@ int32_t sweep_device_get_motor_speed(sweep_device_s device, sweep_error_s* error
 
   sweep::protocol::write_command(device->serial, sweep::protocol::MOTOR_INFORMATION);
 
-  sweep::protocol::response_info_motor_speed_s response;
-  sweep::protocol::read_response_info_motor_speed(device->serial, sweep::protocol::MOTOR_INFORMATION, &response);
+  const auto response = sweep::protocol::read_response_info_motor_speed(device->serial);
 
   int32_t speed = sweep::protocol::ascii_bytes_to_integral(response.motor_speed);
   SWEEP_ASSERT(speed >= 0);
@@ -391,8 +393,7 @@ int32_t sweep_device_get_sample_rate(sweep_device_s device, sweep_error_s* error
 
   sweep::protocol::write_command(device->serial, sweep::protocol::SAMPLE_RATE_INFORMATION);
 
-  sweep::protocol::response_info_sample_rate_s response;
-  sweep::protocol::read_response_info_sample_rate(device->serial, sweep::protocol::SAMPLE_RATE_INFORMATION, &response);
+  const auto response = sweep::protocol::read_response_info_sample_rate(device->serial);
 
   // 01: 500-600Hz, 02: 750-800Hz, 03: 1000-1050Hz
   int32_t code = sweep::protocol::ascii_bytes_to_integral(response.sample_rate);
@@ -446,8 +447,7 @@ void sweep_device_set_sample_rate(sweep_device_s device, int32_t hz, sweep_error
 
   sweep::protocol::write_command_with_arguments(device->serial, sweep::protocol::SAMPLE_RATE_ADJUST, args);
 
-  sweep::protocol::response_param_s response;
-  sweep::protocol::read_response_param(device->serial, sweep::protocol::SAMPLE_RATE_ADJUST, &response);
+  const auto response = sweep::protocol::read_response_param(device->serial, sweep::protocol::SAMPLE_RATE_ADJUST);
 
   // Check the status bytes do not indicate failure
   const uint8_t status_bytes[2] = {response.cmdStatusByte1, response.cmdStatusByte2};
@@ -474,21 +474,21 @@ int32_t sweep_scan_get_angle(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
-  return scan->angle[sample];
+  return scan->samples[sample].angle;
 }
 
 int32_t sweep_scan_get_distance(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
-  return scan->distance[sample];
+  return scan->samples[sample].distance;
 }
 
 int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample) {
   SWEEP_ASSERT(scan);
   SWEEP_ASSERT(sample >= 0 && sample < scan->count && "sample index out of bounds");
 
-  return scan->signal_strength[sample];
+  return scan->samples[sample].signal_strength;
 }
 
 void sweep_scan_destruct(sweep_scan_s scan) {
