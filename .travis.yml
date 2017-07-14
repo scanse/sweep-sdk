@@ -2,6 +2,10 @@ language: generic
 sudo: required
 dist: trusty
 
+cache:
+  directories:
+  - $HOME/.stack
+
 matrix:
   fast_finish: true
 
@@ -48,6 +52,10 @@ before_install:
   - export CC=${CCOMPILER} CXX=${CXXCOMPILER}
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then sudo update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10; fi
   - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew update && brew install python3; fi
+  - mkdir -p ~/.local/bin
+  - export PATH=$HOME/.local/bin:$PATH
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'; fi
+  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then travis_retry curl -L https://www.stackage.org/stack/osx-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'; fi
 
 install:
   # Make sure building libsweep works
@@ -66,6 +74,10 @@ install:
   - pushd sweeppy
   - sudo python2 setup.py install
   - sudo python3 setup.py install
+  - popd
+  # Build Haskell bindings
+  - pushd sweephs
+  - stack --no-terminal --install-ghc build
   - popd
 
 script:
@@ -86,4 +98,8 @@ script:
   # Test SweepJs bindings against the dummy library
   - pushd sweepjs
   - npm install
+  - popd
+  # Test Haskell bindings against dummy library
+  - pushd sweephs
+  - stack --no-terminal exec -- sweephs-exe "/dev/ttyUSB0"
   - popd
