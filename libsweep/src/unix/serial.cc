@@ -26,6 +26,11 @@ static speed_t get_baud(int32_t bitrate) {
     throw error{"Only baud rate 115200 is supported at this time."};
     return -1;
   }
+
+  // Translate human readable bitrate to termios bitrate
+  if (bitrate == 115200)
+    bitrate = B115200;
+
   return bitrate;
 }
 
