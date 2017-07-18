@@ -26,6 +26,11 @@ static speed_t get_baud(int32_t bitrate) {
     throw error{"Only baud rate 115200 is supported at this time."};
     return -1;
   }
+
+// translate human readable bitrate to termios bitrate
+#ifdef B115200
+  return B115200;
+#endif
   return bitrate;
 }
 
@@ -148,7 +153,7 @@ void device_read(device_s serial, void* to, int32_t len) {
         } else {
           throw error{"reading from serial device failed"};
         }
-      } else if(ret == 0){
+      } else if (ret == 0) {
         throw error{"encountered EOF on serial device"};
       } else {
         bytes_read += ret;
