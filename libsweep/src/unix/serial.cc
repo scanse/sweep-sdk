@@ -29,7 +29,11 @@ static speed_t get_baud(int32_t bitrate) {
 
   // Translate human readable bitrate to termios bitrate
   if (bitrate == 115200)
+  {
+    #ifdef B115200
     bitrate = B115200;
+    #endif
+  }
 
   return bitrate;
 }
