@@ -1,6 +1,6 @@
 {
   "name": "sweepjs",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Native module for the Sweep LiDAR",
   "keywords": [
     "addon",

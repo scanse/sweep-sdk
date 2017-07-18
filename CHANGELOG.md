@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.2.2
+This release is compatible with device firmware v1.4.
+
+Changes:
+- libsweep:
+  - Fixed a bug causing sweep object to hang during device creation.
+  - Refactor libsweep internals
+
 ## v1.2.1
 This release is compatible with device firmware v1.4.
 
