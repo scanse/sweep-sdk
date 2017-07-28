@@ -77,10 +77,31 @@ class Scan:
     self.samples -> Sample
 
 class Sample:
-    self.angle -> int
-    self.distance -> int
-    self.signal_strength -> int
+    self.angle -> int (milli-degree)
+    self.distance -> int (cm)
+    self.signal_strength -> int ([0:255])
 ```
+
+See the [libsweep README](https://github.com/scanse/sweep-sdk/tree/master/libsweep#device-interaction) for a description of how to use a related interface.
+
+Additionally, it is recommended that you read through the sweep [Theory of Operation](https://support.scanse.io/hc/en-us/articles/115006333327-Theory-of-Operation) and [Best Practices](https://support.scanse.io/hc/en-us/articles/115006055388-Best-Practices).
+
+### Interpret Sample
+```python
+sample.angle
+```
+The sample's angle (azimuth) represents the rotation of the sensor when the range measurment was taken. The value is reported in milli-degrees, or 1/1000 of a degree. For example, a `sample.angle` value of `180000 milli-degrees` equates to `180 degrees` (half of a complete rotation). Successive samples of the same scan will have increasing angles in the range 0-360000.
+
+```python
+sample.distance
+```
+The sample's distance is the range measurement (in cm).
+
+```python
+sample.distance
+```
+The sample's signal strength is the strength or confidence of the range measurement. The value is reported in the range 0-255, where larger values are better.
+
 
 ### License
 
