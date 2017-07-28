@@ -87,6 +87,7 @@ Table of Contents:
 - [Error Handling](#error-handling)
 - [Device Interaction](#device-interaction)
 - [Full 360 Degree Scan](#full-360-degree-scan)
+- [Additional Information](#additional-information)
 
 #### Firmware Compatibility
 | libsweep | sweep firmware |
@@ -306,6 +307,11 @@ int32_t sweep_scan_get_signal_strength(sweep_scan_s scan, int32_t sample)
 ```
 
 Returns the signal strength (0 low -- 255 high) for the `sample`th sample in the `sweep_scan_s`.
+
+
+#### Additional Information
+It is recommended that you read through the sweep [Theory of Operation](https://support.scanse.io/hc/en-us/articles/115006333327-Theory-of-Operation) and [Best Practices](https://support.scanse.io/hc/en-us/articles/115006055388-Best-Practices).
+
 
 ### License
 
