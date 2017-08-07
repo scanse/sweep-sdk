@@ -95,8 +95,8 @@ device_s device_construct(const char* port, int32_t bitrate) {
   // IEXTEN
 
   // Control Flags
-  options.c_cflag |= (CLOCAL | CREAD | CS8);
   options.c_cflag &= ~(PARENB | CSTOPB | CSIZE);
+  options.c_cflag |= (CLOCAL | CREAD | CS8);
 
   // setup baud rate
   speed_t baud = get_baud(bitrate);
