@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.2.3
+This release is compatible with device firmware v1.4.
+
+Changes:
+- libsweep:
+  - Fixed bug in serial impl. on Linux causing device creation to hang on some systems
+
 ## v1.2.2
 This release is compatible with device firmware v1.4.
 
