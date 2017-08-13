@@ -6,7 +6,7 @@ project(sweep C CXX)
 
 set(SWEEP_VERSION_MAJOR 1)
 set(SWEEP_VERSION_MINOR 2)
-set(SWEEP_VERSION_PATCH 2)
+set(SWEEP_VERSION_PATCH 3)
 
 
 option(DUMMY "Build dummy libsweep always returning static point cloud data. No device needed." OFF)
