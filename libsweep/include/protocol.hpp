@@ -83,8 +83,8 @@ struct response_param_s {
 static_assert(sizeof(response_param_s) == 9, "response param size mismatch");
 
 struct response_scan_packet_s {
-  uint8_t sync_error; // see response_scan_packet_sync::bits below
-  uint16_t angle;     // see angle_raw_to_millideg
+  uint8_t sync_error; // see sync_error_bits::bits below
+  uint16_t angle;     // see get_angle_millideg below
   uint16_t distance;
   uint8_t signal_strength;
   uint8_t checksum;
