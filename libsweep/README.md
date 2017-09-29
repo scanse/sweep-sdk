@@ -56,6 +56,8 @@ Then be sure to add the installation directories for the library and the header 
 
 You may have to restart the computer before the changes take effect.
 
+Lastly, if you are on windows you will have to adjust the settings for the COM port you are using in order to communicate properly with the sweep sensor. Follow [this guide](https://support.scanse.io/hc/en-us/articles/115000793208-Changing-the-USB-Adapter-Latency-Timer-and-Byte-Size-Setting-on-Windows). Adjusting settings only has to be done once for a given COM port, and windows will remember the settings.
+
 ### Usage
 
 - Include `<sweep/sweep.h>` for the C interface or `<sweep/sweep.hpp>` for the C++ interface.
