@@ -50,7 +50,11 @@ To build the dummy library add the dummy flag to the command:
 cmake ..  -DDUMMY=On -G "Visual Studio 14 2015 Win64"
 ```
 
-Then be sure to add the installation directories for the library and the header files to the environment `PATH` variable. For the above installation that would be something like `C:\Program Files\sweep\lib` for the library and `C:\Program Files\sweep\inlcude\sweep` for the headers. You may have to restart the computer before the changes take effect.
+Then be sure to add the installation directories for the library and the header files to the environment `PATH` variable. For the above installation you'd have to add something like the following:
+- `C:\Program Files\sweep\lib` for the library
+- `C:\Program Files\sweep\include`for the headers
+
+You may have to restart the computer before the changes take effect.
 
 ### Usage
 
