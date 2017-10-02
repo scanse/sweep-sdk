@@ -98,6 +98,7 @@ Table of Contents:
 #### Firmware Compatibility
 | libsweep | sweep firmware |
 | -------- | :------------: |
+| v1.2.0+   | v1.4           |
 | v1.1.1   | v1.2           |
 | v1.1.0   | v1.1           |
 | v0.x.x   | v1.0           |
