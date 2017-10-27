@@ -1,4 +1,9 @@
+#ifndef __FreeBSD__
+/// The reason behind this conditional is to correctly set feature test macros
+/// on FreeBSD; by NOT defining `_POSIX_C_SOURCE` the test macro `__BSD_VISIBLE`
+/// is defined, enabling the use of `cfmakeraw(3)`.
 #define _POSIX_C_SOURCE 200809L
+#endif
 
 #include "serial.hpp"
 
@@ -80,6 +85,7 @@ device_s device_construct(const char* port, int32_t bitrate) {
   if (tcgetattr(fd, &options) == -1)
     throw error{"querying terminal options failed"};
 
+#ifndef __FreeBSD__
   // Input Flags
   options.c_iflag &= ~(INLCR | IGNCR | ICRNL | IGNBRK);
 
@@ -97,6 +103,9 @@ device_s device_construct(const char* port, int32_t bitrate) {
   // Control Flags
   options.c_cflag &= ~(PARENB | CSTOPB | CSIZE);
   options.c_cflag |= (CLOCAL | CREAD | CS8);
+#else // __FreeBSD__
+  cfmakeraw(&options);
+#endif
 
   // setup baud rate
   speed_t baud = get_baud(bitrate);
