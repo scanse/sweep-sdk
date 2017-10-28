@@ -1,5 +1,14 @@
 # Changelog
 
+
+## v1.3.0
+This release is compatible with device firmware v1.4.
+- libsweep:
+  - Added FreeBSD support, thanks to [Hyun Hwang](https://github.com/hyunh90)
+- jsweep:
+  - Added new Java bindings `jsweep`, thanks to [Kenzie Togami](https://github.com/kenzierocks)
+
+
 ## v1.2.3
 This release is compatible with device firmware v1.4.
 
