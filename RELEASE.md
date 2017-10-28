@@ -1,7 +1,7 @@
 # Publishing a new version
 
 - [ ] Sync. `CHANGELOG.md` with latest changes and fixes
-- [ ] Sync. version number in `libsweep/CMakeLists.txt`, `sweeppy/setup.py`, `sweepjs/package.json`
+- [ ] Sync. version number in `libsweep/CMakeLists.txt`, `sweeppy/setup.py`, `sweepjs/package.json`, `jsweep/gradle.properties`
 - [ ] Make sure Travis and AppVeyor are green and show no warnings
 - [ ] Continuous Integration only tests dummy library: test with real device
 - [ ] Tag a commit `git tag -a vx.y.z gitsha` (we use [semantic versioning](http://semver.org/))
