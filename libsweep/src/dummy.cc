@@ -35,37 +35,6 @@ void sweep_error_destruct(sweep_error_s error) {
   delete error;
 }
 
-static void sweep_device_wait_until_motor_ready(sweep_device_s device, sweep_error_s* error) {
-  SWEEP_ASSERT(device);
-  SWEEP_ASSERT(error);
-  SWEEP_ASSERT(!device->is_scanning);
-
-  (void)device;
-  (void)error;
-}
-
-static void sweep_device_attempt_start_scanning(sweep_device_s device, sweep_error_s* error) {
-  SWEEP_ASSERT(device);
-  SWEEP_ASSERT(error);
-  SWEEP_ASSERT(!device->is_scanning);
-  (void)error;
-
-  if (device->is_scanning)
-    return;
-
-  device->is_scanning = true;
-}
-
-static void sweep_device_attempt_set_motor_speed(sweep_device_s device, int32_t hz, sweep_error_s* error) {
-  SWEEP_ASSERT(device);
-  SWEEP_ASSERT(hz >= 0 && hz <= 10);
-  SWEEP_ASSERT(error);
-  SWEEP_ASSERT(!device->is_scanning);
-  (void)error;
-
-  device->motor_speed = hz;
-}
-
 sweep_device_s sweep_device_construct_simple(const char* port, sweep_error_s* error) {
   SWEEP_ASSERT(error);
 
