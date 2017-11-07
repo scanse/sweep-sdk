@@ -20,6 +20,11 @@ In the following, replace `/dev/ttyUSB0` with your device's port name. This exec
 python -m sweeppy /dev/ttyUSB0
 ```
 
+See [`app.py`](sweeppy/app.py) for the common use-case where you have to coordinate between scanning and your app's work:
+- we start a producer thread putting scans from the Sweep device into a shared queue (non-blocking)
+- we start a consumer thread pulling scans out of the shared queue and doing work on them (blocking)
+- we use a third thread to set off a stop event and cleanly shutdown the pipeline
+
 ### Windows:
 
 The installed sweep library architecture must match the python version. Ie: if you are using a x86 (32bit) version of python, you must install the x86 (32bit) verison of libsweep.
