@@ -5,6 +5,7 @@ Low-level Scanse Sweep LiDAR library. Comes as C99 library `sweep.h` with option
 
 
 ### Quick Start
+#### Linux
 
 ```bash
 mkdir -p build
@@ -22,6 +23,9 @@ cmake .. -DCMAKE_BUILD_TYPE=Release -DDUMMY=On
 ```
 
 This dummy library is API and ABI compatible. Once your device arrives switch out the `libsweep.so` shared library and you're good to go.
+
+
+#### Windows
 
 For Windows users open a command prompt with administrative access:
 
@@ -58,10 +62,25 @@ You may have to restart the computer before the changes take effect.
 
 Lastly, if you are on windows you will have to adjust the settings for the COM port you are using in order to communicate properly with the sweep sensor. Follow [this guide](https://support.scanse.io/hc/en-us/articles/115000793208-Changing-the-USB-Adapter-Latency-Timer-and-Byte-Size-Setting-on-Windows). Adjusting settings only has to be done once for a given COM port, and windows will remember the settings.
 
+
+#### FreeBSD
+
+On FreeBSD, libsweep is available in the Ports tree:
+
+```sh
+portsnap auto
+cd /usr/ports/misc/libsweep-lidar
+make config
+# Enable NO_DEVICE build option if you don't have the actual device yet.
+make install clean
+```
+
+
 ### Usage
 
 - Include `<sweep/sweep.h>` for the C interface or `<sweep/sweep.hpp>` for the C++ interface.
 - Link `libsweep.so` with `-lsweep`.
+- On FreeBSD, be sure to specify library and header location: `-I/usr/local/include -L/usr/local/lib`
 
 For example:
 
