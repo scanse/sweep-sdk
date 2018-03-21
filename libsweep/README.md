@@ -65,14 +65,24 @@ Lastly, if you are on windows you will have to adjust the settings for the COM p
 
 #### FreeBSD
 
-On FreeBSD, libsweep is available in the Ports tree:
+On FreeBSD, using `pkg(8)` is the easiest and fastest way to get libsweep on your machine:
 
 ```sh
-portsnap auto
+# Requires ports-mgmt/pkg and security/sudo to be pre-installed.
+# Or, just issue these commands as root without sudo (NOT recommended!)
+sudo pkg update
+sudo pkg install libsweep-lidar
+```
+
+In case you prefer to build everything from the source or do not have the actual device yet, building from `ports(7)` tree is another way:
+
+```sh
+# Requires security/sudo to be pre-installed.
+# Or, just issue these commands as root without sudo (NOT recommended!)
+sudo portsnap auto
 cd /usr/ports/misc/libsweep-lidar
-make config
-# Enable NO_DEVICE build option if you don't have the actual device yet.
-make install clean
+sudo make config # Enable NO_DEVICE build option if you don't have the actual device yet.
+sudo make install clean
 ```
 
 
@@ -84,8 +94,14 @@ make install clean
 
 For example:
 
-    gcc -Wall -Wextra -pedantic -std=c99 examples/example.c -lsweep
-    g++ -Wall -Wextra -pedantic -std=c++11 examples/example.cc -lsweep
+```sh
+# Linux
+gcc -Wall -Wextra -pedantic -std=c99 examples/example.c -lsweep
+g++ -Wall -Wextra -pedantic -std=c++11 examples/example.cc -lsweep
+# FreeBSD
+cc -Weverything -std=c99 -I/usr/local/include -L/usr/local/lib -lsweep examples/example.c
+c++ -Weverything -std=c++11 -I/usr/local/include -L/usr/local/lib -lsweep examples/example.cc
+```
 
 In addition, we provide CMake integration. In your `CMakeLists.txt`:
 
